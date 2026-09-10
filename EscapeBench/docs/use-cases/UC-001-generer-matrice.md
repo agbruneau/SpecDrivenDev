@@ -8,7 +8,7 @@
 **Goal:** Obtenir une Matrix de cellules compilables couvrant les tailles, profils de durée de vie et modes de passage demandés, identifiée de façon déterministe et liée à l'empreinte du harnais
 **Status:** Reviewed
 
-**Linked Requirements:** FR-001, NFR-002, NFR-004, C-001, C-004, C-005
+**Linked Requirements:** FR-001, NFR-002, NFR-004, C-001, C-004, C-005, C-007
 **Linked Hypotheses:** — (UC préalable à toutes les hypothèses)
 **Entities:** Matrix, TypeSpec, LifetimeProfile, Cell, Probe
 

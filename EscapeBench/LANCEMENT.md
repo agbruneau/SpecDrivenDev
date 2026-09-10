@@ -7,7 +7,7 @@ Procédure de la première itération complète (UC-001 → UC-005, première ca
 | Élément | Exigence | Source |
 |---|---|---|
 | Go | ≥ 1.25 (`go version`) ; `go.mod` déclare `go 1.25`, la toolchain se télécharge seule si `GOTOOLCHAIN=auto` | C-001 ; vérifié : le squelette compile avec go1.25.0 et go1.27.0 (poste au 2026-09-10 ; la campagne consigne la version réelle, NFR-001) |
-| Claude Code | version 2.x ; sous Windows, travailler dans WSL2 | ACC p. 20, 67 |
+| Claude Code | version 2.x ; sous Windows, Git Bash natif suffit (hooks vérifiés avec des chemins `C:\...` le 2026-09-10) ; WSL2 reste possible | ACC p. 20, 67 ; `.claude/hooks/*.sh` |
 | `jq`, `bash`, `git` | requis par les hooks | `.claude/hooks/*.sh` |
 | `make` | requis par `CLAUDE.md` (`make vet test`) et par `/implement` ; **absent du poste Windows au 2026-09-10** — installer (`winget install GnuWin32.Make`) ou travailler en WSL2 | `Makefile` |
 | Docker | non requis pour P1 | — |
@@ -19,7 +19,8 @@ Procédure de la première itération complète (UC-001 → UC-005, première ca
 1. Copier le dossier `EscapeBench/` hors de `Prospection/` (dépôt dédié, ex. `github.com/agbruneau/escapebench` — module déjà nommé ainsi dans `go.mod`).
 2. `git init && git add -A && git commit -m "init: noyau de spécification AIUP et outillage Claude Code"`.
 3. `make vet test` doit réussir (aucun test, compilation propre).
-4. `chmod +x .claude/hooks/*.sh` si les droits ont été perdus à la copie.
+4. `bash .claude/hooks/selftest.sh` doit afficher « hooks : tous les contrôles passent ».
+5. `chmod +x .claude/hooks/*.sh` si les droits ont été perdus à la copie.
 
 Le squelette contient des `doc.go` par couche et un `main.go` qui refuse toutes les sous-commandes : c'est le point de départ voulu par SDD (p. 121 : le scaffold « is only the foundation »).
 
@@ -37,7 +38,7 @@ cd escapebench && claude
 | `/mcp` | vide — aucun serveur, par conception | ACC p. 103–105 (pollution de contexte) |
 | `/context` | mesure de référence : system prompt + outils + `CLAUDE.md` ; les skills ne coûtent que leur frontmatter (~100–200 tokens chacun, ACC p. 272) | ACC p. 108–109 |
 
-Si un hook ne se déclenche pas : vérifier le chemin (`$CLAUDE_PROJECT_DIR`), les droits d'exécution, puis relancer Claude Code (ACC p. 55–56). *À vérifier* dans la documentation hooks : contrat « code de sortie 2 = blocage, stderr remonté » et champ `stop_hook_active`, sur lesquels reposent `guard-paths.sh` et `go-test.sh`.
+Si un hook ne se déclenche pas : lancer `bash .claude/hooks/selftest.sh`, vérifier le chemin (`$CLAUDE_PROJECT_DIR`) et les droits d'exécution, puis relancer Claude Code (ACC p. 55–56). *Confirmé* dans la documentation hooks de Claude Code (2026-09-10) : code de sortie 2 = blocage en `PreToolUse`, avertissement montré à Claude en `PostToolUse`, poursuite forcée au `Stop` ; `stop_hook_active` vaut vrai quand un hook `Stop` tourne déjà pour le tour. Le matcher `MultiEdit` n'existe plus dans la documentation courante : les hooks portent sur `Edit|Write`.
 
 Ne pas lancer `/init` : `CLAUDE.md` est rédigé à la main et doit rester court (ACC p. 59 ; SDD p. 72) ; `/init` le remplacerait par une description générique du dépôt.
 

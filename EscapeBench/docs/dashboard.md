@@ -12,7 +12,7 @@ Généré par `/spec-coverage` et `/refute` (UC-005) ; ne pas éditer à la main
 | UC-004 Comparer valeur et pointeur | FR-004 | Reviewed | ✕ | ✕ | — | — | Weak |
 | UC-005 Produire les verdicts | FR-005, FR-007 | Reviewed | ✕ | ✕ | — | — | Weak |
 
-Statuts (SDD, p. 140) : Draft → Review → Approved → Implemented → Verified → Deployed (= campagne exécutée et rapport publié). Le passage `Reviewed` → `Approved` est une décision humaine consignée dans le fichier du UC.
+Statuts (SDD, p. 140, colonne `Review` écrite `Reviewed` dans les fichiers de UC) : Draft → Reviewed → Approved → Implemented → Verified → Deployed (= campagne exécutée et rapport publié). Le passage `Reviewed` → `Approved` est une décision humaine consignée dans le fichier du UC.
 
 ## Hypothèses
 

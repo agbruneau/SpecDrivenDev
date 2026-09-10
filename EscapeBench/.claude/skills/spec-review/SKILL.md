@@ -5,7 +5,7 @@ description: >
   et rapporte ses constatations sans modifier la spécification. Invoqué par slash command :
   /spec-review UC-004. Étape obligatoire avant le passage d'un UC au statut Approved.
 disable-model-invocation: true
-allowed-tools: Read, Grep, Glob, Task
+allowed-tools: Read, Grep, Glob, Agent
 ---
 # /spec-review $ARGUMENTS
 

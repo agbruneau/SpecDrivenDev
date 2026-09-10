@@ -16,7 +16,7 @@ Le projet est conduit selon l'*AI Unified Process* (Martinelli, *Spec-Driven Dev
 | `CLAUDE.md` | Règles de processus et de construction lues par Claude Code |
 | `.claude/skills/*` | `/spec-review`, `/implement`, `/go-test`, `/spec-coverage`, `/bench`, `/refute` |
 | `.claude/agents/*` | Sous-agents `spec-reviewer` et `code-reviewer` |
-| `.claude/settings.json`, `.claude/hooks/*` | Garde des chemins protégés, `gofmt`/`go vet` après édition, contrôle de forme des UC, suite de tests au `Stop` |
+| `.claude/settings.json`, `.claude/hooks/*` | Garde des chemins protégés, `gofmt`/`go vet` après édition, contrôle de forme des UC, suite de tests au `Stop` ; `selftest.sh` vérifie les quatre hooks (CI comprise) |
 | `cmd/escapebench` | Composition root : une sous-commande par UC |
 | `internal/{models,service,ports,adapters,harness}` | Layout hexagonal (BEPG ch. 14) |
 | `results/`, `matrices/` | Sorties du binaire, en écriture seule |
@@ -25,8 +25,9 @@ Le projet est conduit selon l'*AI Unified Process* (Martinelli, *Spec-Driven Dev
 ## Démarrage
 
 ```
-make vet test      # squelette : compile, aucun test encore
-claude             # dans ce répertoire ; puis /hooks, /agents, /context
+make vet test                    # squelette : compile, aucun test encore
+bash .claude/hooks/selftest.sh   # contrôle des quatre hooks
+claude                           # dans ce répertoire ; puis /hooks, /agents, /context
 /spec-review UC-001
 ```
 

@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
-# PostToolUse (Edit|Write|MultiEdit) — contrôle de forme d'un cas d'utilisation
+# PostToolUse (Edit|Write) — contrôle de forme d'un cas d'utilisation
 # (gabarit SDD, ch. 3-4) après édition d'un fichier docs/use-cases/UC-###-*.md.
+# Code de sortie 2 = avertissement montré à Claude (documentation hooks, 2026-09-10).
 set -uo pipefail
 ROOT="${CLAUDE_PROJECT_DIR:-$(pwd)}"
 INPUT="$(cat)"
 FILE="$(printf '%s' "$INPUT" | jq -r '.tool_input.file_path // empty' 2>/dev/null || true)"
+FILE="${FILE//\\//}"; ROOT="${ROOT//\\//}"   # chemins Windows C:\... -> C:/...
 case "$FILE" in */docs/use-cases/UC-[0-9][0-9][0-9]-*.md) ;; *) exit 0 ;; esac
 [ -f "$FILE" ] || exit 0
 

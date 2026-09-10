@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Stop — exécute la suite unitaire (-race, -shuffle=on) avant que Claude ne conclue
-# sa réponse, uniquement si des fichiers Go existent. Code 2 = Claude reçoit l'échec
-# et poursuit ; le champ stop_hook_active évite la boucle infinie (à vérifier dans la
-# documentation hooks de Claude Code).
+# sa réponse, uniquement si des fichiers Go existent. Contrat confirmé (documentation
+# hooks Claude Code, 2026-09-10) : code 2 = Claude ne s'arrête pas et reçoit stderr ;
+# stop_hook_active vaut true quand un hook Stop est déjà en cours pour ce tour.
 set -uo pipefail
 ROOT="${CLAUDE_PROJECT_DIR:-$(pwd)}"
 INPUT="$(cat)"

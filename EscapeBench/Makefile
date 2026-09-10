@@ -1,9 +1,10 @@
 # EscapeBench — contrat exécutable (BEPG ch. 11, p. 324-325) : le Makefile dit QUOI, le CI dit OÙ.
 COUNT ?= 20
+PARAMS ?=
 MATRIX ?=
 CAMPAIGN ?=
 
-.PHONY: fmt vet test integration_test bench matrix escape campaign compare verdict dashboard tidy build clean
+.PHONY: fmt vet test integration_test matrix escape campaign compare verdict dashboard tidy build clean
 
 fmt:
 	gofmt -l -w ./cmd ./internal
@@ -22,8 +23,8 @@ build:
 	go build -o bin/escapebench ./cmd/escapebench
 
 ## Sous-commandes du banc — chacune correspond à un cas d'utilisation (docs/use-cases).
-matrix: build            ## UC-001 : matrice de référence si MATRIX est vide
-	./bin/escapebench matrix $(if $(MATRIX),--params $(MATRIX),--reference)
+matrix: build            ## UC-001 : matrice de référence si PARAMS est vide
+	./bin/escapebench matrix $(if $(PARAMS),--params $(PARAMS),--reference)
 
 escape: build            ## UC-002
 	./bin/escapebench escape --matrix $(MATRIX)
@@ -39,8 +40,6 @@ verdict: build           ## UC-005
 
 dashboard: build         ## UC-005 étape 7 / FR-007
 	./bin/escapebench dashboard
-
-bench: campaign compare  ## Chaîne complète de mesure pour une matrice
 
 tidy:
 	go mod tidy

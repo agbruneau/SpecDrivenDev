@@ -9,14 +9,14 @@
 **Status:** Reviewed
 
 **Linked Requirements:** FR-003, FR-006, NFR-001, NFR-003, NFR-004, NFR-005, C-001, C-002, C-003, C-005, C-006
-**Révision :** 2026-09-10 — ajout de l'empreinte des critères (étape 3, BR-003-5) à la demande de UC-005 ; spécification modifiée avant tout code. Même jour : les Probe (FR-006) sont mesurées comme les Cell (étapes 4, 5, 8, A3, A4, BR-003-4) ; `Measurement.subjectId` remplace `cellId`.
+**Révision :** 2026-09-10 — ajout de l'empreinte des critères (étape 3, BR-003-5) à la demande de UC-005 ; spécification modifiée avant tout code. Même jour : les Probe (FR-006) sont mesurées comme les Cell (étapes 4, 5, 8, A3, A4, BR-003-4) ; `Measurement.subjectId` remplace `cellId`. Revue pré-lancement du 2026-09-10 : BR-003-3 admet la transition de `status` dans `campaign.json` ; la précondition UC-002 ne vaut que si la Matrix contient une Cell.
 **Linked Hypotheses:** H-001, H-002, H-003, H-004, H-005
 **Entities:** Matrix, Cell, Probe, Campaign, Measurement, Provenance
 
 ## Preconditions
 
 - Une Matrix existe avec au moins une Cell ou une Probe.
-- Les verdicts d'échappement de cette Matrix existent pour la toolchain courante (UC-002).
+- Si la Matrix contient au moins une Cell, les verdicts d'échappement de cette Matrix existent pour la toolchain courante (UC-002).
 - La toolchain satisfait C-001 ; aucune autre campagne n'est en cours sur la machine.
 
 ## Main Success Scenario
@@ -78,7 +78,7 @@ Une Campaign n'est valide que si l'empreinte de `internal/harness/` est identiqu
 Aucune Measurement n'est écrite sans une Campaign portant une Provenance complète (NFR-001).
 
 ### BR-003-3: Écriture seule
-Le runner de campagne crée des fichiers dans `results/` et n'en modifie ni n'en supprime aucun.
+Le runner de campagne crée des fichiers dans `results/`. Il ne modifie ni ne supprime aucun fichier existant, à deux exceptions nommées : le `campaign.json` de la campagne courante, dont seul le champ `status` passe de `RUNNING` à `COMPLETED` ou `ABORTED`, et `results/.campaign-lock`, créé au démarrage et retiré à la fin. Aucune Measurement, aucun fichier de comparaison, de verdicts ou d'échappement n'est réécrit.
 
 ### BR-003-4: Un sujet, un processus
 Chaque Cell et chaque Probe est mesurée dans un processus `go test` distinct afin qu'aucun état du runtime ne se propage d'un sujet au suivant.

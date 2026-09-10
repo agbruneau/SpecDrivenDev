@@ -68,6 +68,8 @@ Sonde de mesure indépendante des TypeSpec (FR-006, H-004, H-005) ; mesurée par
 | Attribut | Type | Règles de validation |
 |---|---|---|
 | id | String | Requis, unique ; forme `M-<sha256 court des paramètres>` |
+| parameters | Objet | Requis ; paramètres normalisés de la demande (tailles, champ pointeur, profils, modes, Probe), base de `id` (BR-001-1) |
+| harnessDigest | String | Requis ; empreinte SHA-256 de `internal/harness/` à la génération (UC-001 étape 6, C-005) |
 | cells | Liste de Cell | Au moins une cellule |
 | probes | Liste de Probe | Peut être vide ; jamais omise |
 | generatedAt | DateTime (UTC) | Requis |

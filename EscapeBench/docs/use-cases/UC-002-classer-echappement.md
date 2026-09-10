@@ -45,7 +45,7 @@
 3. À l'étape 7, le système affiche le nombre de cellules en `COMPILE_ERROR`.
 
 ### A3: Verdicts déjà présents pour la même toolchain
-**Trigger:** À l'étape 6, un fichier de verdicts existe déjà pour la même Matrix et la même Provenance (version de Go, `GOOS`, `GOARCH`).
+**Trigger:** À l'étape 6, un fichier de verdicts existe déjà pour la même Matrix dont la Provenance porte les mêmes `goVersion`, `goos` et `goarch` (les autres champs de Provenance, dont `capturedAt`, ne sont pas comparés).
 **Flow:**
 1. Le système écrit le nouveau fichier sous un nouvel horodatage (NFR-004).
 2. Le système compare les deux fichiers et affiche le nombre de cellules dont le verdict diffère.

@@ -1,15 +1,17 @@
 #!/usr/bin/env bash
-# PreToolUse (Edit|Write|MultiEdit) — garde des chemins protégés.
+# PreToolUse (Edit|Write) — garde des chemins protégés.
 # Règles appliquées : BR-003-1 / C-005 (harnais figé pendant une campagne),
 # BR-003-3 / NFR-004 (results/ en écriture seule par le runner), BR-005-3
 # (dashboard régénéré, jamais édité), UC-001 BR-001-2 (matrices immuables).
-# Contrat hook : JSON sur stdin ; code de sortie 2 = bloquer l'action, stderr
-# remonté à Claude (à vérifier dans la documentation hooks de Claude Code).
+# Contrat hook (documentation Claude Code, consultée le 2026-09-10) : JSON sur
+# stdin ; code de sortie 2 = bloquer l'action, stderr montré à Claude.
 set -euo pipefail
 ROOT="${CLAUDE_PROJECT_DIR:-$(pwd)}"
 INPUT="$(cat)"
 FILE="$(printf '%s' "$INPUT" | jq -r '.tool_input.file_path // empty' 2>/dev/null || true)"
 [ -z "$FILE" ] && exit 0
+# Sous Windows natif, Claude Code transmet des chemins C:\... : normaliser en C:/...
+FILE="${FILE//\\//}"; ROOT="${ROOT//\\//}"
 
 # Chemin relatif au projet
 REL="${FILE#"$ROOT"/}"

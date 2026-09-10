@@ -37,7 +37,7 @@ Cas d'utilisation demandé : **$ARGUMENTS** (forme attendue : `UC-###`). Si l'ar
 | Règles `BR-` | Fonctions ou vérifications nommées d'après la règle, avec commentaire `// BR-<UC>-<n>` |
 | Entités | Types dans `internal/models`, sans tag JSON ; les DTO et l'encodage vivent dans `internal/adapters` |
 
-Ports dans `internal/ports` uniquement pour ce que le service consomme (système de fichiers, compilateur, runner, horloge) ; adapters dans `internal/adapters/<nom>`. Le *composition root* est `cmd/escapebench/main.go` (sous-commande par UC : `matrix`, `escape`, `campaign`, `compare`, `verdict`).
+Ports dans `internal/ports` uniquement pour ce que le service consomme (système de fichiers, compilateur, runner, horloge) ; adapters dans `internal/adapters/<nom>`. Le *composition root* est `cmd/escapebench/main.go` (sous-commande par UC : `matrix`, `escape`, `campaign`, `compare`, `verdict`, `dashboard`).
 
 ## 5. Tests (obligatoires dans le même passage)
 - Un test par flux et par règle : `TestUC###_MainFlow`, `TestUC###_A1_<slug>`, `TestUC###_BR1_<slug>`, table-driven avec sous-tests nommés.

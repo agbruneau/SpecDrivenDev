@@ -1,0 +1,3 @@
+# Tout le dépôt en LF : les hooks et la CI lisent les mêmes octets sous Windows et Linux.
+* text=auto eol=lf
+*.pdf binary

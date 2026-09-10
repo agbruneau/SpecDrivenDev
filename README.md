@@ -16,7 +16,8 @@ Dépôt de prospection : identification, évaluation et cadrage de projets d'exp
 |---|---|---|
 | `Projets-candidats_Building-Enterprise-Projects-with-Go.md` | Cartographie des affirmations réfutables du livre de Shahsavan, grille d'évaluation, huit fiches de projets (P1–P8), séquence recommandée, méthode d'implémentation commune | Pour choisir un projet |
 | `Guide-implementation_AIUP-Claude-Code.md` | Méthode d'implémentation : *AI Unified Process* (Martinelli) adapté aux bancs de réfutation Go ; réglages Claude Code retenus d'*Agentic Coding with Claude Code* (Marco) — mémoire, skills, sous-agents, hooks, MCP, plan mode, parallélisme ; cycle par cas d'utilisation, traçabilité, pièges | Avant d'ouvrir le dépôt d'un projet |
-| `EscapeBench/` | Projet P1 prêt au lancement : noyau de spécification complet (`docs/` — vision, FR/NFR/C/H, modèle d'entités, diagramme, UC-001 à UC-005, tableau de bord), `CLAUDE.md`, six skills, deux sous-agents, quatre hooks, squelette Go compilable (`go.mod`, `Makefile`, `cmd/`, `internal/`), CI, `LANCEMENT.md` | À copier dans un dépôt dédié ; gabarit pour P2–P8 |
+| `EscapeBench/` | Projet P1 prêt au lancement : noyau de spécification complet (`docs/` — vision, FR/NFR/C/H, modèle d'entités, diagramme, UC-001 à UC-005, tableau de bord), `CLAUDE.md`, six skills, deux sous-agents, quatre hooks avec leur contrôle (`selftest.sh`), squelette Go compilable (`go.mod`, `Makefile`, `cmd/`, `internal/`), CI, `LANCEMENT.md` | À copier dans un dépôt dédié ; gabarit pour P2–P8 |
+| `REVUE-PRELANCEMENT_2026-09-10.md` | Revue du dépôt avant développement : constats, corrections appliquées, points laissés au chercheur | Avant `/spec-review UC-001` |
 
 ## Ordre de lecture
 
@@ -29,7 +30,7 @@ Dépôt de prospection : identification, évaluation et cadrage de projets d'exp
 
 | Projet | Statut | Prochaine étape |
 |---|---|---|
-| P1 EscapeBench | Spécification complète (UC-001 à UC-005 au statut Reviewed), outillage Claude Code en place, squelette compilé avec go1.25.0 ; aucun code de service | Créer le dépôt dédié, `/spec-review UC-001` → `Approved` → `/implement UC-001` (voir `EscapeBench/LANCEMENT.md`) |
+| P1 EscapeBench | Spécification complète (UC-001 à UC-005 au statut Reviewed), outillage Claude Code revu et vérifié le 2026-09-10 (`bash .claude/hooks/selftest.sh`), squelette compilé avec go1.25.0 et go1.27.0 ; aucun code de service | Créer le dépôt dédié, `/spec-review UC-001` → `Approved` → `/implement UC-001` (voir `EscapeBench/LANCEMENT.md`) |
 | P2–P8 | Fiches de cadrage seulement | Rédiger `docs/vision.md` et le catalogue `H-###` avant tout code |
 
 Conventions : français pour la prose, anglais pour les identifiants et le code ; pages citées = folios imprimés des PDF ; marqueurs *Confirmé / Probable / Hypothèse / À vérifier / Adaptation*.

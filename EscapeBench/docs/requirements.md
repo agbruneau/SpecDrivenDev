@@ -34,6 +34,7 @@ Conventions : `FR-###` exigence fonctionnelle, `NFR-###` exigence non fonctionne
 | C-004 | Layout | Structure hexagonale de BEPG ch. 14 (p. 368–369) : `cmd/`, `internal/{models,service,ports,adapters}` ; `internal/models` n'importe que la bibliothèque standard. |
 | C-005 | Harnais figé | Le code sous `internal/harness/` est identique pour toutes les cellules d'une campagne ; toute modification invalide la campagne en cours. |
 | C-006 | Architectures | Campagnes exécutées au minimum sur `amd64` ; `arm64` souhaité pour H-002 et H-004. |
+| C-007 | Sources générées hors du module principal | Les fichiers Go générés sous `matrices/<matrixId>/` ne sont pas des paquets du module principal : chaque matrice est un module imbriqué (son propre `go.mod`), de sorte que `go vet ./...`, `go test ./...`, la CI et les hooks ne les compilent jamais. |
 
 ## Hypothèses à éprouver
 

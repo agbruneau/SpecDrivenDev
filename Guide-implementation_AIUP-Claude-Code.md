@@ -86,7 +86,7 @@ Un dépôt par projet (P1 → `EscapeBench`, etc.), assemblé selon BEPG ch. 4 e
   internal/adapters/...         compilateur, système de fichiers, conteneurs, broker
   results/<campagne>/           mesures brutes + provenance, jamais réécrites
   .claude/skills/<skill>/SKILL.md
-  Makefile                      fmt · vet · test · integration_test · bench (BEPG p. 324–325)
+  Makefile                      fmt · vet · test · integration_test (BEPG p. 324–325)
 ```
 
 Les projets sans composante d'exécution longue (P3 LeakLab, P4 HexaGuard) gardent la même structure avec `results/` réduit aux rapports.
@@ -110,7 +110,7 @@ Les projets sans composante d'exécution longue (P3 LeakLab, P4 HexaGuard) garde
 | `/implement UC-###` | UC, exigences liées, `entity-model.md`, `CLAUDE.md`, code existant | Code dans `internal/` + tests unitaires nommés par flux ; mode synchronisation si le UC existe déjà | Layout hexagonal (p. 368–369) ; erreurs enveloppées `%w`, `errors.Is/As` aux bords (p. 177–190) ; `context.Context` premier paramètre de tout I/O (p. 539–545) |
 | `/go-test UC-###` | UC, code du UC | Tests table-driven, sous-tests nommés `UC###/<flux>` ; `testing/synctest` pour tout comportement temporel ou concurrent | Table-driven + `t.Run` (p. 213–216) ; `-race` et `-shuffle=on` (p. 231) ; horloge injectée plutôt qu'attentes réelles (p. 225–227) |
 | `/integration-test UC-###` | UC, ports/adapters | Tests sous `//go:build integration_test`, conteneur partagé par `sync.Once` | Pattern « one container, many tests » (p. 433–435) ; images figées, jamais `latest` (p. 444) |
-| `/bench H-###` | H, UC de mesure liés | `Benchmark*` avec `b.ReportAllocs()`, cible `make bench`, sortie `results/` | `-benchmem` (p. 219, 232) ; `-count` fixé par un `C-###` ; *setup* hors boucle `b.N` (p. 219) |
+| `/bench H-###` | H, UC de mesure liés | `Benchmark*` avec `b.ReportAllocs()`, campagne lancée par le binaire (`campaign`), sortie `results/` | `-benchmem` (p. 219, 232) ; `-count` fixé par un `C-###` ; *setup* hors boucle `b.N` (p. 219) |
 | `/migration` | `entity-model.md` | Scripts `V###__<slug>.sql` + rollback (projets avec base : P4, P8) | Liquibase/Flyway, migrations immuables (p. 423–426) |
 | `/spec-coverage` | UC, tests | Matrice UC × (flux, règle) → test ; signale les flux sans test | Couverture = complétude de la spec (SDD, p. 96) |
 | `/refute H-###` | `results/`, H | Verdict Confirmée / Infirmée / Non concluante + mise à jour de `dashboard.md` | Critère de réfutation écrit dans H avant la campagne ; jamais ajusté après coup |

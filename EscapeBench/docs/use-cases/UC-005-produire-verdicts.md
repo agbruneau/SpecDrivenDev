@@ -10,7 +10,7 @@
 
 **Linked Requirements:** FR-005, FR-007, NFR-001, NFR-004
 **Linked Hypotheses:** H-001, H-002, H-003, H-004, H-005, H-006
-**Entities:** Hypothesis, Verdict, Campaign, Comparison, Measurement, Probe, EscapeVerdict
+**Entities:** Hypothesis, Verdict, Campaign, Matrix, Cell, TypeSpec, Comparison, Measurement, Probe, EscapeVerdict
 
 ## Preconditions
 
