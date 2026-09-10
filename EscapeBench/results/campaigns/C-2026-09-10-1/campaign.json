@@ -1,0 +1,25 @@
+{
+  "id": "C-2026-09-10-1",
+  "matrixId": "M-823d8b5af441",
+  "harnessDigest": "022b7a58027e1bbcaa6f4c2fdb0e51bb1f02f05b6cbabc71cdd71ee53b1f3b4f",
+  "hypothesesDigest": "4c06e20a9d33309f08a5e309d0946464666d19ebcb5517e24840a16d546ef9de",
+  "hypothesisIds": [
+    "H-001",
+    "H-002",
+    "H-003",
+    "H-004",
+    "H-005",
+    "H-006"
+  ],
+  "count": 20,
+  "status": "COMPLETED",
+  "provenance": {
+    "goVersion": "go1.27.0",
+    "goos": "windows",
+    "goarch": "amd64",
+    "cpuModel": "Intel64 Family 6 Model 198 Stepping 2, GenuineIntel",
+    "capturedAt": "2026-09-10T14:00:07.4881097Z"
+  },
+  "startedAt": "2026-09-10T14:00:07.4886481Z",
+  "finishedAt": "2026-09-10T14:29:36.7427216Z"
+}
