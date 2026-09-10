@@ -1,0 +1,17 @@
+{
+  "campaignId": "C-2026-09-10-10",
+  "producedAt": "2026-09-10T22:07:34.1987526Z",
+  "verdicts": [
+    {
+      "hypothesisId": "H-013",
+      "campaignId": "C-2026-09-10-10",
+      "outcome": "CONFIRMED",
+      "rationale": "la latence non résidente dépasse 100 ns et le rapport ne dépasse pas 200, machine attestée au repos — résident 16384 o : 0.78 ns/accès ; intermédiaire 262144 o : 2.99 ns/accès ; non résident 268435456 o : 134.45 ns/accès ; rapport ×171.4 ; occupation 6.9 %, 6.5 %, 6.0 %",
+      "resultFiles": [
+        "results/campaigns/C-2026-09-10-10/measurements/probe_POINTER_CHASE_16384.json",
+        "results/campaigns/C-2026-09-10-10/measurements/probe_POINTER_CHASE_262144.json",
+        "results/campaigns/C-2026-09-10-10/measurements/probe_POINTER_CHASE_268435456.json"
+      ]
+    }
+  ]
+}

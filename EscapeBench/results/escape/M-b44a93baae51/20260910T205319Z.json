@@ -1,0 +1,3740 @@
+{
+  "matrixId": "M-b44a93baae51",
+  "provenance": {
+    "goVersion": "go1.27.0",
+    "goos": "windows",
+    "goarch": "amd64",
+    "cpuModel": "Intel64 Family 6 Model 198 Stepping 2, GenuineIntel",
+    "l1DataCacheBytes": 49152,
+    "lastLevelCacheBytes": 37748736,
+    "pageSizeBytes": 4096,
+    "gomaxprocs": 24,
+    "capturedAt": "2026-09-10T20:53:19.6646842Z"
+  },
+  "verdicts": [
+    {
+      "cellId": "Size0008Plain/LOCAL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008Plain/LOCAL/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008Plain/RETURNED/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008Plain/RETURNED/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008Plain_RETURNED_POINTER/subject.go:40:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008Plain/CAPTURED_BY_CLOSURE/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008Plain_CAPTURED_BY_CLOSURE_VALUE/subject.go:58:20: func literal escapes to heap",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008Plain/CAPTURED_BY_CLOSURE/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008Plain_CAPTURED_BY_CLOSURE_POINTER/subject.go:57:3: moved to heap: t",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008Plain/SENT_ON_CHANNEL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008Plain/SENT_ON_CHANNEL/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008Plain_SENT_ON_CHANNEL_POINTER/subject.go:47:3: moved to heap: t",
+      "category": "CHANNEL_SEND",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008Plain/STORED_IN_MAP/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008Plain/STORED_IN_MAP/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008Plain_STORED_IN_MAP_POINTER/subject.go:47:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008Plain/STORED_IN_SLICE/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008Plain/STORED_IN_SLICE/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008Plain_STORED_IN_SLICE_POINTER/subject.go:47:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008Plain/STORED_IN_STRUCT/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008Plain/STORED_IN_STRUCT/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008Plain_STORED_IN_STRUCT_POINTER/subject.go:52:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008Plain/RETURNED_ALLOCATING/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008Plain_RETURNED_ALLOCATING_VALUE/subject.go:58:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008Plain/RETURNED_ALLOCATING/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008Plain_RETURNED_ALLOCATING_POINTER/subject.go:55:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008Plain/RETURNED_ALLOCATING_K2/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008Plain_RETURNED_ALLOCATING_K2_VALUE/subject.go:58:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008Plain/RETURNED_ALLOCATING_K2/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008Plain_RETURNED_ALLOCATING_K2_POINTER/subject.go:55:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008Plain/RETURNED_ALLOCATING_R4/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008Plain_RETURNED_ALLOCATING_R4_VALUE/subject.go:58:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008Plain/RETURNED_ALLOCATING_R4/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008Plain_RETURNED_ALLOCATING_R4_POINTER/subject.go:55:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008Plain/RETURNED_ALLOCATING_R4_K2/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008Plain_RETURNED_ALLOCATING_R4_K2_VALUE/subject.go:58:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008Plain/RETURNED_ALLOCATING_R4_K2/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008Plain_RETURNED_ALLOCATING_R4_K2_POINTER/subject.go:55:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008Plain/RETURNED_ALLOCATING_R16/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008Plain_RETURNED_ALLOCATING_R16_VALUE/subject.go:58:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008Plain/RETURNED_ALLOCATING_R16/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008Plain_RETURNED_ALLOCATING_R16_POINTER/subject.go:55:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008Plain/RETURNED_ALLOCATING_R16_K2/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008Plain_RETURNED_ALLOCATING_R16_K2_VALUE/subject.go:58:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008Plain/RETURNED_ALLOCATING_R16_K2/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008Plain_RETURNED_ALLOCATING_R16_K2_POINTER/subject.go:55:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008Ptr/LOCAL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008Ptr/LOCAL/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008Ptr/RETURNED/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008Ptr/RETURNED/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008Ptr_RETURNED_POINTER/subject.go:40:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008Ptr/CAPTURED_BY_CLOSURE/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008Ptr_CAPTURED_BY_CLOSURE_VALUE/subject.go:58:20: func literal escapes to heap",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008Ptr/CAPTURED_BY_CLOSURE/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008Ptr_CAPTURED_BY_CLOSURE_POINTER/subject.go:57:3: moved to heap: t",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008Ptr/SENT_ON_CHANNEL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008Ptr/SENT_ON_CHANNEL/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008Ptr_SENT_ON_CHANNEL_POINTER/subject.go:47:3: moved to heap: t",
+      "category": "CHANNEL_SEND",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008Ptr/STORED_IN_MAP/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008Ptr/STORED_IN_MAP/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008Ptr_STORED_IN_MAP_POINTER/subject.go:47:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008Ptr/STORED_IN_SLICE/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008Ptr/STORED_IN_SLICE/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008Ptr_STORED_IN_SLICE_POINTER/subject.go:47:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008Ptr/STORED_IN_STRUCT/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008Ptr/STORED_IN_STRUCT/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008Ptr_STORED_IN_STRUCT_POINTER/subject.go:52:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008Ptr/RETURNED_ALLOCATING/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008Ptr_RETURNED_ALLOCATING_VALUE/subject.go:58:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008Ptr/RETURNED_ALLOCATING/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008Ptr_RETURNED_ALLOCATING_POINTER/subject.go:55:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008Ptr/RETURNED_ALLOCATING_K2/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008Ptr_RETURNED_ALLOCATING_K2_VALUE/subject.go:58:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008Ptr/RETURNED_ALLOCATING_K2/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008Ptr_RETURNED_ALLOCATING_K2_POINTER/subject.go:55:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008Ptr/RETURNED_ALLOCATING_R4/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008Ptr_RETURNED_ALLOCATING_R4_VALUE/subject.go:58:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008Ptr/RETURNED_ALLOCATING_R4/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008Ptr_RETURNED_ALLOCATING_R4_POINTER/subject.go:55:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008Ptr/RETURNED_ALLOCATING_R4_K2/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008Ptr_RETURNED_ALLOCATING_R4_K2_VALUE/subject.go:58:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008Ptr/RETURNED_ALLOCATING_R4_K2/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008Ptr_RETURNED_ALLOCATING_R4_K2_POINTER/subject.go:55:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008Ptr/RETURNED_ALLOCATING_R16/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008Ptr_RETURNED_ALLOCATING_R16_VALUE/subject.go:58:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008Ptr/RETURNED_ALLOCATING_R16/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008Ptr_RETURNED_ALLOCATING_R16_POINTER/subject.go:55:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008Ptr/RETURNED_ALLOCATING_R16_K2/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008Ptr_RETURNED_ALLOCATING_R16_K2_VALUE/subject.go:58:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008Ptr/RETURNED_ALLOCATING_R16_K2/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008Ptr_RETURNED_ALLOCATING_R16_K2_POINTER/subject.go:55:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016Plain/LOCAL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016Plain/LOCAL/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016Plain/RETURNED/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016Plain/RETURNED/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016Plain_RETURNED_POINTER/subject.go:42:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016Plain/CAPTURED_BY_CLOSURE/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016Plain_CAPTURED_BY_CLOSURE_VALUE/subject.go:60:20: func literal escapes to heap",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016Plain/CAPTURED_BY_CLOSURE/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016Plain_CAPTURED_BY_CLOSURE_POINTER/subject.go:59:3: moved to heap: t",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016Plain/SENT_ON_CHANNEL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016Plain/SENT_ON_CHANNEL/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016Plain_SENT_ON_CHANNEL_POINTER/subject.go:49:3: moved to heap: t",
+      "category": "CHANNEL_SEND",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016Plain/STORED_IN_MAP/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016Plain/STORED_IN_MAP/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016Plain_STORED_IN_MAP_POINTER/subject.go:49:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016Plain/STORED_IN_SLICE/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016Plain/STORED_IN_SLICE/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016Plain_STORED_IN_SLICE_POINTER/subject.go:49:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016Plain/STORED_IN_STRUCT/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016Plain/STORED_IN_STRUCT/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016Plain_STORED_IN_STRUCT_POINTER/subject.go:54:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016Plain/RETURNED_ALLOCATING/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016Plain_RETURNED_ALLOCATING_VALUE/subject.go:60:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016Plain/RETURNED_ALLOCATING/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016Plain_RETURNED_ALLOCATING_POINTER/subject.go:57:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016Plain/RETURNED_ALLOCATING_K2/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016Plain_RETURNED_ALLOCATING_K2_VALUE/subject.go:60:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016Plain/RETURNED_ALLOCATING_K2/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016Plain_RETURNED_ALLOCATING_K2_POINTER/subject.go:57:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016Plain/RETURNED_ALLOCATING_R4/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016Plain_RETURNED_ALLOCATING_R4_VALUE/subject.go:60:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016Plain/RETURNED_ALLOCATING_R4/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016Plain_RETURNED_ALLOCATING_R4_POINTER/subject.go:57:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016Plain/RETURNED_ALLOCATING_R4_K2/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016Plain_RETURNED_ALLOCATING_R4_K2_VALUE/subject.go:60:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016Plain/RETURNED_ALLOCATING_R4_K2/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016Plain_RETURNED_ALLOCATING_R4_K2_POINTER/subject.go:57:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016Plain/RETURNED_ALLOCATING_R16/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016Plain_RETURNED_ALLOCATING_R16_VALUE/subject.go:60:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016Plain/RETURNED_ALLOCATING_R16/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016Plain_RETURNED_ALLOCATING_R16_POINTER/subject.go:57:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016Plain/RETURNED_ALLOCATING_R16_K2/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016Plain_RETURNED_ALLOCATING_R16_K2_VALUE/subject.go:60:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016Plain/RETURNED_ALLOCATING_R16_K2/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016Plain_RETURNED_ALLOCATING_R16_K2_POINTER/subject.go:57:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016Ptr/LOCAL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016Ptr/LOCAL/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016Ptr/RETURNED/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016Ptr/RETURNED/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016Ptr_RETURNED_POINTER/subject.go:42:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016Ptr/CAPTURED_BY_CLOSURE/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016Ptr_CAPTURED_BY_CLOSURE_VALUE/subject.go:60:20: func literal escapes to heap",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016Ptr/CAPTURED_BY_CLOSURE/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016Ptr_CAPTURED_BY_CLOSURE_POINTER/subject.go:59:3: moved to heap: t",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016Ptr/SENT_ON_CHANNEL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016Ptr/SENT_ON_CHANNEL/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016Ptr_SENT_ON_CHANNEL_POINTER/subject.go:49:3: moved to heap: t",
+      "category": "CHANNEL_SEND",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016Ptr/STORED_IN_MAP/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016Ptr/STORED_IN_MAP/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016Ptr_STORED_IN_MAP_POINTER/subject.go:49:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016Ptr/STORED_IN_SLICE/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016Ptr/STORED_IN_SLICE/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016Ptr_STORED_IN_SLICE_POINTER/subject.go:49:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016Ptr/STORED_IN_STRUCT/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016Ptr/STORED_IN_STRUCT/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016Ptr_STORED_IN_STRUCT_POINTER/subject.go:54:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016Ptr/RETURNED_ALLOCATING/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016Ptr_RETURNED_ALLOCATING_VALUE/subject.go:60:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016Ptr/RETURNED_ALLOCATING/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016Ptr_RETURNED_ALLOCATING_POINTER/subject.go:57:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016Ptr/RETURNED_ALLOCATING_K2/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016Ptr_RETURNED_ALLOCATING_K2_VALUE/subject.go:60:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016Ptr/RETURNED_ALLOCATING_K2/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016Ptr_RETURNED_ALLOCATING_K2_POINTER/subject.go:57:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016Ptr/RETURNED_ALLOCATING_R4/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016Ptr_RETURNED_ALLOCATING_R4_VALUE/subject.go:60:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016Ptr/RETURNED_ALLOCATING_R4/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016Ptr_RETURNED_ALLOCATING_R4_POINTER/subject.go:57:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016Ptr/RETURNED_ALLOCATING_R4_K2/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016Ptr_RETURNED_ALLOCATING_R4_K2_VALUE/subject.go:60:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016Ptr/RETURNED_ALLOCATING_R4_K2/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016Ptr_RETURNED_ALLOCATING_R4_K2_POINTER/subject.go:57:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016Ptr/RETURNED_ALLOCATING_R16/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016Ptr_RETURNED_ALLOCATING_R16_VALUE/subject.go:60:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016Ptr/RETURNED_ALLOCATING_R16/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016Ptr_RETURNED_ALLOCATING_R16_POINTER/subject.go:57:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016Ptr/RETURNED_ALLOCATING_R16_K2/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016Ptr_RETURNED_ALLOCATING_R16_K2_VALUE/subject.go:60:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016Ptr/RETURNED_ALLOCATING_R16_K2/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016Ptr_RETURNED_ALLOCATING_R16_K2_POINTER/subject.go:57:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024Plain/LOCAL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024Plain/LOCAL/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024Plain/RETURNED/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024Plain/RETURNED/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024Plain_RETURNED_POINTER/subject.go:42:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024Plain/CAPTURED_BY_CLOSURE/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024Plain_CAPTURED_BY_CLOSURE_VALUE/subject.go:60:20: func literal escapes to heap",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024Plain/CAPTURED_BY_CLOSURE/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024Plain_CAPTURED_BY_CLOSURE_POINTER/subject.go:59:3: moved to heap: t",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024Plain/SENT_ON_CHANNEL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024Plain/SENT_ON_CHANNEL/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024Plain_SENT_ON_CHANNEL_POINTER/subject.go:49:3: moved to heap: t",
+      "category": "CHANNEL_SEND",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024Plain/STORED_IN_MAP/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024Plain/STORED_IN_MAP/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024Plain_STORED_IN_MAP_POINTER/subject.go:49:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024Plain/STORED_IN_SLICE/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024Plain/STORED_IN_SLICE/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024Plain_STORED_IN_SLICE_POINTER/subject.go:49:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024Plain/STORED_IN_STRUCT/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024Plain/STORED_IN_STRUCT/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024Plain_STORED_IN_STRUCT_POINTER/subject.go:54:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024Plain/RETURNED_ALLOCATING/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024Plain_RETURNED_ALLOCATING_VALUE/subject.go:60:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024Plain/RETURNED_ALLOCATING/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024Plain_RETURNED_ALLOCATING_POINTER/subject.go:57:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024Plain/RETURNED_ALLOCATING_K2/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024Plain_RETURNED_ALLOCATING_K2_VALUE/subject.go:60:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024Plain/RETURNED_ALLOCATING_K2/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024Plain_RETURNED_ALLOCATING_K2_POINTER/subject.go:57:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024Plain/RETURNED_ALLOCATING_R4/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024Plain_RETURNED_ALLOCATING_R4_VALUE/subject.go:60:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024Plain/RETURNED_ALLOCATING_R4/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024Plain_RETURNED_ALLOCATING_R4_POINTER/subject.go:57:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024Plain/RETURNED_ALLOCATING_R4_K2/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024Plain_RETURNED_ALLOCATING_R4_K2_VALUE/subject.go:60:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024Plain/RETURNED_ALLOCATING_R4_K2/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024Plain_RETURNED_ALLOCATING_R4_K2_POINTER/subject.go:57:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024Plain/RETURNED_ALLOCATING_R16/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024Plain_RETURNED_ALLOCATING_R16_VALUE/subject.go:60:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024Plain/RETURNED_ALLOCATING_R16/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024Plain_RETURNED_ALLOCATING_R16_POINTER/subject.go:57:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024Plain/RETURNED_ALLOCATING_R16_K2/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024Plain_RETURNED_ALLOCATING_R16_K2_VALUE/subject.go:60:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024Plain/RETURNED_ALLOCATING_R16_K2/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024Plain_RETURNED_ALLOCATING_R16_K2_POINTER/subject.go:57:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024Ptr/LOCAL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024Ptr/LOCAL/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024Ptr/RETURNED/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024Ptr/RETURNED/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024Ptr_RETURNED_POINTER/subject.go:42:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024Ptr/CAPTURED_BY_CLOSURE/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024Ptr_CAPTURED_BY_CLOSURE_VALUE/subject.go:60:20: func literal escapes to heap",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024Ptr/CAPTURED_BY_CLOSURE/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024Ptr_CAPTURED_BY_CLOSURE_POINTER/subject.go:59:3: moved to heap: t",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024Ptr/SENT_ON_CHANNEL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024Ptr/SENT_ON_CHANNEL/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024Ptr_SENT_ON_CHANNEL_POINTER/subject.go:49:3: moved to heap: t",
+      "category": "CHANNEL_SEND",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024Ptr/STORED_IN_MAP/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024Ptr/STORED_IN_MAP/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024Ptr_STORED_IN_MAP_POINTER/subject.go:49:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024Ptr/STORED_IN_SLICE/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024Ptr/STORED_IN_SLICE/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024Ptr_STORED_IN_SLICE_POINTER/subject.go:49:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024Ptr/STORED_IN_STRUCT/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024Ptr/STORED_IN_STRUCT/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024Ptr_STORED_IN_STRUCT_POINTER/subject.go:54:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024Ptr/RETURNED_ALLOCATING/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024Ptr_RETURNED_ALLOCATING_VALUE/subject.go:60:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024Ptr/RETURNED_ALLOCATING/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024Ptr_RETURNED_ALLOCATING_POINTER/subject.go:57:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024Ptr/RETURNED_ALLOCATING_K2/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024Ptr_RETURNED_ALLOCATING_K2_VALUE/subject.go:60:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024Ptr/RETURNED_ALLOCATING_K2/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024Ptr_RETURNED_ALLOCATING_K2_POINTER/subject.go:57:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024Ptr/RETURNED_ALLOCATING_R4/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024Ptr_RETURNED_ALLOCATING_R4_VALUE/subject.go:60:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024Ptr/RETURNED_ALLOCATING_R4/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024Ptr_RETURNED_ALLOCATING_R4_POINTER/subject.go:57:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024Ptr/RETURNED_ALLOCATING_R4_K2/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024Ptr_RETURNED_ALLOCATING_R4_K2_VALUE/subject.go:60:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024Ptr/RETURNED_ALLOCATING_R4_K2/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024Ptr_RETURNED_ALLOCATING_R4_K2_POINTER/subject.go:57:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024Ptr/RETURNED_ALLOCATING_R16/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024Ptr_RETURNED_ALLOCATING_R16_VALUE/subject.go:60:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024Ptr/RETURNED_ALLOCATING_R16/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024Ptr_RETURNED_ALLOCATING_R16_POINTER/subject.go:57:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024Ptr/RETURNED_ALLOCATING_R16_K2/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024Ptr_RETURNED_ALLOCATING_R16_K2_VALUE/subject.go:60:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024Ptr/RETURNED_ALLOCATING_R16_K2/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024Ptr_RETURNED_ALLOCATING_R16_K2_POINTER/subject.go:57:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128Plain/LOCAL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128Plain/LOCAL/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128Plain/RETURNED/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128Plain/RETURNED/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128Plain_RETURNED_POINTER/subject.go:42:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128Plain/CAPTURED_BY_CLOSURE/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128Plain_CAPTURED_BY_CLOSURE_VALUE/subject.go:60:20: func literal escapes to heap",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128Plain/CAPTURED_BY_CLOSURE/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128Plain_CAPTURED_BY_CLOSURE_POINTER/subject.go:59:3: moved to heap: t",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128Plain/SENT_ON_CHANNEL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128Plain/SENT_ON_CHANNEL/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128Plain_SENT_ON_CHANNEL_POINTER/subject.go:49:3: moved to heap: t",
+      "category": "CHANNEL_SEND",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128Plain/STORED_IN_MAP/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128Plain/STORED_IN_MAP/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128Plain_STORED_IN_MAP_POINTER/subject.go:49:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128Plain/STORED_IN_SLICE/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128Plain/STORED_IN_SLICE/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128Plain_STORED_IN_SLICE_POINTER/subject.go:49:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128Plain/STORED_IN_STRUCT/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128Plain/STORED_IN_STRUCT/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128Plain_STORED_IN_STRUCT_POINTER/subject.go:54:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128Plain/RETURNED_ALLOCATING/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128Plain_RETURNED_ALLOCATING_VALUE/subject.go:60:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128Plain/RETURNED_ALLOCATING/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128Plain_RETURNED_ALLOCATING_POINTER/subject.go:57:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128Plain/RETURNED_ALLOCATING_K2/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128Plain_RETURNED_ALLOCATING_K2_VALUE/subject.go:60:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128Plain/RETURNED_ALLOCATING_K2/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128Plain_RETURNED_ALLOCATING_K2_POINTER/subject.go:57:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128Plain/RETURNED_ALLOCATING_R4/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128Plain_RETURNED_ALLOCATING_R4_VALUE/subject.go:60:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128Plain/RETURNED_ALLOCATING_R4/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128Plain_RETURNED_ALLOCATING_R4_POINTER/subject.go:57:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128Plain/RETURNED_ALLOCATING_R4_K2/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128Plain_RETURNED_ALLOCATING_R4_K2_VALUE/subject.go:60:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128Plain/RETURNED_ALLOCATING_R4_K2/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128Plain_RETURNED_ALLOCATING_R4_K2_POINTER/subject.go:57:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128Plain/RETURNED_ALLOCATING_R16/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128Plain_RETURNED_ALLOCATING_R16_VALUE/subject.go:60:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128Plain/RETURNED_ALLOCATING_R16/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128Plain_RETURNED_ALLOCATING_R16_POINTER/subject.go:57:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128Plain/RETURNED_ALLOCATING_R16_K2/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128Plain_RETURNED_ALLOCATING_R16_K2_VALUE/subject.go:60:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128Plain/RETURNED_ALLOCATING_R16_K2/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128Plain_RETURNED_ALLOCATING_R16_K2_POINTER/subject.go:57:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128Ptr/LOCAL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128Ptr/LOCAL/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128Ptr/RETURNED/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128Ptr/RETURNED/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128Ptr_RETURNED_POINTER/subject.go:42:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128Ptr/CAPTURED_BY_CLOSURE/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128Ptr_CAPTURED_BY_CLOSURE_VALUE/subject.go:60:20: func literal escapes to heap",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128Ptr/CAPTURED_BY_CLOSURE/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128Ptr_CAPTURED_BY_CLOSURE_POINTER/subject.go:59:3: moved to heap: t",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128Ptr/SENT_ON_CHANNEL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128Ptr/SENT_ON_CHANNEL/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128Ptr_SENT_ON_CHANNEL_POINTER/subject.go:49:3: moved to heap: t",
+      "category": "CHANNEL_SEND",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128Ptr/STORED_IN_MAP/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128Ptr/STORED_IN_MAP/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128Ptr_STORED_IN_MAP_POINTER/subject.go:49:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128Ptr/STORED_IN_SLICE/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128Ptr/STORED_IN_SLICE/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128Ptr_STORED_IN_SLICE_POINTER/subject.go:49:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128Ptr/STORED_IN_STRUCT/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128Ptr/STORED_IN_STRUCT/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128Ptr_STORED_IN_STRUCT_POINTER/subject.go:54:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128Ptr/RETURNED_ALLOCATING/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128Ptr_RETURNED_ALLOCATING_VALUE/subject.go:60:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128Ptr/RETURNED_ALLOCATING/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128Ptr_RETURNED_ALLOCATING_POINTER/subject.go:57:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128Ptr/RETURNED_ALLOCATING_K2/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128Ptr_RETURNED_ALLOCATING_K2_VALUE/subject.go:60:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128Ptr/RETURNED_ALLOCATING_K2/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128Ptr_RETURNED_ALLOCATING_K2_POINTER/subject.go:57:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128Ptr/RETURNED_ALLOCATING_R4/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128Ptr_RETURNED_ALLOCATING_R4_VALUE/subject.go:60:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128Ptr/RETURNED_ALLOCATING_R4/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128Ptr_RETURNED_ALLOCATING_R4_POINTER/subject.go:57:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128Ptr/RETURNED_ALLOCATING_R4_K2/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128Ptr_RETURNED_ALLOCATING_R4_K2_VALUE/subject.go:60:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128Ptr/RETURNED_ALLOCATING_R4_K2/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128Ptr_RETURNED_ALLOCATING_R4_K2_POINTER/subject.go:57:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128Ptr/RETURNED_ALLOCATING_R16/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128Ptr_RETURNED_ALLOCATING_R16_VALUE/subject.go:60:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128Ptr/RETURNED_ALLOCATING_R16/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128Ptr_RETURNED_ALLOCATING_R16_POINTER/subject.go:57:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128Ptr/RETURNED_ALLOCATING_R16_K2/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128Ptr_RETURNED_ALLOCATING_R16_K2_VALUE/subject.go:60:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128Ptr/RETURNED_ALLOCATING_R16_K2/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128Ptr_RETURNED_ALLOCATING_R16_K2_POINTER/subject.go:57:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024Plain/LOCAL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024Plain/LOCAL/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024Plain/RETURNED/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024Plain/RETURNED/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024Plain_RETURNED_POINTER/subject.go:42:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024Plain/CAPTURED_BY_CLOSURE/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024Plain_CAPTURED_BY_CLOSURE_VALUE/subject.go:59:3: moved to heap: t",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024Plain/CAPTURED_BY_CLOSURE/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024Plain_CAPTURED_BY_CLOSURE_POINTER/subject.go:59:3: moved to heap: t",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024Plain/SENT_ON_CHANNEL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024Plain/SENT_ON_CHANNEL/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024Plain_SENT_ON_CHANNEL_POINTER/subject.go:49:3: moved to heap: t",
+      "category": "CHANNEL_SEND",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024Plain/STORED_IN_MAP/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024Plain/STORED_IN_MAP/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024Plain_STORED_IN_MAP_POINTER/subject.go:49:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024Plain/STORED_IN_SLICE/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024Plain/STORED_IN_SLICE/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024Plain_STORED_IN_SLICE_POINTER/subject.go:49:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024Plain/STORED_IN_STRUCT/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024Plain/STORED_IN_STRUCT/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024Plain_STORED_IN_STRUCT_POINTER/subject.go:54:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024Plain/RETURNED_ALLOCATING/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024Plain_RETURNED_ALLOCATING_VALUE/subject.go:60:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024Plain/RETURNED_ALLOCATING/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024Plain_RETURNED_ALLOCATING_POINTER/subject.go:57:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024Plain/RETURNED_ALLOCATING_K2/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024Plain_RETURNED_ALLOCATING_K2_VALUE/subject.go:60:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024Plain/RETURNED_ALLOCATING_K2/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024Plain_RETURNED_ALLOCATING_K2_POINTER/subject.go:57:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024Plain/RETURNED_ALLOCATING_R4/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024Plain_RETURNED_ALLOCATING_R4_VALUE/subject.go:60:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024Plain/RETURNED_ALLOCATING_R4/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024Plain_RETURNED_ALLOCATING_R4_POINTER/subject.go:57:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024Plain/RETURNED_ALLOCATING_R4_K2/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024Plain_RETURNED_ALLOCATING_R4_K2_VALUE/subject.go:60:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024Plain/RETURNED_ALLOCATING_R4_K2/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024Plain_RETURNED_ALLOCATING_R4_K2_POINTER/subject.go:57:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024Plain/RETURNED_ALLOCATING_R16/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024Plain_RETURNED_ALLOCATING_R16_VALUE/subject.go:60:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024Plain/RETURNED_ALLOCATING_R16/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024Plain_RETURNED_ALLOCATING_R16_POINTER/subject.go:57:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024Plain/RETURNED_ALLOCATING_R16_K2/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024Plain_RETURNED_ALLOCATING_R16_K2_VALUE/subject.go:60:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024Plain/RETURNED_ALLOCATING_R16_K2/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024Plain_RETURNED_ALLOCATING_R16_K2_POINTER/subject.go:57:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024Ptr/LOCAL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024Ptr/LOCAL/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024Ptr/RETURNED/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024Ptr/RETURNED/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024Ptr_RETURNED_POINTER/subject.go:42:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024Ptr/CAPTURED_BY_CLOSURE/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024Ptr_CAPTURED_BY_CLOSURE_VALUE/subject.go:59:3: moved to heap: t",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024Ptr/CAPTURED_BY_CLOSURE/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024Ptr_CAPTURED_BY_CLOSURE_POINTER/subject.go:59:3: moved to heap: t",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024Ptr/SENT_ON_CHANNEL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024Ptr/SENT_ON_CHANNEL/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024Ptr_SENT_ON_CHANNEL_POINTER/subject.go:49:3: moved to heap: t",
+      "category": "CHANNEL_SEND",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024Ptr/STORED_IN_MAP/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024Ptr/STORED_IN_MAP/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024Ptr_STORED_IN_MAP_POINTER/subject.go:49:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024Ptr/STORED_IN_SLICE/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024Ptr/STORED_IN_SLICE/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024Ptr_STORED_IN_SLICE_POINTER/subject.go:49:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024Ptr/STORED_IN_STRUCT/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024Ptr/STORED_IN_STRUCT/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024Ptr_STORED_IN_STRUCT_POINTER/subject.go:54:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024Ptr/RETURNED_ALLOCATING/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024Ptr_RETURNED_ALLOCATING_VALUE/subject.go:60:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024Ptr/RETURNED_ALLOCATING/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024Ptr_RETURNED_ALLOCATING_POINTER/subject.go:57:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024Ptr/RETURNED_ALLOCATING_K2/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024Ptr_RETURNED_ALLOCATING_K2_VALUE/subject.go:60:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024Ptr/RETURNED_ALLOCATING_K2/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024Ptr_RETURNED_ALLOCATING_K2_POINTER/subject.go:57:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024Ptr/RETURNED_ALLOCATING_R4/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024Ptr_RETURNED_ALLOCATING_R4_VALUE/subject.go:60:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024Ptr/RETURNED_ALLOCATING_R4/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024Ptr_RETURNED_ALLOCATING_R4_POINTER/subject.go:57:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024Ptr/RETURNED_ALLOCATING_R4_K2/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024Ptr_RETURNED_ALLOCATING_R4_K2_VALUE/subject.go:60:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024Ptr/RETURNED_ALLOCATING_R4_K2/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024Ptr_RETURNED_ALLOCATING_R4_K2_POINTER/subject.go:57:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024Ptr/RETURNED_ALLOCATING_R16/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024Ptr_RETURNED_ALLOCATING_R16_VALUE/subject.go:60:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024Ptr/RETURNED_ALLOCATING_R16/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024Ptr_RETURNED_ALLOCATING_R16_POINTER/subject.go:57:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024Ptr/RETURNED_ALLOCATING_R16_K2/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024Ptr_RETURNED_ALLOCATING_R16_K2_VALUE/subject.go:60:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024Ptr/RETURNED_ALLOCATING_R16_K2/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024Ptr_RETURNED_ALLOCATING_R16_K2_POINTER/subject.go:57:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008FieldsPlain/LOCAL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008FieldsPlain/LOCAL/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008FieldsPlain/RETURNED/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008FieldsPlain/RETURNED/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008FieldsPlain_RETURNED_POINTER/subject.go:39:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008FieldsPlain/CAPTURED_BY_CLOSURE/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008FieldsPlain_CAPTURED_BY_CLOSURE_VALUE/subject.go:57:20: func literal escapes to heap",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008FieldsPlain/CAPTURED_BY_CLOSURE/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008FieldsPlain_CAPTURED_BY_CLOSURE_POINTER/subject.go:56:3: moved to heap: t",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008FieldsPlain/SENT_ON_CHANNEL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008FieldsPlain/SENT_ON_CHANNEL/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008FieldsPlain_SENT_ON_CHANNEL_POINTER/subject.go:46:3: moved to heap: t",
+      "category": "CHANNEL_SEND",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008FieldsPlain/STORED_IN_MAP/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008FieldsPlain/STORED_IN_MAP/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008FieldsPlain_STORED_IN_MAP_POINTER/subject.go:46:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008FieldsPlain/STORED_IN_SLICE/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008FieldsPlain/STORED_IN_SLICE/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008FieldsPlain_STORED_IN_SLICE_POINTER/subject.go:46:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008FieldsPlain/STORED_IN_STRUCT/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008FieldsPlain/STORED_IN_STRUCT/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008FieldsPlain_STORED_IN_STRUCT_POINTER/subject.go:51:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008FieldsPlain/RETURNED_ALLOCATING/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008FieldsPlain_RETURNED_ALLOCATING_VALUE/subject.go:57:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008FieldsPlain/RETURNED_ALLOCATING/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008FieldsPlain_RETURNED_ALLOCATING_POINTER/subject.go:54:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008FieldsPlain/RETURNED_ALLOCATING_K2/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008FieldsPlain_RETURNED_ALLOCATING_K2_VALUE/subject.go:57:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008FieldsPlain/RETURNED_ALLOCATING_K2/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008FieldsPlain_RETURNED_ALLOCATING_K2_POINTER/subject.go:54:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008FieldsPlain/RETURNED_ALLOCATING_R4/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008FieldsPlain_RETURNED_ALLOCATING_R4_VALUE/subject.go:57:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008FieldsPlain/RETURNED_ALLOCATING_R4/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008FieldsPlain_RETURNED_ALLOCATING_R4_POINTER/subject.go:54:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008FieldsPlain/RETURNED_ALLOCATING_R4_K2/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008FieldsPlain_RETURNED_ALLOCATING_R4_K2_VALUE/subject.go:57:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008FieldsPlain/RETURNED_ALLOCATING_R4_K2/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008FieldsPlain_RETURNED_ALLOCATING_R4_K2_POINTER/subject.go:54:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008FieldsPlain/RETURNED_ALLOCATING_R16/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008FieldsPlain_RETURNED_ALLOCATING_R16_VALUE/subject.go:57:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008FieldsPlain/RETURNED_ALLOCATING_R16/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008FieldsPlain_RETURNED_ALLOCATING_R16_POINTER/subject.go:54:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008FieldsPlain/RETURNED_ALLOCATING_R16_K2/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008FieldsPlain_RETURNED_ALLOCATING_R16_K2_VALUE/subject.go:57:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008FieldsPlain/RETURNED_ALLOCATING_R16_K2/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008FieldsPlain_RETURNED_ALLOCATING_R16_K2_POINTER/subject.go:54:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008FieldsPtr/LOCAL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008FieldsPtr/LOCAL/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008FieldsPtr/RETURNED/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008FieldsPtr/RETURNED/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008FieldsPtr_RETURNED_POINTER/subject.go:39:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008FieldsPtr/CAPTURED_BY_CLOSURE/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008FieldsPtr_CAPTURED_BY_CLOSURE_VALUE/subject.go:57:20: func literal escapes to heap",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008FieldsPtr/CAPTURED_BY_CLOSURE/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008FieldsPtr_CAPTURED_BY_CLOSURE_POINTER/subject.go:56:3: moved to heap: t",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008FieldsPtr/SENT_ON_CHANNEL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008FieldsPtr/SENT_ON_CHANNEL/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008FieldsPtr_SENT_ON_CHANNEL_POINTER/subject.go:46:3: moved to heap: t",
+      "category": "CHANNEL_SEND",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008FieldsPtr/STORED_IN_MAP/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008FieldsPtr/STORED_IN_MAP/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008FieldsPtr_STORED_IN_MAP_POINTER/subject.go:46:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008FieldsPtr/STORED_IN_SLICE/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008FieldsPtr/STORED_IN_SLICE/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008FieldsPtr_STORED_IN_SLICE_POINTER/subject.go:46:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008FieldsPtr/STORED_IN_STRUCT/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008FieldsPtr/STORED_IN_STRUCT/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008FieldsPtr_STORED_IN_STRUCT_POINTER/subject.go:51:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008FieldsPtr/RETURNED_ALLOCATING/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008FieldsPtr_RETURNED_ALLOCATING_VALUE/subject.go:57:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008FieldsPtr/RETURNED_ALLOCATING/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008FieldsPtr_RETURNED_ALLOCATING_POINTER/subject.go:54:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008FieldsPtr/RETURNED_ALLOCATING_K2/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008FieldsPtr_RETURNED_ALLOCATING_K2_VALUE/subject.go:57:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008FieldsPtr/RETURNED_ALLOCATING_K2/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008FieldsPtr_RETURNED_ALLOCATING_K2_POINTER/subject.go:54:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008FieldsPtr/RETURNED_ALLOCATING_R4/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008FieldsPtr_RETURNED_ALLOCATING_R4_VALUE/subject.go:57:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008FieldsPtr/RETURNED_ALLOCATING_R4/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008FieldsPtr_RETURNED_ALLOCATING_R4_POINTER/subject.go:54:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008FieldsPtr/RETURNED_ALLOCATING_R4_K2/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008FieldsPtr_RETURNED_ALLOCATING_R4_K2_VALUE/subject.go:57:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008FieldsPtr/RETURNED_ALLOCATING_R4_K2/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008FieldsPtr_RETURNED_ALLOCATING_R4_K2_POINTER/subject.go:54:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008FieldsPtr/RETURNED_ALLOCATING_R16/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008FieldsPtr_RETURNED_ALLOCATING_R16_VALUE/subject.go:57:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008FieldsPtr/RETURNED_ALLOCATING_R16/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008FieldsPtr_RETURNED_ALLOCATING_R16_POINTER/subject.go:54:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008FieldsPtr/RETURNED_ALLOCATING_R16_K2/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008FieldsPtr_RETURNED_ALLOCATING_R16_K2_VALUE/subject.go:57:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008FieldsPtr/RETURNED_ALLOCATING_R16_K2/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008FieldsPtr_RETURNED_ALLOCATING_R16_K2_POINTER/subject.go:54:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016FieldsPlain/LOCAL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016FieldsPlain/LOCAL/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016FieldsPlain/RETURNED/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016FieldsPlain/RETURNED/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016FieldsPlain_RETURNED_POINTER/subject.go:42:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016FieldsPlain/CAPTURED_BY_CLOSURE/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016FieldsPlain_CAPTURED_BY_CLOSURE_VALUE/subject.go:60:20: func literal escapes to heap",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016FieldsPlain/CAPTURED_BY_CLOSURE/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016FieldsPlain_CAPTURED_BY_CLOSURE_POINTER/subject.go:59:3: moved to heap: t",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016FieldsPlain/SENT_ON_CHANNEL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016FieldsPlain/SENT_ON_CHANNEL/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016FieldsPlain_SENT_ON_CHANNEL_POINTER/subject.go:49:3: moved to heap: t",
+      "category": "CHANNEL_SEND",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016FieldsPlain/STORED_IN_MAP/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016FieldsPlain/STORED_IN_MAP/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016FieldsPlain_STORED_IN_MAP_POINTER/subject.go:49:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016FieldsPlain/STORED_IN_SLICE/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016FieldsPlain/STORED_IN_SLICE/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016FieldsPlain_STORED_IN_SLICE_POINTER/subject.go:49:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016FieldsPlain/STORED_IN_STRUCT/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016FieldsPlain/STORED_IN_STRUCT/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016FieldsPlain_STORED_IN_STRUCT_POINTER/subject.go:54:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016FieldsPlain/RETURNED_ALLOCATING/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016FieldsPlain_RETURNED_ALLOCATING_VALUE/subject.go:60:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016FieldsPlain/RETURNED_ALLOCATING/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016FieldsPlain_RETURNED_ALLOCATING_POINTER/subject.go:57:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016FieldsPlain/RETURNED_ALLOCATING_K2/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016FieldsPlain_RETURNED_ALLOCATING_K2_VALUE/subject.go:60:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016FieldsPlain/RETURNED_ALLOCATING_K2/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016FieldsPlain_RETURNED_ALLOCATING_K2_POINTER/subject.go:57:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016FieldsPlain/RETURNED_ALLOCATING_R4/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016FieldsPlain_RETURNED_ALLOCATING_R4_VALUE/subject.go:60:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016FieldsPlain/RETURNED_ALLOCATING_R4/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016FieldsPlain_RETURNED_ALLOCATING_R4_POINTER/subject.go:57:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016FieldsPlain/RETURNED_ALLOCATING_R4_K2/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016FieldsPlain_RETURNED_ALLOCATING_R4_K2_VALUE/subject.go:60:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016FieldsPlain/RETURNED_ALLOCATING_R4_K2/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016FieldsPlain_RETURNED_ALLOCATING_R4_K2_POINTER/subject.go:57:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016FieldsPlain/RETURNED_ALLOCATING_R16/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016FieldsPlain_RETURNED_ALLOCATING_R16_VALUE/subject.go:60:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016FieldsPlain/RETURNED_ALLOCATING_R16/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016FieldsPlain_RETURNED_ALLOCATING_R16_POINTER/subject.go:57:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016FieldsPlain/RETURNED_ALLOCATING_R16_K2/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016FieldsPlain_RETURNED_ALLOCATING_R16_K2_VALUE/subject.go:60:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016FieldsPlain/RETURNED_ALLOCATING_R16_K2/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016FieldsPlain_RETURNED_ALLOCATING_R16_K2_POINTER/subject.go:57:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016FieldsPtr/LOCAL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016FieldsPtr/LOCAL/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016FieldsPtr/RETURNED/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016FieldsPtr/RETURNED/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016FieldsPtr_RETURNED_POINTER/subject.go:42:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016FieldsPtr/CAPTURED_BY_CLOSURE/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016FieldsPtr_CAPTURED_BY_CLOSURE_VALUE/subject.go:60:20: func literal escapes to heap",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016FieldsPtr/CAPTURED_BY_CLOSURE/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016FieldsPtr_CAPTURED_BY_CLOSURE_POINTER/subject.go:59:3: moved to heap: t",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016FieldsPtr/SENT_ON_CHANNEL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016FieldsPtr/SENT_ON_CHANNEL/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016FieldsPtr_SENT_ON_CHANNEL_POINTER/subject.go:49:3: moved to heap: t",
+      "category": "CHANNEL_SEND",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016FieldsPtr/STORED_IN_MAP/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016FieldsPtr/STORED_IN_MAP/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016FieldsPtr_STORED_IN_MAP_POINTER/subject.go:49:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016FieldsPtr/STORED_IN_SLICE/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016FieldsPtr/STORED_IN_SLICE/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016FieldsPtr_STORED_IN_SLICE_POINTER/subject.go:49:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016FieldsPtr/STORED_IN_STRUCT/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016FieldsPtr/STORED_IN_STRUCT/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016FieldsPtr_STORED_IN_STRUCT_POINTER/subject.go:54:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016FieldsPtr/RETURNED_ALLOCATING/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016FieldsPtr_RETURNED_ALLOCATING_VALUE/subject.go:60:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016FieldsPtr/RETURNED_ALLOCATING/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016FieldsPtr_RETURNED_ALLOCATING_POINTER/subject.go:57:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016FieldsPtr/RETURNED_ALLOCATING_K2/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016FieldsPtr_RETURNED_ALLOCATING_K2_VALUE/subject.go:60:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016FieldsPtr/RETURNED_ALLOCATING_K2/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016FieldsPtr_RETURNED_ALLOCATING_K2_POINTER/subject.go:57:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016FieldsPtr/RETURNED_ALLOCATING_R4/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016FieldsPtr_RETURNED_ALLOCATING_R4_VALUE/subject.go:60:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016FieldsPtr/RETURNED_ALLOCATING_R4/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016FieldsPtr_RETURNED_ALLOCATING_R4_POINTER/subject.go:57:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016FieldsPtr/RETURNED_ALLOCATING_R4_K2/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016FieldsPtr_RETURNED_ALLOCATING_R4_K2_VALUE/subject.go:60:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016FieldsPtr/RETURNED_ALLOCATING_R4_K2/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016FieldsPtr_RETURNED_ALLOCATING_R4_K2_POINTER/subject.go:57:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016FieldsPtr/RETURNED_ALLOCATING_R16/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016FieldsPtr_RETURNED_ALLOCATING_R16_VALUE/subject.go:60:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016FieldsPtr/RETURNED_ALLOCATING_R16/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016FieldsPtr_RETURNED_ALLOCATING_R16_POINTER/subject.go:57:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016FieldsPtr/RETURNED_ALLOCATING_R16_K2/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016FieldsPtr_RETURNED_ALLOCATING_R16_K2_VALUE/subject.go:60:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016FieldsPtr/RETURNED_ALLOCATING_R16_K2/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016FieldsPtr_RETURNED_ALLOCATING_R16_K2_POINTER/subject.go:57:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024FieldsPlain/LOCAL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024FieldsPlain/LOCAL/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024FieldsPlain/RETURNED/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024FieldsPlain/RETURNED/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024FieldsPlain_RETURNED_POINTER/subject.go:43:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024FieldsPlain/CAPTURED_BY_CLOSURE/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024FieldsPlain_CAPTURED_BY_CLOSURE_VALUE/subject.go:61:20: func literal escapes to heap",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024FieldsPlain/CAPTURED_BY_CLOSURE/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024FieldsPlain_CAPTURED_BY_CLOSURE_POINTER/subject.go:60:3: moved to heap: t",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024FieldsPlain/SENT_ON_CHANNEL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024FieldsPlain/SENT_ON_CHANNEL/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024FieldsPlain_SENT_ON_CHANNEL_POINTER/subject.go:50:3: moved to heap: t",
+      "category": "CHANNEL_SEND",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024FieldsPlain/STORED_IN_MAP/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024FieldsPlain/STORED_IN_MAP/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024FieldsPlain_STORED_IN_MAP_POINTER/subject.go:50:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024FieldsPlain/STORED_IN_SLICE/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024FieldsPlain/STORED_IN_SLICE/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024FieldsPlain_STORED_IN_SLICE_POINTER/subject.go:50:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024FieldsPlain/STORED_IN_STRUCT/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024FieldsPlain/STORED_IN_STRUCT/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024FieldsPlain_STORED_IN_STRUCT_POINTER/subject.go:55:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024FieldsPlain/RETURNED_ALLOCATING/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024FieldsPlain_RETURNED_ALLOCATING_VALUE/subject.go:61:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024FieldsPlain/RETURNED_ALLOCATING/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024FieldsPlain_RETURNED_ALLOCATING_POINTER/subject.go:58:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024FieldsPlain/RETURNED_ALLOCATING_K2/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024FieldsPlain_RETURNED_ALLOCATING_K2_VALUE/subject.go:61:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024FieldsPlain/RETURNED_ALLOCATING_K2/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024FieldsPlain_RETURNED_ALLOCATING_K2_POINTER/subject.go:58:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024FieldsPlain/RETURNED_ALLOCATING_R4/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024FieldsPlain_RETURNED_ALLOCATING_R4_VALUE/subject.go:61:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024FieldsPlain/RETURNED_ALLOCATING_R4/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024FieldsPlain_RETURNED_ALLOCATING_R4_POINTER/subject.go:58:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024FieldsPlain/RETURNED_ALLOCATING_R4_K2/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024FieldsPlain_RETURNED_ALLOCATING_R4_K2_VALUE/subject.go:61:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024FieldsPlain/RETURNED_ALLOCATING_R4_K2/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024FieldsPlain_RETURNED_ALLOCATING_R4_K2_POINTER/subject.go:58:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024FieldsPlain/RETURNED_ALLOCATING_R16/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024FieldsPlain_RETURNED_ALLOCATING_R16_VALUE/subject.go:61:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024FieldsPlain/RETURNED_ALLOCATING_R16/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024FieldsPlain_RETURNED_ALLOCATING_R16_POINTER/subject.go:58:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024FieldsPlain/RETURNED_ALLOCATING_R16_K2/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024FieldsPlain_RETURNED_ALLOCATING_R16_K2_VALUE/subject.go:61:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024FieldsPlain/RETURNED_ALLOCATING_R16_K2/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024FieldsPlain_RETURNED_ALLOCATING_R16_K2_POINTER/subject.go:58:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024FieldsPtr/LOCAL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024FieldsPtr/LOCAL/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024FieldsPtr/RETURNED/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024FieldsPtr/RETURNED/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024FieldsPtr_RETURNED_POINTER/subject.go:43:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024FieldsPtr/CAPTURED_BY_CLOSURE/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024FieldsPtr_CAPTURED_BY_CLOSURE_VALUE/subject.go:61:20: func literal escapes to heap",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024FieldsPtr/CAPTURED_BY_CLOSURE/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024FieldsPtr_CAPTURED_BY_CLOSURE_POINTER/subject.go:60:3: moved to heap: t",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024FieldsPtr/SENT_ON_CHANNEL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024FieldsPtr/SENT_ON_CHANNEL/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024FieldsPtr_SENT_ON_CHANNEL_POINTER/subject.go:50:3: moved to heap: t",
+      "category": "CHANNEL_SEND",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024FieldsPtr/STORED_IN_MAP/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024FieldsPtr/STORED_IN_MAP/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024FieldsPtr_STORED_IN_MAP_POINTER/subject.go:50:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024FieldsPtr/STORED_IN_SLICE/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024FieldsPtr/STORED_IN_SLICE/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024FieldsPtr_STORED_IN_SLICE_POINTER/subject.go:50:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024FieldsPtr/STORED_IN_STRUCT/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024FieldsPtr/STORED_IN_STRUCT/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024FieldsPtr_STORED_IN_STRUCT_POINTER/subject.go:55:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024FieldsPtr/RETURNED_ALLOCATING/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024FieldsPtr_RETURNED_ALLOCATING_VALUE/subject.go:61:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024FieldsPtr/RETURNED_ALLOCATING/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024FieldsPtr_RETURNED_ALLOCATING_POINTER/subject.go:58:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024FieldsPtr/RETURNED_ALLOCATING_K2/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024FieldsPtr_RETURNED_ALLOCATING_K2_VALUE/subject.go:61:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024FieldsPtr/RETURNED_ALLOCATING_K2/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024FieldsPtr_RETURNED_ALLOCATING_K2_POINTER/subject.go:58:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024FieldsPtr/RETURNED_ALLOCATING_R4/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024FieldsPtr_RETURNED_ALLOCATING_R4_VALUE/subject.go:61:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024FieldsPtr/RETURNED_ALLOCATING_R4/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024FieldsPtr_RETURNED_ALLOCATING_R4_POINTER/subject.go:58:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024FieldsPtr/RETURNED_ALLOCATING_R4_K2/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024FieldsPtr_RETURNED_ALLOCATING_R4_K2_VALUE/subject.go:61:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024FieldsPtr/RETURNED_ALLOCATING_R4_K2/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024FieldsPtr_RETURNED_ALLOCATING_R4_K2_POINTER/subject.go:58:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024FieldsPtr/RETURNED_ALLOCATING_R16/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024FieldsPtr_RETURNED_ALLOCATING_R16_VALUE/subject.go:61:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024FieldsPtr/RETURNED_ALLOCATING_R16/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024FieldsPtr_RETURNED_ALLOCATING_R16_POINTER/subject.go:58:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024FieldsPtr/RETURNED_ALLOCATING_R16_K2/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024FieldsPtr_RETURNED_ALLOCATING_R16_K2_VALUE/subject.go:61:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024FieldsPtr/RETURNED_ALLOCATING_R16_K2/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024FieldsPtr_RETURNED_ALLOCATING_R16_K2_POINTER/subject.go:58:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128FieldsPlain/LOCAL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128FieldsPlain/LOCAL/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128FieldsPlain/RETURNED/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128FieldsPlain/RETURNED/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128FieldsPlain_RETURNED_POINTER/subject.go:56:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128FieldsPlain/CAPTURED_BY_CLOSURE/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128FieldsPlain_CAPTURED_BY_CLOSURE_VALUE/subject.go:74:20: func literal escapes to heap",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128FieldsPlain/CAPTURED_BY_CLOSURE/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128FieldsPlain_CAPTURED_BY_CLOSURE_POINTER/subject.go:73:3: moved to heap: t",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128FieldsPlain/SENT_ON_CHANNEL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128FieldsPlain/SENT_ON_CHANNEL/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128FieldsPlain_SENT_ON_CHANNEL_POINTER/subject.go:63:3: moved to heap: t",
+      "category": "CHANNEL_SEND",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128FieldsPlain/STORED_IN_MAP/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128FieldsPlain/STORED_IN_MAP/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128FieldsPlain_STORED_IN_MAP_POINTER/subject.go:63:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128FieldsPlain/STORED_IN_SLICE/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128FieldsPlain/STORED_IN_SLICE/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128FieldsPlain_STORED_IN_SLICE_POINTER/subject.go:63:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128FieldsPlain/STORED_IN_STRUCT/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128FieldsPlain/STORED_IN_STRUCT/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128FieldsPlain_STORED_IN_STRUCT_POINTER/subject.go:68:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128FieldsPlain/RETURNED_ALLOCATING/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128FieldsPlain_RETURNED_ALLOCATING_VALUE/subject.go:74:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128FieldsPlain/RETURNED_ALLOCATING/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128FieldsPlain_RETURNED_ALLOCATING_POINTER/subject.go:71:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128FieldsPlain/RETURNED_ALLOCATING_K2/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128FieldsPlain_RETURNED_ALLOCATING_K2_VALUE/subject.go:74:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128FieldsPlain/RETURNED_ALLOCATING_K2/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128FieldsPlain_RETURNED_ALLOCATING_K2_POINTER/subject.go:71:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128FieldsPlain/RETURNED_ALLOCATING_R4/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128FieldsPlain_RETURNED_ALLOCATING_R4_VALUE/subject.go:74:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128FieldsPlain/RETURNED_ALLOCATING_R4/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128FieldsPlain_RETURNED_ALLOCATING_R4_POINTER/subject.go:71:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128FieldsPlain/RETURNED_ALLOCATING_R4_K2/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128FieldsPlain_RETURNED_ALLOCATING_R4_K2_VALUE/subject.go:74:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128FieldsPlain/RETURNED_ALLOCATING_R4_K2/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128FieldsPlain_RETURNED_ALLOCATING_R4_K2_POINTER/subject.go:71:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128FieldsPlain/RETURNED_ALLOCATING_R16/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128FieldsPlain_RETURNED_ALLOCATING_R16_VALUE/subject.go:74:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128FieldsPlain/RETURNED_ALLOCATING_R16/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128FieldsPlain_RETURNED_ALLOCATING_R16_POINTER/subject.go:71:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128FieldsPlain/RETURNED_ALLOCATING_R16_K2/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128FieldsPlain_RETURNED_ALLOCATING_R16_K2_VALUE/subject.go:74:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128FieldsPlain/RETURNED_ALLOCATING_R16_K2/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128FieldsPlain_RETURNED_ALLOCATING_R16_K2_POINTER/subject.go:71:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128FieldsPtr/LOCAL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128FieldsPtr/LOCAL/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128FieldsPtr/RETURNED/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128FieldsPtr/RETURNED/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128FieldsPtr_RETURNED_POINTER/subject.go:56:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128FieldsPtr/CAPTURED_BY_CLOSURE/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128FieldsPtr_CAPTURED_BY_CLOSURE_VALUE/subject.go:74:20: func literal escapes to heap",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128FieldsPtr/CAPTURED_BY_CLOSURE/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128FieldsPtr_CAPTURED_BY_CLOSURE_POINTER/subject.go:73:3: moved to heap: t",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128FieldsPtr/SENT_ON_CHANNEL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128FieldsPtr/SENT_ON_CHANNEL/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128FieldsPtr_SENT_ON_CHANNEL_POINTER/subject.go:63:3: moved to heap: t",
+      "category": "CHANNEL_SEND",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128FieldsPtr/STORED_IN_MAP/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128FieldsPtr/STORED_IN_MAP/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128FieldsPtr_STORED_IN_MAP_POINTER/subject.go:63:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128FieldsPtr/STORED_IN_SLICE/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128FieldsPtr/STORED_IN_SLICE/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128FieldsPtr_STORED_IN_SLICE_POINTER/subject.go:63:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128FieldsPtr/STORED_IN_STRUCT/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128FieldsPtr/STORED_IN_STRUCT/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128FieldsPtr_STORED_IN_STRUCT_POINTER/subject.go:68:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128FieldsPtr/RETURNED_ALLOCATING/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128FieldsPtr_RETURNED_ALLOCATING_VALUE/subject.go:74:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128FieldsPtr/RETURNED_ALLOCATING/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128FieldsPtr_RETURNED_ALLOCATING_POINTER/subject.go:71:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128FieldsPtr/RETURNED_ALLOCATING_K2/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128FieldsPtr_RETURNED_ALLOCATING_K2_VALUE/subject.go:74:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128FieldsPtr/RETURNED_ALLOCATING_K2/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128FieldsPtr_RETURNED_ALLOCATING_K2_POINTER/subject.go:71:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128FieldsPtr/RETURNED_ALLOCATING_R4/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128FieldsPtr_RETURNED_ALLOCATING_R4_VALUE/subject.go:74:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128FieldsPtr/RETURNED_ALLOCATING_R4/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128FieldsPtr_RETURNED_ALLOCATING_R4_POINTER/subject.go:71:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128FieldsPtr/RETURNED_ALLOCATING_R4_K2/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128FieldsPtr_RETURNED_ALLOCATING_R4_K2_VALUE/subject.go:74:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128FieldsPtr/RETURNED_ALLOCATING_R4_K2/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128FieldsPtr_RETURNED_ALLOCATING_R4_K2_POINTER/subject.go:71:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128FieldsPtr/RETURNED_ALLOCATING_R16/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128FieldsPtr_RETURNED_ALLOCATING_R16_VALUE/subject.go:74:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128FieldsPtr/RETURNED_ALLOCATING_R16/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128FieldsPtr_RETURNED_ALLOCATING_R16_POINTER/subject.go:71:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128FieldsPtr/RETURNED_ALLOCATING_R16_K2/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128FieldsPtr_RETURNED_ALLOCATING_R16_K2_VALUE/subject.go:74:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128FieldsPtr/RETURNED_ALLOCATING_R16_K2/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128FieldsPtr_RETURNED_ALLOCATING_R16_K2_POINTER/subject.go:71:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024FieldsPlain/LOCAL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024FieldsPlain/LOCAL/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024FieldsPlain/RETURNED/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024FieldsPlain/RETURNED/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024FieldsPlain_RETURNED_POINTER/subject.go:168:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024FieldsPlain/CAPTURED_BY_CLOSURE/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024FieldsPlain_CAPTURED_BY_CLOSURE_VALUE/subject.go:185:3: moved to heap: t",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024FieldsPlain/CAPTURED_BY_CLOSURE/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024FieldsPlain_CAPTURED_BY_CLOSURE_POINTER/subject.go:185:3: moved to heap: t",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024FieldsPlain/SENT_ON_CHANNEL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024FieldsPlain/SENT_ON_CHANNEL/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024FieldsPlain_SENT_ON_CHANNEL_POINTER/subject.go:175:3: moved to heap: t",
+      "category": "CHANNEL_SEND",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024FieldsPlain/STORED_IN_MAP/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024FieldsPlain/STORED_IN_MAP/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024FieldsPlain_STORED_IN_MAP_POINTER/subject.go:175:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024FieldsPlain/STORED_IN_SLICE/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024FieldsPlain/STORED_IN_SLICE/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024FieldsPlain_STORED_IN_SLICE_POINTER/subject.go:175:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024FieldsPlain/STORED_IN_STRUCT/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024FieldsPlain/STORED_IN_STRUCT/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024FieldsPlain_STORED_IN_STRUCT_POINTER/subject.go:180:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024FieldsPlain/RETURNED_ALLOCATING/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024FieldsPlain_RETURNED_ALLOCATING_VALUE/subject.go:186:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024FieldsPlain/RETURNED_ALLOCATING/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024FieldsPlain_RETURNED_ALLOCATING_POINTER/subject.go:183:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024FieldsPlain/RETURNED_ALLOCATING_K2/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024FieldsPlain_RETURNED_ALLOCATING_K2_VALUE/subject.go:186:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024FieldsPlain/RETURNED_ALLOCATING_K2/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024FieldsPlain_RETURNED_ALLOCATING_K2_POINTER/subject.go:183:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024FieldsPlain/RETURNED_ALLOCATING_R4/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024FieldsPlain_RETURNED_ALLOCATING_R4_VALUE/subject.go:186:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024FieldsPlain/RETURNED_ALLOCATING_R4/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024FieldsPlain_RETURNED_ALLOCATING_R4_POINTER/subject.go:183:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024FieldsPlain/RETURNED_ALLOCATING_R4_K2/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024FieldsPlain_RETURNED_ALLOCATING_R4_K2_VALUE/subject.go:186:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024FieldsPlain/RETURNED_ALLOCATING_R4_K2/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024FieldsPlain_RETURNED_ALLOCATING_R4_K2_POINTER/subject.go:183:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024FieldsPlain/RETURNED_ALLOCATING_R16/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024FieldsPlain_RETURNED_ALLOCATING_R16_VALUE/subject.go:186:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024FieldsPlain/RETURNED_ALLOCATING_R16/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024FieldsPlain_RETURNED_ALLOCATING_R16_POINTER/subject.go:183:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024FieldsPlain/RETURNED_ALLOCATING_R16_K2/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024FieldsPlain_RETURNED_ALLOCATING_R16_K2_VALUE/subject.go:186:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024FieldsPlain/RETURNED_ALLOCATING_R16_K2/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024FieldsPlain_RETURNED_ALLOCATING_R16_K2_POINTER/subject.go:183:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024FieldsPtr/LOCAL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024FieldsPtr/LOCAL/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024FieldsPtr/RETURNED/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024FieldsPtr/RETURNED/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024FieldsPtr_RETURNED_POINTER/subject.go:168:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024FieldsPtr/CAPTURED_BY_CLOSURE/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024FieldsPtr_CAPTURED_BY_CLOSURE_VALUE/subject.go:185:3: moved to heap: t",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024FieldsPtr/CAPTURED_BY_CLOSURE/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024FieldsPtr_CAPTURED_BY_CLOSURE_POINTER/subject.go:185:3: moved to heap: t",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024FieldsPtr/SENT_ON_CHANNEL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024FieldsPtr/SENT_ON_CHANNEL/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024FieldsPtr_SENT_ON_CHANNEL_POINTER/subject.go:175:3: moved to heap: t",
+      "category": "CHANNEL_SEND",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024FieldsPtr/STORED_IN_MAP/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024FieldsPtr/STORED_IN_MAP/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024FieldsPtr_STORED_IN_MAP_POINTER/subject.go:175:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024FieldsPtr/STORED_IN_SLICE/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024FieldsPtr/STORED_IN_SLICE/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024FieldsPtr_STORED_IN_SLICE_POINTER/subject.go:175:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024FieldsPtr/STORED_IN_STRUCT/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024FieldsPtr/STORED_IN_STRUCT/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024FieldsPtr_STORED_IN_STRUCT_POINTER/subject.go:180:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024FieldsPtr/RETURNED_ALLOCATING/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024FieldsPtr_RETURNED_ALLOCATING_VALUE/subject.go:186:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024FieldsPtr/RETURNED_ALLOCATING/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024FieldsPtr_RETURNED_ALLOCATING_POINTER/subject.go:183:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024FieldsPtr/RETURNED_ALLOCATING_K2/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024FieldsPtr_RETURNED_ALLOCATING_K2_VALUE/subject.go:186:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024FieldsPtr/RETURNED_ALLOCATING_K2/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024FieldsPtr_RETURNED_ALLOCATING_K2_POINTER/subject.go:183:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024FieldsPtr/RETURNED_ALLOCATING_R4/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024FieldsPtr_RETURNED_ALLOCATING_R4_VALUE/subject.go:186:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024FieldsPtr/RETURNED_ALLOCATING_R4/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024FieldsPtr_RETURNED_ALLOCATING_R4_POINTER/subject.go:183:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024FieldsPtr/RETURNED_ALLOCATING_R4_K2/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024FieldsPtr_RETURNED_ALLOCATING_R4_K2_VALUE/subject.go:186:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024FieldsPtr/RETURNED_ALLOCATING_R4_K2/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024FieldsPtr_RETURNED_ALLOCATING_R4_K2_POINTER/subject.go:183:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024FieldsPtr/RETURNED_ALLOCATING_R16/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024FieldsPtr_RETURNED_ALLOCATING_R16_VALUE/subject.go:186:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024FieldsPtr/RETURNED_ALLOCATING_R16/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024FieldsPtr_RETURNED_ALLOCATING_R16_POINTER/subject.go:183:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024FieldsPtr/RETURNED_ALLOCATING_R16_K2/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024FieldsPtr_RETURNED_ALLOCATING_R16_K2_VALUE/subject.go:186:10: new(payload) escapes to heap",
+      "category": "OTHER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024FieldsPtr/RETURNED_ALLOCATING_R16_K2/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024FieldsPtr_RETURNED_ALLOCATING_R16_K2_POINTER/subject.go:183:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008ShamPlain/LOCAL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008ShamPlain/LOCAL/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008ShamPtr/LOCAL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008ShamPtr/LOCAL/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016ShamPlain/LOCAL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016ShamPlain/LOCAL/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016ShamPtr/LOCAL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016ShamPtr/LOCAL/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024ShamPlain/LOCAL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024ShamPlain/LOCAL/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024ShamPtr/LOCAL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024ShamPtr/LOCAL/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    }
+  ]
+}

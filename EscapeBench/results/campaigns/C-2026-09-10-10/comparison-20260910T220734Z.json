@@ -1,0 +1,33 @@
+{
+  "campaignId": "C-2026-09-10-10",
+  "matrixId": "M-abb3d708d0e1",
+  "computedAt": "2026-09-10T22:07:34.0123893Z",
+  "method": "bootstrap percentile de la différence des médianes, 2000 rééchantillonnages, IC 95 %, graine dérivée des identifiants de la paire",
+  "comparisons": [
+    {
+      "campaignId": "C-2026-09-10-10",
+      "valueCellId": "Size0008FieldsPlain/LOCAL/VALUE",
+      "pointerCellId": "Size0008FieldsPlain/LOCAL/POINTER",
+      "sizeBytes": 8,
+      "hasPointerField": false,
+      "layout": "NAMED_FIELDS",
+      "lifetimeProfile": "LOCAL",
+      "deltaNsPerOp": 0.0030999999999998806,
+      "ciLow": -0.049449999999999994,
+      "ciHigh": 0.03539999999999999,
+      "significant": false,
+      "medianValueNsPerOp": 0.8301000000000001,
+      "medianPointerNsPerOp": 0.8331999999999999
+    }
+  ],
+  "tippingPoints": [
+    {
+      "lifetimeProfile": "LOCAL",
+      "layout": "NAMED_FIELDS",
+      "hasPointerField": false,
+      "sizeBytes": -1,
+      "observed": false
+    }
+  ],
+  "excludedPairs": []
+}
