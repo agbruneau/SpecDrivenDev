@@ -59,6 +59,17 @@ func ParseParameters(spec string) (models.MatrixParameters, error) {
 			for _, item := range splitValues(value) {
 				params.PassingModes = append(params.PassingModes, models.PassingMode(item))
 			}
+		case "layouts":
+			params.Layouts = nil
+			for _, item := range splitValues(value) {
+				params.Layouts = append(params.Layouts, models.Layout(item))
+			}
+		case "repeats":
+			repeats, err := parseInts(value)
+			if err != nil {
+				return models.MatrixParameters{}, fmt.Errorf("%w : repeats : %s", ErrUsage, err)
+			}
+			params.Repeats = repeats
 		case "probes":
 			probes, err := parseProbes(value)
 			if err != nil {
@@ -66,7 +77,7 @@ func ParseParameters(spec string) (models.MatrixParameters, error) {
 			}
 			params.Probes = probes
 		default:
-			return models.MatrixParameters{}, fmt.Errorf("%w : clé %q inconnue (sizes, pointer, profiles, modes, probes)", ErrUsage, key)
+			return models.MatrixParameters{}, fmt.Errorf("%w : clé %q inconnue (sizes, pointer, profiles, modes, layouts, repeats, probes)", ErrUsage, key)
 		}
 	}
 	if len(params.Sizes) == 0 {

@@ -1,11 +1,23 @@
 // Code généré par EscapeBench (UC-001) — ne pas modifier à la main.
 // Sujet : {{.SubjectID}}
 // Profil : {{.Profile}} · Mode : {{.PassingMode}} · Taille : {{.SizeBytes}} octets · Champ pointeur : {{.HasPointerField}}
+// Disposition : {{.Layout}} · Instances par opération : {{.Repeat}}
 package subject
 
 import "unsafe"
 
 // {{.TypeName}} occupe exactement {{.SizeBytes}} octets.
+{{- if .NamedFields}}
+// Ses champs sont déclarés un à un : le type reste assignable aux registres de la convention
+// d'appel de Go, quelle que soit sa taille (C-008).
+type {{.TypeName}} struct {
+{{- range .Fields}}
+	{{.}}
+{{- end}}
+}
+{{- else}}
+// Le remplissage est un tableau : au-delà d'un élément, le type n'est plus assignable aux
+// registres et le passage par valeur emprunte la mémoire (C-008).
 type {{.TypeName}} struct {
 {{- if .HasPointerField}}
 	P *byte
@@ -14,25 +26,21 @@ type {{.TypeName}} struct {
 {{- end}}
 	Fill [{{.FillLen}}]uint64
 }
+{{- end}}
 
 // Contrôle à la compilation : la disposition dérivée par le générateur donne bien {{.SizeBytes}} octets.
 // Une taille différente rend la constante négative et le paquet ne compile pas.
 const _ = uint(unsafe.Sizeof({{.TypeName}}{}) - {{.SizeBytes}})
 
 // anchor est la cible du champ pointeur : elle ne fait jamais échapper la valeur qui la référence.
-var anchor byte
+var anchor {{if .NamedFields}}uint64{{else}}byte{{end}}
 
-// sum lit le premier et, si le type en compte plus d'un, le dernier mot de la valeur. Le
-// remplissage est dimensionné à la génération : l'accès n'existe que s'il est valide.
+// sum lit le premier et, si le type en compte plus d'un, le dernier mot de la valeur.
 func (t {{.TypeName}}) sum() uint64 {
 	var s uint64
-{{- if .HasPointerField}}
-	s = uint64(uintptr(unsafe.Pointer(t.P)))
-{{- else}}
-	s = t.Tag
-{{- end}}
-{{- if .HasFill}}
-	s += t.Fill[{{.LastFill}}]
+	s = {{.FirstWord}}
+{{- if .HasLastWord}}
+	s += {{.LastWord}}
 {{- end}}
 	return s
 }
@@ -40,17 +48,21 @@ func (t {{.TypeName}}) sum() uint64 {
 // newValue construit une valeur dont le premier et le dernier mot dépendent de i.
 func newValue(i int) {{.TypeName}} {
 	var t {{.TypeName}}
-{{- if .HasPointerField}}
-	t.P = &anchor
-{{- else}}
-	t.Tag = uint64(i)
-{{- end}}
-{{- if .HasFill}}
-	t.Fill[{{.LastFill}}] = uint64(i)
+{{- range .Init}}
+	{{.}}
 {{- end}}
 	return t
 }
-{{if .NeedConsumeValue}}
+{{if .NeedPayload}}
+// payload est la charge allouée qui accompagne chaque instance produite : elle donne au bras
+// valeur une base d'allocation non nulle, sans laquelle aucun doublement n'est calculable (H-010).
+type payload struct {
+	A uint64
+	B uint64
+	C uint64
+}
+{{end}}
+{{- if .NeedConsumeValue}}
 //go:noinline
 func consumeValue(t {{.TypeName}}) uint64 { return t.sum() }
 {{end}}
@@ -69,6 +81,24 @@ func producePointer(i int) *{{.TypeName}} {
 	return &t
 }
 {{end}}
+{{- if .NeedProduceValueAlloc}}
+//go:noinline
+func produceValueAlloc(i int) ({{.TypeName}}, *payload) {
+	t := newValue(i)
+	p := new(payload)
+	p.A = uint64(i)
+	return t, p
+}
+{{end}}
+{{- if .NeedProducePointerAlloc}}
+//go:noinline
+func producePointerAlloc(i int) (*{{.TypeName}}, *payload) {
+	t := newValue(i)
+	p := new(payload)
+	p.A = uint64(i)
+	return &t, p
+}
+{{end}}
 {{- if .NeedClosure}}
 // keptClosure conserve la dernière closure reçue : la capture survit à la trame appelante, ce qui
 // est le motif « capture par closure » de BEPG p. 238-242. Une closure appelée puis oubliée
@@ -79,6 +109,16 @@ var keptClosure func() uint64
 func keepClosure(f func() uint64) uint64 {
 	keptClosure = f
 	return f()
+}
+{{end}}
+{{- if .NeedHolder}}
+// holder est le conteneur de la quatrième cause d'échappement, sous la forme d'un champ de struct.
+type holder struct {
+{{- if .Pointer}}
+	P *{{.TypeName}}
+{{- else}}
+	V {{.TypeName}}
+{{- end}}
 }
 {{end}}
 // Setup prépare l'état du sujet ; il est appelé hors de la boucle b.N (BEPG p. 219).
@@ -105,6 +145,20 @@ func Run(n int) uint64 {
 {{- else if eq .Body "RETURNED_POINTER"}}
 	for i := 0; i < n; i++ {
 		s += producePointer(i).sum()
+	}
+{{- else if eq .Body "RETURNED_ALLOCATING_VALUE"}}
+	for i := 0; i < n; i++ {
+		for r := 0; r < {{.Repeat}}; r++ {
+			v, p := produceValueAlloc(i)
+			s += v.sum() + p.A
+		}
+	}
+{{- else if eq .Body "RETURNED_ALLOCATING_POINTER"}}
+	for i := 0; i < n; i++ {
+		for r := 0; r < {{.Repeat}}; r++ {
+			v, p := producePointerAlloc(i)
+			s += v.sum() + p.A
+		}
 	}
 {{- else if eq .Body "CAPTURED_BY_CLOSURE_VALUE"}}
 	for i := 0; i < n; i++ {
@@ -147,6 +201,38 @@ func Run(n int) uint64 {
 		t := newValue(i)
 		m[0] = &t
 		v := m[0]
+		s += v.sum()
+	}
+{{- else if eq .Body "STORED_IN_SLICE_VALUE"}}
+	c := make([]{{.TypeName}}, 1)
+	for i := 0; i < n; i++ {
+		t := newValue(i)
+		c[0] = t
+		v := c[0]
+		s += v.sum()
+	}
+{{- else if eq .Body "STORED_IN_SLICE_POINTER"}}
+	c := make([]*{{.TypeName}}, 1)
+	for i := 0; i < n; i++ {
+		t := newValue(i)
+		c[0] = &t
+		v := c[0]
+		s += v.sum()
+	}
+{{- else if eq .Body "STORED_IN_STRUCT_VALUE"}}
+	c := new(holder)
+	for i := 0; i < n; i++ {
+		t := newValue(i)
+		c.V = t
+		v := c.V
+		s += v.sum()
+	}
+{{- else if eq .Body "STORED_IN_STRUCT_POINTER"}}
+	c := new(holder)
+	for i := 0; i < n; i++ {
+		t := newValue(i)
+		c.P = &t
+		v := c.P
 		s += v.sum()
 	}
 {{- end}}

@@ -140,18 +140,18 @@ func TestUC005_H011_DonneesInsuffisantes(t *testing.T) {
 	})
 }
 
-func TestUC005_H007aH010_SansEvaluateur(t *testing.T) {
+func TestUC005_ToutesLesHypothesesOntUnEvaluateur(t *testing.T) {
 	t.Parallel()
-	// H-007 à H-010 nomment des sujets que le banc ne produit pas encore (C-008). L'absence
-	// d'évaluateur est délibérée : UC-005 doit la nommer plutôt que deviner un verdict.
-	for _, id := range []string{"H-007", "H-008", "H-009", "H-010"} {
-		if _, ok := evaluators[id]; ok {
-			t.Fatalf("%s ne doit pas avoir d'évaluateur tant que C-008 n'est pas satisfaite", id)
-		}
-	}
-	for _, id := range []string{"H-001", "H-002", "H-003", "H-004", "H-005", "H-006", "H-011"} {
+	// C-008 étant satisfaite, les onze hypothèses du catalogue s'évaluent mécaniquement.
+	// Mutation : retirer une entrée du registre ⇒ échec attendu, et UC-005 rendrait
+	// INCONCLUSIVE en nommant l'absence d'évaluateur.
+	for _, id := range []string{"H-001", "H-002", "H-003", "H-004", "H-005", "H-006",
+		"H-007", "H-008", "H-009", "H-010", "H-011"} {
 		if _, ok := evaluators[id]; !ok {
 			t.Fatalf("%s doit avoir un évaluateur", id)
 		}
+	}
+	if len(evaluators) != 11 {
+		t.Fatalf("%d évaluateurs, 11 attendus", len(evaluators))
 	}
 }

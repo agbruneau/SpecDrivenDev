@@ -143,6 +143,7 @@ func compare(value, pointer models.Cell, valueM, pointerM models.Measurement) mo
 		PointerCellID:   pointer.ID(),
 		SizeBytes:       value.TypeSpec.SizeBytes,
 		HasPointerField: value.TypeSpec.HasPointerField,
+		Layout:          value.TypeSpec.Layout,
 		Profile:         value.Profile,
 		DeltaNsPerOp:    medianPointer - medianValue,
 		CILow:           low,

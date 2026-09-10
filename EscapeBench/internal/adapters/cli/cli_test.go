@@ -42,16 +42,25 @@ func TestParseParametersComplet(t *testing.T) {
 func TestParseParametersDefauts(t *testing.T) {
 	t.Parallel()
 	// Les clés absentes reprennent la couverture complète : les deux variantes de champ
-	// pointeur, les cinq profils et les deux modes.
+	// pointeur, tous les profils connus et les deux modes.
 	params, err := ParseParameters("sizes=8")
 	if err != nil {
 		t.Fatalf("ParseParameters : %v", err)
 	}
-	if len(params.Profiles) != 5 || len(params.PassingModes) != 2 || len(params.PointerFieldVariants) != 2 {
+	if len(params.Profiles) != len(models.LifetimeProfiles()) || len(params.PassingModes) != 2 || len(params.PointerFieldVariants) != 2 {
 		t.Fatalf("valeurs par défaut inattendues : %+v", params)
 	}
 	if len(params.Probes) != 0 {
 		t.Fatalf("aucune sonde par défaut, obtenu %v", params.Probes)
+	}
+	// Disposition et répétition restent vides : la normalisation leur applique la valeur d'avant
+	// C-008, ce qui garde l'identifiant des matrices antérieures.
+	normalized := params.Normalize()
+	if len(normalized.Layouts) != 1 || normalized.Layouts[0] != models.LayoutArrayFill {
+		t.Fatalf("dispositions par défaut = %v", normalized.Layouts)
+	}
+	if len(normalized.Repeats) != 1 || normalized.Repeats[0] != 1 {
+		t.Fatalf("répétitions par défaut = %v", normalized.Repeats)
 	}
 	if _, err := ParseParameters("sizes=8; ;"); err != nil {
 		t.Fatalf("les clauses vides sont ignorées : %v", err)

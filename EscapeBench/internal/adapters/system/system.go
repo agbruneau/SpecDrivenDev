@@ -29,11 +29,14 @@ type CPUReader func() string
 
 // Prober capture la provenance d'une mesure.
 type Prober struct {
-	clock   interface{ Now() time.Time }
-	cpu     CPUReader
-	version func() string
-	goos    string
-	goarch  string
+	clock    interface{ Now() time.Time }
+	cpu      CPUReader
+	topology func() Topology
+	pageSize func() int
+	procs    func() int
+	version  func() string
+	goos     string
+	goarch   string
 }
 
 // NewProber construit un Prober. Un lecteur de CPU nil retombe sur la détection système.
@@ -44,22 +47,38 @@ func NewProber(clock interface{ Now() time.Time }, cpu CPUReader) *Prober {
 	if cpu == nil {
 		cpu = DetectCPUModel
 	}
-	return &Prober{clock: clock, cpu: cpu, version: runtime.Version, goos: runtime.GOOS, goarch: runtime.GOARCH}
+	return &Prober{
+		clock:    clock,
+		cpu:      cpu,
+		topology: detectTopology,
+		pageSize: os.Getpagesize,
+		procs:    func() int { return runtime.GOMAXPROCS(0) },
+		version:  runtime.Version,
+		goos:     runtime.GOOS,
+		goarch:   runtime.GOARCH,
+	}
 }
 
-// Capture rend la provenance courante. Aucun champ n'est laissé vide : un résultat sans
-// provenance complète est invalide (NFR-001).
+// Capture rend la provenance courante. Aucun champ obligatoire n'est laissé vide : un résultat
+// sans provenance complète est invalide (NFR-001). Les trois tailles mémoire ajoutées par C-008
+// valent zéro quand la machine ne les expose pas ; une hypothèse qui en dépend se déclare alors
+// non concluante plutôt que de supposer une valeur.
 func (p *Prober) Capture(_ context.Context) (models.Provenance, error) {
 	cpu := strings.TrimSpace(p.cpu())
 	if cpu == "" {
 		cpu = "inconnu"
 	}
+	topology := p.topology()
 	provenance := models.Provenance{
-		GoVersion:  p.version(),
-		GOOS:       p.goos,
-		GOARCH:     p.goarch,
-		CPUModel:   cpu,
-		CapturedAt: p.clock.Now().UTC(),
+		GoVersion:           p.version(),
+		GOOS:                p.goos,
+		GOARCH:              p.goarch,
+		CPUModel:            cpu,
+		L1DataCacheBytes:    topology.L1DataCacheBytes,
+		LastLevelCacheBytes: topology.LastLevelCacheBytes,
+		PageSizeBytes:       int64(p.pageSize()),
+		GOMAXPROCS:          p.procs(),
+		CapturedAt:          p.clock.Now().UTC(),
 	}
 	return provenance, provenance.Validate()
 }

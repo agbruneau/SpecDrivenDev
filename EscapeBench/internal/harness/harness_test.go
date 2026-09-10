@@ -39,7 +39,7 @@ func TestRenderCellPourTousLesProfilsEtModes(t *testing.T) {
 		for _, hasPointer := range []bool{false, true} {
 			for _, profile := range models.LifetimeProfiles() {
 				for _, mode := range models.PassingModes() {
-					spec, err := models.NewTypeSpec(size, hasPointer)
+					spec, err := models.NewTypeSpec(size, hasPointer, models.LayoutArrayFill)
 					if err != nil {
 						t.Fatalf("NewTypeSpec : %v", err)
 					}
@@ -76,7 +76,7 @@ func TestRenderCellNEmetQueLesAidesUtilisees(t *testing.T) {
 	// d'échappement parasites qui fausseraient UC-002 et H-006.
 	// Mutation : émettre producePointer pour un profil LOCAL ⇒ échec attendu.
 	renderer := newRenderer(t)
-	spec, _ := models.NewTypeSpec(24, false)
+	spec, _ := models.NewTypeSpec(24, false, models.LayoutArrayFill)
 	cases := []struct {
 		profile models.LifetimeProfile
 		mode    models.PassingMode
@@ -118,7 +118,7 @@ func TestRenderCellDisposeLeRemplissage(t *testing.T) {
 	renderer := newRenderer(t)
 	// Un type de 8 octets n'a qu'un mot : aucun accès à Fill ne doit être émis, sinon l'indice
 	// constant -1 empêche la compilation.
-	spec8, _ := models.NewTypeSpec(8, false)
+	spec8, _ := models.NewTypeSpec(8, false, models.LayoutArrayFill)
 	cell8 := models.Cell{TypeSpec: spec8, Profile: models.ProfileLocal, PassingMode: models.PassingValue}
 	cell8.SourceFile = models.SourcePath(cell8.ID())
 	files, err := renderer.RenderCell(cell8)
@@ -130,7 +130,7 @@ func TestRenderCellDisposeLeRemplissage(t *testing.T) {
 	if strings.Contains(source, "t.Fill[") {
 		t.Fatal("un type d'un seul mot ne doit pas indexer Fill")
 	}
-	spec24, _ := models.NewTypeSpec(24, false)
+	spec24, _ := models.NewTypeSpec(24, false, models.LayoutArrayFill)
 	cell24 := models.Cell{TypeSpec: spec24, Profile: models.ProfileLocal, PassingMode: models.PassingValue}
 	cell24.SourceFile = models.SourcePath(cell24.ID())
 	files, err = renderer.RenderCell(cell24)

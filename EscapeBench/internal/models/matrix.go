@@ -22,8 +22,19 @@ type MatrixParameters struct {
 	PointerFieldVariants []bool
 	Profiles             []LifetimeProfile
 	PassingModes         []PassingMode
-	Probes               []ProbeSpec
+	// Layouts et Repeats sont ajoutés par C-008. Leurs valeurs par défaut — la seule disposition
+	// d'origine et une instance par opération — reproduisent exactement les matrices antérieures,
+	// identifiant compris.
+	Layouts []Layout
+	Repeats []int
+	Probes  []ProbeSpec
 }
+
+// DefaultLayouts rend la dimension de disposition par défaut : celle d'avant C-008.
+func DefaultLayouts() []Layout { return []Layout{LayoutArrayFill} }
+
+// DefaultRepeats rend la dimension de répétition par défaut : une instance par opération.
+func DefaultRepeats() []int { return []int{1} }
 
 // ReferenceParameters rend les paramètres de la matrice de référence (BR-001-4) :
 // 11 tailles × 2 variantes de champ pointeur × 5 profils × 2 modes = 220 Cell, plus 10 Probe.
@@ -35,8 +46,10 @@ func ReferenceParameters() MatrixParameters {
 	return MatrixParameters{
 		Sizes:                []int{8, 16, 24, 32, 64, 128, 256, 512, 1024, 2048, 4096},
 		PointerFieldVariants: []bool{false, true},
-		Profiles:             LifetimeProfiles(),
+		Profiles:             ReferenceProfiles(),
 		PassingModes:         PassingModes(),
+		Layouts:              DefaultLayouts(),
+		Repeats:              DefaultRepeats(),
 		Probes: []ProbeSpec{
 			{ProbeSequentialScan, 256 * kiB}, {ProbeScatteredScan, 256 * kiB},
 			{ProbeSequentialScan, 4 * miB}, {ProbeScatteredScan, 4 * miB},
@@ -50,11 +63,21 @@ func ReferenceParameters() MatrixParameters {
 // Normalize trie et dédoublonne chaque dimension. Deux demandes équivalentes produisent des
 // paramètres normalisés identiques, donc le même identifiant de Matrix (BR-001-1).
 func (p MatrixParameters) Normalize() MatrixParameters {
+	layouts := p.Layouts
+	if len(layouts) == 0 {
+		layouts = DefaultLayouts()
+	}
+	repeats := p.Repeats
+	if len(repeats) == 0 {
+		repeats = DefaultRepeats()
+	}
 	out := MatrixParameters{
 		Sizes:                dedupeSorted(p.Sizes, func(a, b int) bool { return a < b }),
 		PointerFieldVariants: dedupeSorted(p.PointerFieldVariants, func(a, b bool) bool { return !a && b }),
 		Profiles:             orderedSubset(p.Profiles, LifetimeProfiles()),
 		PassingModes:         orderedSubset(p.PassingModes, PassingModes()),
+		Layouts:              orderedSubset(layouts, Layouts()),
+		Repeats:              dedupeSorted(repeats, func(a, b int) bool { return a < b }),
 	}
 	seen := make(map[ProbeSpec]bool, len(p.Probes))
 	for _, spec := range p.Probes {
@@ -146,12 +169,38 @@ func (p MatrixParameters) Validate() error {
 			problems = append(problems, fmt.Sprintf("mode de passage %q inconnu", mode))
 		}
 	}
+	for _, layout := range p.Layouts {
+		if !layout.Valid() {
+			problems = append(problems, fmt.Sprintf("disposition %q inconnue", layout))
+		}
+	}
+	for _, repeat := range p.Repeats {
+		if repeat < 1 {
+			problems = append(problems, fmt.Sprintf("nombre d'instances par opération doit être ≥ 1 (%d)", repeat))
+		}
+	}
+	// Le témoin nul ne se mesure qu'en profil LOCAL : demandé avec d'autres profils, il
+	// produirait des cellules que Cell.Validate refuse.
+	for _, layout := range p.Layouts {
+		if layout != LayoutNamedFieldsSham {
+			continue
+		}
+		for _, profile := range p.Profiles {
+			if profile != ProfileLocal {
+				problems = append(problems, fmt.Sprintf("la disposition %s ne se combine qu'au profil LOCAL, %s demandé", layout, profile))
+			}
+		}
+	}
 	for _, spec := range p.Probes {
 		if !spec.Kind.Valid() {
 			problems = append(problems, fmt.Sprintf("genre de Probe %q inconnu", spec.Kind))
 		}
 		if spec.Parameter <= 0 {
 			problems = append(problems, fmt.Sprintf("paramètre de Probe %s doit être > 0 (%d)", spec.Kind, spec.Parameter))
+		}
+		// Une sonde qui parcourt la mémoire travaille par nœuds d'une ligne de cache.
+		if (spec.Kind == ProbeSequentialScan || spec.Kind == ProbeScatteredScan || spec.Kind == ProbePointerChase) && spec.Parameter%64 != 0 {
+			problems = append(problems, fmt.Sprintf("le jeu de travail d'une sonde %s doit être un multiple de 64 octets (%d)", spec.Kind, spec.Parameter))
 		}
 	}
 	if len(problems) > 0 {
@@ -169,12 +218,47 @@ func (p MatrixParameters) Canonical() string {
 	fmt.Fprintf(&b, "pointerField=%v\n", n.PointerFieldVariants)
 	fmt.Fprintf(&b, "profiles=%v\n", n.Profiles)
 	fmt.Fprintf(&b, "passingModes=%v\n", n.PassingModes)
+	// Les deux dimensions de C-008 ne sont écrites que si elles s'écartent de leur valeur par
+	// défaut : une demande antérieure à C-008 produit la même représentation canonique, donc le
+	// même identifiant de Matrix (BR-001-1).
+	if !sameLayouts(n.Layouts, DefaultLayouts()) {
+		fmt.Fprintf(&b, "layouts=%v\n", n.Layouts)
+	}
+	if !sameInts(n.Repeats, DefaultRepeats()) {
+		fmt.Fprintf(&b, "repeats=%v\n", n.Repeats)
+	}
 	b.WriteString("probes=")
 	for _, spec := range n.Probes {
 		fmt.Fprintf(&b, "%s:%d,", spec.Kind, spec.Parameter)
 	}
 	b.WriteString("\n")
 	return b.String()
+}
+
+// sameLayouts compare deux listes de dispositions.
+func sameLayouts(a, b []Layout) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if a[i] != b[i] {
+			return false
+		}
+	}
+	return true
+}
+
+// sameInts compare deux listes d'entiers.
+func sameInts(a, b []int) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if a[i] != b[i] {
+			return false
+		}
+	}
+	return true
 }
 
 // MatrixID rend l'identifiant déterministe de la forme M-<sha256 court> (BR-001-1).
@@ -196,21 +280,31 @@ func (p MatrixParameters) Expand() ([]Cell, []Probe, error) {
 		return nil, nil, err
 	}
 	var cells []Cell
-	for _, size := range n.Sizes {
-		for _, hasPointer := range n.PointerFieldVariants {
-			spec, err := NewTypeSpec(size, hasPointer)
-			if err != nil {
-				return nil, nil, err
-			}
-			for _, profile := range n.Profiles {
-				// BR-001-3 : une Cell par mode demandé, donc la paire complète quand les deux le sont.
-				for _, mode := range n.PassingModes {
-					cell := Cell{TypeSpec: spec, Profile: profile, PassingMode: mode}
-					cell.SourceFile = SourcePath(cell.ID())
-					if err := cell.Validate(); err != nil {
-						return nil, nil, err
+	for _, layout := range n.Layouts {
+		for _, size := range n.Sizes {
+			for _, hasPointer := range n.PointerFieldVariants {
+				spec, err := NewTypeSpec(size, hasPointer, layout)
+				if err != nil {
+					return nil, nil, err
+				}
+				for _, profile := range n.Profiles {
+					for _, repeat := range n.Repeats {
+						// Seul un profil qui produit plusieurs instances par opération dépend de
+						// la répétition ; ailleurs elle ne créerait que des doublons.
+						if repeat > 1 && profile != ProfileReturnedAlloc {
+							continue
+						}
+						// BR-001-3 : une Cell par mode demandé, donc la paire complète quand les
+						// deux le sont.
+						for _, mode := range n.PassingModes {
+							cell := Cell{TypeSpec: spec, Profile: profile, PassingMode: mode, Repeat: repeat}
+							cell.SourceFile = SourcePath(cell.ID())
+							if err := cell.Validate(); err != nil {
+								return nil, nil, err
+							}
+							cells = append(cells, cell)
+						}
 					}
-					cells = append(cells, cell)
 				}
 			}
 		}
@@ -362,7 +456,9 @@ func (m Matrix) ValuePointerPairs() [][2]Cell {
 	byKey := make(map[string]map[PassingMode]Cell, len(m.Cells))
 	var order []string
 	for _, cell := range m.Cells {
-		key := cell.TypeSpec.Name + "/" + string(cell.Profile)
+		// La clé est l'identifiant privé de son mode de passage : deux cellules ne s'apparient que
+		// si leur type, leur profil et leur nombre d'instances par opération coïncident.
+		key := cell.TypeSpec.Name + "/" + cell.ProfileSegment()
 		if _, ok := byKey[key]; !ok {
 			byKey[key] = make(map[PassingMode]Cell, 2)
 			order = append(order, key)

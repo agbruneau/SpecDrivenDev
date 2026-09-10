@@ -263,7 +263,9 @@ func classifyUsage(body *ast.BlockStmt, name string) models.EscapeCategory {
 			}
 		case *ast.AssignStmt:
 			for i, lhs := range stmt.Lhs {
-				if _, isIndex := lhs.(*ast.IndexExpr); !isIndex {
+				// Le livre range parmi les conteneurs déjà sur le tas la map, la tranche et la
+				// struct : une affectation dans un élément indexé comme dans un champ compte.
+				if !isContainerTarget(lhs) {
 					continue
 				}
 				if i < len(stmt.Rhs) && carriesAddress(stmt.Rhs[i], name, aliases) {
@@ -282,6 +284,16 @@ func classifyUsage(body *ast.BlockStmt, name string) models.EscapeCategory {
 		return true
 	})
 	return category
+}
+
+// isContainerTarget indique si la cible d'une affectation désigne l'intérieur d'un conteneur :
+// un élément indexé, ou le champ d'une struct. Une simple variable n'en est pas un.
+func isContainerTarget(lhs ast.Expr) bool {
+	switch lhs.(type) {
+	case *ast.IndexExpr, *ast.SelectorExpr, *ast.StarExpr:
+		return true
+	}
+	return false
 }
 
 // carriesAddress indique si l'expression emporte l'adresse de name, directement (`&name`) ou par

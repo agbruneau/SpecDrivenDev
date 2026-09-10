@@ -42,11 +42,63 @@ const (
 	ProfileCapturedByClosure LifetimeProfile = "CAPTURED_BY_CLOSURE"
 	ProfileSentOnChannel     LifetimeProfile = "SENT_ON_CHANNEL"
 	ProfileStoredInMap       LifetimeProfile = "STORED_IN_MAP"
+	// Profils ajoutés par C-008. STORED_IN_SLICE et STORED_IN_STRUCT reprennent la forme de
+	// STORED_IN_MAP pour les deux autres conteneurs que le livre nomme (H-009).
+	// RETURNED_ALLOCATING retourne une valeur accompagnée d'une charge allouée, de sorte que le
+	// bras valeur alloue déjà et qu'un doublement soit calculable (H-010).
+	ProfileStoredInSlice  LifetimeProfile = "STORED_IN_SLICE"
+	ProfileStoredInStruct LifetimeProfile = "STORED_IN_STRUCT"
+	ProfileReturnedAlloc  LifetimeProfile = "RETURNED_ALLOCATING"
 )
 
-// LifetimeProfiles énumère les cinq profils, dans l'ordre canonique.
+// LifetimeProfiles énumère les profils connus, dans l'ordre canonique.
 func LifetimeProfiles() []LifetimeProfile {
+	return []LifetimeProfile{ProfileLocal, ProfileReturned, ProfileCapturedByClosure,
+		ProfileSentOnChannel, ProfileStoredInMap, ProfileStoredInSlice, ProfileStoredInStruct,
+		ProfileReturnedAlloc}
+}
+
+// ReferenceProfiles énumère les cinq profils de la matrice de référence (BR-001-4). Les profils
+// ajoutés par C-008 n'en font pas partie : la matrice de référence garde ses 220 Cell.
+func ReferenceProfiles() []LifetimeProfile {
 	return []LifetimeProfile{ProfileLocal, ProfileReturned, ProfileCapturedByClosure, ProfileSentOnChannel, ProfileStoredInMap}
+}
+
+// Layout est la disposition des champs d'un TypeSpec (C-008). Elle décide si le type est
+// assignable aux registres de la convention d'appel de Go, ce qui change le coût du passage par
+// valeur indépendamment de la taille.
+type Layout string
+
+const (
+	// LayoutArrayFill est la disposition d'origine : `Tag uint64` suivi de `Fill [n-1]uint64`.
+	// Un tableau de longueur supérieure à 1 n'étant pas assignable aux registres, tout type de
+	// 24 octets ou plus est passé en mémoire.
+	LayoutArrayFill Layout = "ARRAY_FILL"
+	// LayoutNamedFields déclare `sizeBytes / 8` champs `uint64` un à un, sans tableau ; la
+	// variante à champ pointeur remplace le dernier par un `*uint64`.
+	LayoutNamedFields Layout = "NAMED_FIELDS"
+	// LayoutNamedFieldsSham est le témoin nul : même déclaration que NAMED_FIELDS, mais les deux
+	// cellules de la paire exécutent le corps du mode VALUE. Son delta vrai est nul par
+	// construction, ce qui mesure l'écart entre deux binaires.
+	LayoutNamedFieldsSham Layout = "NAMED_FIELDS_SHAM"
+)
+
+// Layouts énumère les dispositions connues, dans l'ordre canonique.
+func Layouts() []Layout { return []Layout{LayoutArrayFill, LayoutNamedFields, LayoutNamedFieldsSham} }
+
+// Valid indique si la disposition appartient à la liste du modèle d'entités.
+func (l Layout) Valid() bool {
+	for _, known := range Layouts() {
+		if l == known {
+			return true
+		}
+	}
+	return false
+}
+
+// RegisterAssignable indique si la disposition permet le passage en registres pour toute taille.
+func (l Layout) RegisterAssignable() bool {
+	return l == LayoutNamedFields || l == LayoutNamedFieldsSham
 }
 
 // Valid indique si le profil appartient à la liste du modèle d'entités.
@@ -67,11 +119,15 @@ const (
 	ProbeScatteredScan  ProbeKind = "SCATTERED_SCAN"
 	ProbeAppendPrealloc ProbeKind = "APPEND_PREALLOC"
 	ProbeAppendGrow     ProbeKind = "APPEND_GROW"
+	// ProbePointerChase est ajoutée par C-008 : anneau de nœuds d'une ligne de cache chaînés en
+	// permutation, une itération de b.N valant un seul accès dont l'adresse a été lue à l'accès
+	// précédent. C'est une mesure de latence, là où les deux parcours mesurent un débit (H-008).
+	ProbePointerChase ProbeKind = "POINTER_CHASE"
 )
 
-// ProbeKinds énumère les quatre genres, dans l'ordre canonique.
+// ProbeKinds énumère les genres connus, dans l'ordre canonique.
 func ProbeKinds() []ProbeKind {
-	return []ProbeKind{ProbeSequentialScan, ProbeScatteredScan, ProbeAppendPrealloc, ProbeAppendGrow}
+	return []ProbeKind{ProbeSequentialScan, ProbeScatteredScan, ProbeAppendPrealloc, ProbeAppendGrow, ProbePointerChase}
 }
 
 // Valid indique si le genre appartient à la liste du modèle d'entités.
@@ -96,6 +152,7 @@ type TypeSpec struct {
 	Name            string
 	SizeBytes       int
 	HasPointerField bool
+	Layout          Layout
 }
 
 // WordCount est l'attribut dérivé wordCount (mots machine de 64 bits).
@@ -105,6 +162,9 @@ func (t TypeSpec) WordCount() int { return t.SizeBytes / WordBytes }
 func (t TypeSpec) Validate() error {
 	if t.Name == "" {
 		return invalid("TypeSpec.name est requis")
+	}
+	if !t.Layout.Valid() {
+		return invalid("TypeSpec.layout %q inconnue (%s)", t.Layout, t.Name)
 	}
 	return ValidateSize(t.SizeBytes)
 }
@@ -120,32 +180,66 @@ func ValidateSize(size int) error {
 	return nil
 }
 
-// TypeSpecName construit un nom de type Go déterministe et unique par (taille, champ pointeur).
-// Le remplissage à quatre chiffres garde l'ordre lexicographique aligné sur l'ordre des tailles.
-func TypeSpecName(sizeBytes int, hasPointerField bool) string {
-	if hasPointerField {
-		return fmt.Sprintf("Size%04dPtr", sizeBytes)
+// TypeSpecName construit un nom de type Go déterministe et unique par (taille, champ pointeur,
+// disposition). Le remplissage à quatre chiffres garde l'ordre lexicographique aligné sur l'ordre
+// des tailles. La disposition d'origine ne porte aucun marqueur : les identifiants de cellules des
+// campagnes antérieures à C-008 restent inchangés.
+func TypeSpecName(sizeBytes int, hasPointerField bool, layout Layout) string {
+	marker := ""
+	switch layout {
+	case LayoutNamedFields:
+		marker = "Fields"
+	case LayoutNamedFieldsSham:
+		marker = "Sham"
 	}
-	return fmt.Sprintf("Size%04dPlain", sizeBytes)
+	if hasPointerField {
+		return fmt.Sprintf("Size%04d%sPtr", sizeBytes, marker)
+	}
+	return fmt.Sprintf("Size%04d%sPlain", sizeBytes, marker)
 }
 
 // NewTypeSpec construit un TypeSpec validé.
-func NewTypeSpec(sizeBytes int, hasPointerField bool) (TypeSpec, error) {
-	t := TypeSpec{Name: TypeSpecName(sizeBytes, hasPointerField), SizeBytes: sizeBytes, HasPointerField: hasPointerField}
+func NewTypeSpec(sizeBytes int, hasPointerField bool, layout Layout) (TypeSpec, error) {
+	t := TypeSpec{
+		Name:            TypeSpecName(sizeBytes, hasPointerField, layout),
+		SizeBytes:       sizeBytes,
+		HasPointerField: hasPointerField,
+		Layout:          layout,
+	}
 	return t, t.Validate()
 }
 
-// Cell est l'unité de mesure : un TypeSpec × un LifetimeProfile × un mode de passage.
+// Cell est l'unité de mesure : un TypeSpec × un LifetimeProfile × un mode de passage, avec le
+// nombre d'instances produites par opération pour les profils qui en dépendent (C-008).
 type Cell struct {
 	TypeSpec    TypeSpec
 	Profile     LifetimeProfile
 	PassingMode PassingMode
+	Repeat      int
 	SourceFile  string
+}
+
+// ProfileSegment rend le deuxième segment de l'identifiant : le code du profil, suffixé du nombre
+// d'instances par opération quand il diffère de un. Une répétition de un ne laisse aucune trace :
+// les identifiants antérieurs à C-008 sont inchangés.
+func (c Cell) ProfileSegment() string {
+	if c.Repeat > 1 {
+		return fmt.Sprintf("%s_R%d", c.Profile, c.Repeat)
+	}
+	return string(c.Profile)
 }
 
 // ID rend l'identifiant immuable de la forme <TypeSpec.name>/<LifetimeProfile.code>/<passingMode>.
 func (c Cell) ID() string {
-	return c.TypeSpec.Name + "/" + string(c.Profile) + "/" + string(c.PassingMode)
+	return c.TypeSpec.Name + "/" + c.ProfileSegment() + "/" + string(c.PassingMode)
+}
+
+// Repetitions rend le nombre d'instances produites par opération, au moins une.
+func (c Cell) Repetitions() int {
+	if c.Repeat < 1 {
+		return 1
+	}
+	return c.Repeat
 }
 
 // Validate applique les règles de validation du modèle d'entités.
@@ -161,6 +255,14 @@ func (c Cell) Validate() error {
 	}
 	if c.SourceFile == "" {
 		return invalid("Cell.sourceFile est requis (%s)", c.ID())
+	}
+	if c.Repeat < 0 {
+		return invalid("Cell.repeat doit être positif (%s)", c.ID())
+	}
+	// Le témoin nul n'a de sens que par paire complète : ses deux cellules exécutent le même
+	// corps, celui du mode VALUE.
+	if c.TypeSpec.Layout == LayoutNamedFieldsSham && c.Profile != ProfileLocal {
+		return invalid("le témoin nul %s ne se mesure qu'en profil LOCAL (%s)", LayoutNamedFieldsSham, c.ID())
 	}
 	return nil
 }
@@ -312,13 +414,20 @@ func (r EscapeReport) CountCompileErrors() int {
 	return n
 }
 
-// Provenance identifie la toolchain et la machine d'une mesure (NFR-001).
+// Provenance identifie la toolchain et la machine d'une mesure (NFR-001). Les trois tailles
+// mémoire sont ajoutées par C-008 : sans elles, aucune hypothèse portant sur la hiérarchie de
+// cache n'est interprétable. Elles valent zéro quand la détection échoue, et H-008 rend alors son
+// verdict non concluant plutôt que de supposer une valeur.
 type Provenance struct {
-	GoVersion  string
-	GOOS       string
-	GOARCH     string
-	CPUModel   string
-	CapturedAt time.Time
+	GoVersion           string
+	GOOS                string
+	GOARCH              string
+	CPUModel            string
+	L1DataCacheBytes    int64
+	LastLevelCacheBytes int64
+	PageSizeBytes       int64
+	GOMAXPROCS          int
+	CapturedAt          time.Time
 }
 
 // Validate applique NFR-001 : un résultat sans provenance complète est invalide.
@@ -477,6 +586,7 @@ type Comparison struct {
 	PointerCellID   string
 	SizeBytes       int
 	HasPointerField bool
+	Layout          Layout
 	Profile         LifetimeProfile
 	DeltaNsPerOp    float64
 	CILow           float64

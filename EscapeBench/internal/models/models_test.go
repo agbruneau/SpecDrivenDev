@@ -33,11 +33,40 @@ func TestEnumsValid(t *testing.T) {
 			}
 		})
 	}
-	if len(LifetimeProfiles()) != 5 {
-		t.Fatalf("cinq profils attendus, %d obtenus", len(LifetimeProfiles()))
+	// BR-001-4 : la matrice de référence garde ses cinq profils, indépendamment des profils que
+	// C-008 ajoute au catalogue. Mutation : rendre LifetimeProfiles() dans ReferenceParameters
+	// ⇒ échec attendu, la matrice passerait de 220 à 352 cellules.
+	if len(ReferenceProfiles()) != 5 {
+		t.Fatalf("cinq profils de référence attendus, %d obtenus", len(ReferenceProfiles()))
 	}
-	if len(ProbeKinds()) != 4 {
-		t.Fatalf("quatre genres de sonde attendus, %d obtenus", len(ProbeKinds()))
+	if len(LifetimeProfiles()) != 8 {
+		t.Fatalf("huit profils connus attendus, %d obtenus", len(LifetimeProfiles()))
+	}
+	for _, profile := range ReferenceProfiles() {
+		if !profile.Valid() {
+			t.Fatalf("%s doit rester un profil connu", profile)
+		}
+	}
+	if len(ProbeKinds()) != 5 {
+		t.Fatalf("cinq genres de sonde attendus, %d obtenus", len(ProbeKinds()))
+	}
+	if len(Layouts()) != 3 {
+		t.Fatalf("trois dispositions attendues, %d obtenues", len(Layouts()))
+	}
+	for _, layout := range Layouts() {
+		if !layout.Valid() {
+			t.Fatalf("%s doit être une disposition connue", layout)
+		}
+	}
+	if Layout("PACKED").Valid() {
+		t.Fatal("une disposition inconnue ne doit pas être valide")
+	}
+	// Seules les dispositions à champs nommés restent assignables aux registres à toute taille.
+	if LayoutArrayFill.RegisterAssignable() {
+		t.Fatal("un tableau de remplissage sort le type des registres")
+	}
+	if !LayoutNamedFields.RegisterAssignable() || !LayoutNamedFieldsSham.RegisterAssignable() {
+		t.Fatal("les dispositions à champs nommés restent assignables aux registres")
 	}
 }
 
@@ -91,7 +120,7 @@ func TestValidateSize(t *testing.T) {
 
 func TestTypeSpec(t *testing.T) {
 	t.Parallel()
-	spec, err := NewTypeSpec(24, false)
+	spec, err := NewTypeSpec(24, false, LayoutArrayFill)
 	if err != nil {
 		t.Fatalf("NewTypeSpec : %v", err)
 	}
@@ -101,24 +130,24 @@ func TestTypeSpec(t *testing.T) {
 	if spec.WordCount() != 3 {
 		t.Fatalf("wordCount = %d, attendu 3", spec.WordCount())
 	}
-	withPointer, err := NewTypeSpec(24, true)
+	withPointer, err := NewTypeSpec(24, true, LayoutArrayFill)
 	if err != nil {
 		t.Fatalf("NewTypeSpec : %v", err)
 	}
 	if withPointer.Name == spec.Name {
 		t.Fatal("les deux variantes doivent avoir des noms distincts")
 	}
-	if _, err := NewTypeSpec(20, false); err == nil {
+	if _, err := NewTypeSpec(20, false, LayoutArrayFill); err == nil {
 		t.Fatal("une taille non multiple de 8 doit être refusée")
 	}
-	if err := (TypeSpec{SizeBytes: 24}).Validate(); err == nil {
+	if err := (TypeSpec{SizeBytes: 24, Layout: LayoutArrayFill}).Validate(); err == nil {
 		t.Fatal("un TypeSpec sans nom doit être refusé")
 	}
 }
 
 func TestCellAndProbeIdentifiers(t *testing.T) {
 	t.Parallel()
-	spec, _ := NewTypeSpec(64, true)
+	spec, _ := NewTypeSpec(64, true, LayoutArrayFill)
 	cell := Cell{TypeSpec: spec, Profile: ProfileSentOnChannel, PassingMode: PassingPointer, SourceFile: "subjects/x/subject.go"}
 	if got, want := cell.ID(), "Size0064Ptr/SENT_ON_CHANNEL/POINTER"; got != want {
 		t.Fatalf("Cell.ID() = %q, attendu %q", got, want)
@@ -138,7 +167,7 @@ func TestCellAndProbeIdentifiers(t *testing.T) {
 
 func TestCellValidateRejects(t *testing.T) {
 	t.Parallel()
-	spec, _ := NewTypeSpec(8, false)
+	spec, _ := NewTypeSpec(8, false, LayoutArrayFill)
 	cases := map[string]Cell{
 		"profil inconnu": {TypeSpec: spec, Profile: "GLOBAL", PassingMode: PassingValue, SourceFile: "x"},
 		"mode inconnu":   {TypeSpec: spec, Profile: ProfileLocal, PassingMode: "BOTH", SourceFile: "x"},

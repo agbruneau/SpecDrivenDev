@@ -10,19 +10,31 @@ import (
 // internal/models restent sans tag (C-004, CLAUDE.md) : la conversion se fait ici.
 
 type provenanceDTO struct {
-	GoVersion  string    `json:"goVersion"`
-	GOOS       string    `json:"goos"`
-	GOARCH     string    `json:"goarch"`
-	CPUModel   string    `json:"cpuModel"`
-	CapturedAt time.Time `json:"capturedAt"`
+	GoVersion           string    `json:"goVersion"`
+	GOOS                string    `json:"goos"`
+	GOARCH              string    `json:"goarch"`
+	CPUModel            string    `json:"cpuModel"`
+	L1DataCacheBytes    int64     `json:"l1DataCacheBytes,omitempty"`
+	LastLevelCacheBytes int64     `json:"lastLevelCacheBytes,omitempty"`
+	PageSizeBytes       int64     `json:"pageSizeBytes,omitempty"`
+	GOMAXPROCS          int       `json:"gomaxprocs,omitempty"`
+	CapturedAt          time.Time `json:"capturedAt"`
 }
 
 func toProvenanceDTO(p models.Provenance) provenanceDTO {
-	return provenanceDTO{GoVersion: p.GoVersion, GOOS: p.GOOS, GOARCH: p.GOARCH, CPUModel: p.CPUModel, CapturedAt: p.CapturedAt.UTC()}
+	return provenanceDTO{
+		GoVersion: p.GoVersion, GOOS: p.GOOS, GOARCH: p.GOARCH, CPUModel: p.CPUModel,
+		L1DataCacheBytes: p.L1DataCacheBytes, LastLevelCacheBytes: p.LastLevelCacheBytes,
+		PageSizeBytes: p.PageSizeBytes, GOMAXPROCS: p.GOMAXPROCS, CapturedAt: p.CapturedAt.UTC(),
+	}
 }
 
 func (d provenanceDTO) toModel() models.Provenance {
-	return models.Provenance{GoVersion: d.GoVersion, GOOS: d.GOOS, GOARCH: d.GOARCH, CPUModel: d.CPUModel, CapturedAt: d.CapturedAt}
+	return models.Provenance{
+		GoVersion: d.GoVersion, GOOS: d.GOOS, GOARCH: d.GOARCH, CPUModel: d.CPUModel,
+		L1DataCacheBytes: d.L1DataCacheBytes, LastLevelCacheBytes: d.LastLevelCacheBytes,
+		PageSizeBytes: d.PageSizeBytes, GOMAXPROCS: d.GOMAXPROCS, CapturedAt: d.CapturedAt,
+	}
 }
 
 type typeSpecDTO struct {
@@ -30,6 +42,7 @@ type typeSpecDTO struct {
 	SizeBytes       int    `json:"sizeBytes"`
 	WordCount       int    `json:"wordCount"`
 	HasPointerField bool   `json:"hasPointerField"`
+	Layout          string `json:"layout,omitempty"`
 }
 
 type cellDTO struct {
@@ -37,33 +50,50 @@ type cellDTO struct {
 	TypeSpec    typeSpecDTO `json:"typeSpec"`
 	Profile     string      `json:"lifetimeProfile"`
 	PassingMode string      `json:"passingMode"`
+	Repeat      int         `json:"repeat,omitempty"`
 	SourceFile  string      `json:"sourceFile"`
 }
 
 func toCellDTO(c models.Cell) cellDTO {
-	return cellDTO{
+	dto := cellDTO{
 		ID: c.ID(),
 		TypeSpec: typeSpecDTO{
 			Name:            c.TypeSpec.Name,
 			SizeBytes:       c.TypeSpec.SizeBytes,
 			WordCount:       c.TypeSpec.WordCount(),
 			HasPointerField: c.TypeSpec.HasPointerField,
+			Layout:          string(c.TypeSpec.Layout),
 		},
 		Profile:     string(c.Profile),
 		PassingMode: string(c.PassingMode),
 		SourceFile:  c.SourceFile,
 	}
+	if c.Repeat > 1 {
+		dto.Repeat = c.Repeat
+	}
+	return dto
 }
 
 func (d cellDTO) toModel() models.Cell {
+	// Un fichier antérieur à C-008 ne porte pas de disposition : c'est celle d'origine.
+	layout := models.Layout(d.TypeSpec.Layout)
+	if layout == "" {
+		layout = models.LayoutArrayFill
+	}
+	repeat := d.Repeat
+	if repeat < 1 {
+		repeat = 1
+	}
 	return models.Cell{
 		TypeSpec: models.TypeSpec{
 			Name:            d.TypeSpec.Name,
 			SizeBytes:       d.TypeSpec.SizeBytes,
 			HasPointerField: d.TypeSpec.HasPointerField,
+			Layout:          layout,
 		},
 		Profile:     models.LifetimeProfile(d.Profile),
 		PassingMode: models.PassingMode(d.PassingMode),
+		Repeat:      repeat,
 		SourceFile:  d.SourceFile,
 	}
 }
@@ -93,6 +123,8 @@ type matrixParametersDTO struct {
 	PointerFieldVariants []bool         `json:"pointerFieldVariants"`
 	Profiles             []string       `json:"lifetimeProfiles"`
 	PassingModes         []string       `json:"passingModes"`
+	Layouts              []string       `json:"layouts,omitempty"`
+	Repeats              []int          `json:"repeats,omitempty"`
 	Probes               []probeSpecDTO `json:"probes"`
 }
 
@@ -108,6 +140,10 @@ func toParametersDTO(p models.MatrixParameters) matrixParametersDTO {
 	for _, mode := range p.PassingModes {
 		d.PassingModes = append(d.PassingModes, string(mode))
 	}
+	for _, layout := range p.Layouts {
+		d.Layouts = append(d.Layouts, string(layout))
+	}
+	d.Repeats = p.Repeats
 	for _, spec := range p.Probes {
 		d.Probes = append(d.Probes, probeSpecDTO{Kind: string(spec.Kind), Parameter: spec.Parameter})
 	}
@@ -122,6 +158,10 @@ func (d matrixParametersDTO) toModel() models.MatrixParameters {
 	for _, mode := range d.PassingModes {
 		p.PassingModes = append(p.PassingModes, models.PassingMode(mode))
 	}
+	for _, layout := range d.Layouts {
+		p.Layouts = append(p.Layouts, models.Layout(layout))
+	}
+	p.Repeats = d.Repeats
 	for _, spec := range d.Probes {
 		p.Probes = append(p.Probes, models.ProbeSpec{Kind: models.ProbeKind(spec.Kind), Parameter: spec.Parameter})
 	}
@@ -281,6 +321,7 @@ type comparisonDTO struct {
 	PointerCellID   string  `json:"pointerCellId"`
 	SizeBytes       int     `json:"sizeBytes"`
 	HasPointerField bool    `json:"hasPointerField"`
+	Layout          string  `json:"layout,omitempty"`
 	Profile         string  `json:"lifetimeProfile"`
 	DeltaNsPerOp    float64 `json:"deltaNsPerOp"`
 	CILow           float64 `json:"ciLow"`
@@ -323,7 +364,7 @@ func toComparisonSetDTO(s models.ComparisonSet) comparisonSetDTO {
 	for _, c := range s.Comparisons {
 		d.Comparisons = append(d.Comparisons, comparisonDTO{
 			CampaignID: c.CampaignID, ValueCellID: c.ValueCellID, PointerCellID: c.PointerCellID,
-			SizeBytes: c.SizeBytes, HasPointerField: c.HasPointerField, Profile: string(c.Profile),
+			SizeBytes: c.SizeBytes, HasPointerField: c.HasPointerField, Layout: string(c.Layout), Profile: string(c.Profile),
 			DeltaNsPerOp: c.DeltaNsPerOp, CILow: c.CILow, CIHigh: c.CIHigh, Significant: c.Significant,
 			MedianValueNs: c.MedianValueNs, MedianPointerNs: c.MedianPointerNs,
 		})
@@ -347,9 +388,13 @@ func (d comparisonSetDTO) toModel() models.ComparisonSet {
 		TippingPoints: make(map[models.TippingKey]int, len(d.TippingPoints)),
 	}
 	for _, c := range d.Comparisons {
+		layout := models.Layout(c.Layout)
+		if layout == "" {
+			layout = models.LayoutArrayFill
+		}
 		s.Comparisons = append(s.Comparisons, models.Comparison{
 			CampaignID: c.CampaignID, ValueCellID: c.ValueCellID, PointerCellID: c.PointerCellID,
-			SizeBytes: c.SizeBytes, HasPointerField: c.HasPointerField, Profile: models.LifetimeProfile(c.Profile),
+			SizeBytes: c.SizeBytes, HasPointerField: c.HasPointerField, Layout: layout, Profile: models.LifetimeProfile(c.Profile),
 			DeltaNsPerOp: c.DeltaNsPerOp, CILow: c.CILow, CIHigh: c.CIHigh, Significant: c.Significant,
 			MedianValueNs: c.MedianValueNs, MedianPointerNs: c.MedianPointerNs,
 		})

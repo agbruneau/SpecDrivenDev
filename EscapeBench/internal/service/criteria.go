@@ -18,12 +18,12 @@ var evaluators = map[string]evaluator{
 	"H-004": evaluateH004,
 	"H-005": evaluateH005,
 	"H-006": evaluateH006,
+	"H-007": evaluateH007,
+	"H-008": evaluateH008,
+	"H-009": evaluateH009,
+	"H-010": evaluateH010,
 	"H-011": evaluateH011,
 }
-
-// H-007 à H-010 n'ont volontairement pas d'évaluateur : les sujets qu'elles nomment n'existent pas
-// encore (C-008). UC-005 les rend INCONCLUSIVE en nommant cette absence, ce qui est le
-// comportement voulu tant que le banc n'a pas acquis la capacité de les mesurer.
 
 // SmallStructBytes est la borne « 1 à 3 mots machine » de BEPG p. 253, en octets sur 64 bits.
 const SmallStructBytes = 24

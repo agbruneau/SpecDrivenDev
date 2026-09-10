@@ -30,10 +30,11 @@ Description d'un type `struct` généré.
 
 | Attribut | Type | Règles de validation |
 |---|---|---|
-| name | String | Requis, unique dans la matrice, identifiant Go valide |
+| name | String | Requis, unique dans la matrice, identifiant Go valide ; porte la disposition, sauf `ARRAY_FILL` qui n'ajoute aucun marqueur pour que les identifiants antérieurs à C-008 restent inchangés |
 | sizeBytes | Integer | Requis, multiple de 8 entre 8 et 4096 |
 | wordCount | Integer | Dérivé : `sizeBytes / 8` sur 64 bits |
 | hasPointerField | Boolean | Requis |
+| layout | Enum | Requis ; valeurs : `ARRAY_FILL` (un mot de tête puis `Fill [n-1]uint64`), `NAMED_FIELDS` (`wordCount` champs déclarés un à un, sans tableau, donc assignable aux registres), `NAMED_FIELDS_SHAM` (même déclaration, témoin nul). Définies par C-008 |
 
 ## LifetimeProfile
 
@@ -41,8 +42,10 @@ Profil de durée de vie d'une valeur dans le harnais, aligné sur les causes d'�
 
 | Attribut | Type | Règles de validation |
 |---|---|---|
-| code | Enum | Requis ; valeurs : `LOCAL`, `RETURNED`, `CAPTURED_BY_CLOSURE`, `SENT_ON_CHANNEL`, `STORED_IN_MAP` |
+| code | Enum | Requis ; valeurs : `LOCAL`, `RETURNED`, `CAPTURED_BY_CLOSURE`, `SENT_ON_CHANNEL`, `STORED_IN_MAP`, et, ajoutés par C-008, `STORED_IN_SLICE`, `STORED_IN_STRUCT`, `RETURNED_ALLOCATING` |
 | description | String | Optionnel |
+
+Les cinq premiers profils forment la matrice de référence (BR-001-4) ; les trois derniers ne s'y trouvent pas et ne changent donc ni son décompte ni son identifiant. `RETURNED_ALLOCATING` appartient à la famille des retours : chaque instance produite s'accompagne d'une charge allouée, de sorte que le bras valeur alloue déjà (H-010).
 
 ## Cell
 
@@ -50,8 +53,9 @@ Unité de mesure : un `TypeSpec` × un `LifetimeProfile` × un mode de passage.
 
 | Attribut | Type | Règles de validation |
 |---|---|---|
-| id | String | Requis, unique, immuable ; forme `<TypeSpec.name>/<LifetimeProfile.code>/<passingMode>` |
+| id | String | Requis, unique, immuable ; forme `<TypeSpec.name>/<LifetimeProfile.code>/<passingMode>`, le code du profil étant suffixé de `_R<n>` quand `repeat` dépasse un |
 | passingMode | Enum | Requis ; valeurs : `VALUE`, `POINTER` |
+| repeat | Integer | Requis, ≥ 1, par défaut 1 ; instances produites par opération, seul le profil `RETURNED_ALLOCATING` s'en décline (C-008) |
 | sourceFile | String | Requis ; chemin relatif du fichier Go généré |
 
 ## Probe
@@ -61,8 +65,10 @@ Sonde de mesure indépendante des TypeSpec (FR-006, H-004, H-005) ; mesurée par
 | Attribut | Type | Règles de validation |
 |---|---|---|
 | id | String | Requis, unique, immuable ; forme `probe/<kind>/<parameter>` (disjoint des identifiants de Cell : le deuxième segment n'est jamais un code de LifetimeProfile) |
-| kind | Enum | Requis ; valeurs : `SEQUENTIAL_SCAN`, `SCATTERED_SCAN`, `APPEND_PREALLOC`, `APPEND_GROW` |
-| parameter | Integer | Requis, > 0 ; jeu de travail en octets pour `*_SCAN`, nombre d'éléments pour `APPEND_*` |
+| kind | Enum | Requis ; valeurs : `SEQUENTIAL_SCAN`, `SCATTERED_SCAN`, `APPEND_PREALLOC`, `APPEND_GROW`, et, ajouté par C-008, `POINTER_CHASE` |
+| parameter | Integer | Requis, > 0 ; jeu de travail en octets pour `*_SCAN` et `POINTER_CHASE`, multiple de 64 et d'au moins deux nœuds ; nombre d'éléments pour `APPEND_*` |
+
+Les deux parcours mesurent un débit : leurs chargements sont indépendants et se recouvrent. `POINTER_CHASE` mesure une latence : une itération de `b.N` vaut un seul accès, dont l'adresse a été lue à l'accès précédent (H-008).
 | sourceFile | String | Requis ; chemin relatif du fichier Go généré |
 
 ## Matrix
@@ -97,7 +103,13 @@ Résultat de la classification d'une cellule par le compilateur.
 | goos | String | Requis |
 | goarch | String | Requis |
 | cpuModel | String | Requis |
+| l1DataCacheBytes | Integer | Ajouté par C-008 ; relevé sur la machine, jamais saisi. Zéro quand la détection échoue : une hypothèse qui en dépend se déclare alors non concluante |
+| lastLevelCacheBytes | Integer | Ajouté par C-008 ; même règle |
+| pageSizeBytes | Integer | Ajouté par C-008 ; consigné pour le diagnostic, aucun critère ne s'y adosse |
+| gomaxprocs | Integer | Ajouté par C-008 ; consigné pour la comparaison avec les chiffres du livre |
 | capturedAt | DateTime (UTC) | Requis |
+
+Les quatre champs ajoutés par C-008 ne sont pas exigés par NFR-001 : un fichier de résultats antérieur reste valide, et ils ne participent pas à l'identité de la toolchain que compare UC-002 A3.
 
 ## Campaign
 
@@ -134,7 +146,7 @@ Résultat de la classification d'une cellule par le compilateur.
 | campaignId | String | Requis |
 | valueCellId | String | Requis ; `passingMode = VALUE` |
 | pointerCellId | String | Requis ; même `TypeSpec` et même `LifetimeProfile` que `valueCellId`, `passingMode = POINTER` |
-| sizeBytes, hasPointerField, lifetimeProfile | Integer, Boolean, Enum | Requis ; attributs de la paire recopiés depuis son TypeSpec et son LifetimeProfile, pour que le fichier de comparaison suffise à évaluer H-001 et H-002 sans relire la Matrix (BR-005-2) |
+| sizeBytes, hasPointerField, layout, lifetimeProfile | Integer, Boolean, Enum, Enum | Requis ; attributs de la paire recopiés depuis son TypeSpec et son LifetimeProfile, pour que le fichier de comparaison suffise à évaluer H-001, H-002 et H-007 sans relire la Matrix (BR-005-2) |
 | deltaNsPerOp | Decimal | Médiane pointeur − médiane valeur |
 | medianValueNsPerOp, medianPointerNsPerOp | Decimal | Médianes des deux côtés, citées dans les rationales |
 | ciLow, ciHigh | Decimal | Bornes de l'intervalle de confiance à 95 % de `deltaNsPerOp` |

@@ -9,9 +9,41 @@ import (
 	"github.com/agbruneau/escapebench/internal/service"
 )
 
-// RenderProvenance rend la provenance sur une ligne (NFR-001).
+// RenderProvenance rend la provenance sur une ligne (NFR-001). Les tailles mémoire relevées par
+// C-008 ne sont affichées que si la machine les expose : une hypothèse qui en dépend se déclare
+// non concluante plutôt que de supposer une valeur.
 func RenderProvenance(p models.Provenance) string {
-	return fmt.Sprintf("%s %s/%s · %s · %s", p.GoVersion, p.GOOS, p.GOARCH, p.CPUModel, p.CapturedAt.UTC().Format("2006-01-02 15:04:05 UTC"))
+	line := fmt.Sprintf("%s %s/%s · %s · %s", p.GoVersion, p.GOOS, p.GOARCH, p.CPUModel,
+		p.CapturedAt.UTC().Format("2006-01-02 15:04:05 UTC"))
+	var memory []string
+	if p.L1DataCacheBytes > 0 {
+		memory = append(memory, "L1d "+humanBytes(p.L1DataCacheBytes))
+	}
+	if p.LastLevelCacheBytes > 0 {
+		memory = append(memory, "dernier niveau "+humanBytes(p.LastLevelCacheBytes))
+	}
+	if p.PageSizeBytes > 0 {
+		memory = append(memory, "page "+humanBytes(p.PageSizeBytes))
+	}
+	if p.GOMAXPROCS > 0 {
+		memory = append(memory, fmt.Sprintf("GOMAXPROCS %d", p.GOMAXPROCS))
+	}
+	if len(memory) > 0 {
+		line += " · " + strings.Join(memory, " · ")
+	}
+	return line
+}
+
+// humanBytes rend une taille en Ko ou Mo, sans décimale inutile.
+func humanBytes(n int64) string {
+	switch {
+	case n >= 1<<20 && n%(1<<20) == 0:
+		return fmt.Sprintf("%d Mo", n/(1<<20))
+	case n >= 1<<10 && n%(1<<10) == 0:
+		return fmt.Sprintf("%d Ko", n/(1<<10))
+	default:
+		return fmt.Sprintf("%d o", n)
+	}
 }
 
 // RenderMatrix met en forme l'étape 7 de UC-001.

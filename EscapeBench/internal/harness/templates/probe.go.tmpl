@@ -2,7 +2,69 @@
 // Sujet : {{.SubjectID}}
 // Sonde : {{.Kind}} · Paramètre : {{.Parameter}}
 package subject
-{{if .IsScan}}
+{{if .IsChase}}
+import "unsafe"
+
+// Le jeu de travail fait exactement {{.Parameter}} octets, en nœuds d'une ligne de cache.
+const (
+	workBytes = {{.Parameter}}
+	nodeBytes = 64
+	nodeCount = workBytes / nodeBytes
+)
+
+// node occupe une ligne de cache et porte l'adresse du nœud suivant : c'est cette adresse, lue
+// dans le nœud courant, qui rend chaque accès dépendant du précédent.
+type node struct {
+	V    uint64
+	next *node
+	_    [48]byte
+}
+
+const _ = uint(unsafe.Sizeof(node{}) - nodeBytes)
+
+var (
+	nodes  []node
+	cursor *node
+)
+
+// Setup construit l'anneau hors de la boucle b.N (BEPG p. 219) et n'agit qu'une fois.
+func Setup() {
+	if len(nodes) == nodeCount {
+		return
+	}
+	nodes = make([]node, nodeCount)
+	order := make([]int, nodeCount)
+	for i := range order {
+		order[i] = i
+		nodes[i].V = uint64(i)
+	}
+	// Permutation déterministe (Fisher-Yates à générateur congruentiel fixe) : l'ordre de
+	// parcours doit être rejouable d'une campagne à l'autre, sans source d'aléa.
+	state := uint64(0x9E3779B97F4A7C15)
+	for i := nodeCount - 1; i > 0; i-- {
+		state = state*6364136223846793005 + 1442695040888963407
+		j := int((state >> 33) % uint64(i+1))
+		order[i], order[j] = order[j], order[i]
+	}
+	// Chaînage en un cycle unique couvrant tous les nœuds.
+	for k := 0; k < nodeCount; k++ {
+		nodes[order[k]].next = &nodes[order[(k+1)%nodeCount]]
+	}
+	cursor = &nodes[0]
+}
+
+// Run suit la chaîne sur n accès. Une itération de b.N vaut un seul accès, dont l'adresse a été
+// lue à l'accès précédent : les chargements ne peuvent pas se recouvrir et nsPerOp est la latence
+// effective d'un accès, non un débit.
+func Run(n int) uint64 {
+	p := cursor
+	for i := 0; i < n; i++ {
+		p = p.next
+	}
+	cursor = p
+	return p.V
+}
+{{else if .IsScan}}
 // Le jeu de travail fait exactement {{.Parameter}} octets, réparti en éléments d'une ligne de cache.
 const (
 	workBytes = {{.Parameter}}
