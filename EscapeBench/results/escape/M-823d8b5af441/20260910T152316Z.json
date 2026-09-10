@@ -1,0 +1,1552 @@
+{
+  "matrixId": "M-823d8b5af441",
+  "provenance": {
+    "goVersion": "go1.27.0",
+    "goos": "windows",
+    "goarch": "amd64",
+    "cpuModel": "Intel64 Family 6 Model 198 Stepping 2, GenuineIntel",
+    "capturedAt": "2026-09-10T15:23:16.9248546Z"
+  },
+  "verdicts": [
+    {
+      "cellId": "Size0008Plain/LOCAL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008Plain/LOCAL/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008Plain/RETURNED/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008Plain/RETURNED/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008Plain_RETURNED_POINTER/subject.go:38:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008Plain/CAPTURED_BY_CLOSURE/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008Plain_CAPTURED_BY_CLOSURE_VALUE/subject.go:56:20: func literal escapes to heap",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008Plain/CAPTURED_BY_CLOSURE/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008Plain_CAPTURED_BY_CLOSURE_POINTER/subject.go:55:3: moved to heap: t",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008Plain/SENT_ON_CHANNEL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008Plain/SENT_ON_CHANNEL/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008Plain_SENT_ON_CHANNEL_POINTER/subject.go:45:3: moved to heap: t",
+      "category": "CHANNEL_SEND",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008Plain/STORED_IN_MAP/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008Plain/STORED_IN_MAP/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008Plain_STORED_IN_MAP_POINTER/subject.go:45:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008Ptr/LOCAL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008Ptr/LOCAL/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008Ptr/RETURNED/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008Ptr/RETURNED/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008Ptr_RETURNED_POINTER/subject.go:38:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008Ptr/CAPTURED_BY_CLOSURE/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008Ptr_CAPTURED_BY_CLOSURE_VALUE/subject.go:56:20: func literal escapes to heap",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008Ptr/CAPTURED_BY_CLOSURE/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008Ptr_CAPTURED_BY_CLOSURE_POINTER/subject.go:55:3: moved to heap: t",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008Ptr/SENT_ON_CHANNEL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008Ptr/SENT_ON_CHANNEL/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008Ptr_SENT_ON_CHANNEL_POINTER/subject.go:45:3: moved to heap: t",
+      "category": "CHANNEL_SEND",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008Ptr/STORED_IN_MAP/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008Ptr/STORED_IN_MAP/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0008Ptr_STORED_IN_MAP_POINTER/subject.go:45:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016Plain/LOCAL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016Plain/LOCAL/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016Plain/RETURNED/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016Plain/RETURNED/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016Plain_RETURNED_POINTER/subject.go:40:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016Plain/CAPTURED_BY_CLOSURE/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016Plain_CAPTURED_BY_CLOSURE_VALUE/subject.go:58:20: func literal escapes to heap",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016Plain/CAPTURED_BY_CLOSURE/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016Plain_CAPTURED_BY_CLOSURE_POINTER/subject.go:57:3: moved to heap: t",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016Plain/SENT_ON_CHANNEL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016Plain/SENT_ON_CHANNEL/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016Plain_SENT_ON_CHANNEL_POINTER/subject.go:47:3: moved to heap: t",
+      "category": "CHANNEL_SEND",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016Plain/STORED_IN_MAP/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016Plain/STORED_IN_MAP/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016Plain_STORED_IN_MAP_POINTER/subject.go:47:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016Ptr/LOCAL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016Ptr/LOCAL/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016Ptr/RETURNED/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016Ptr/RETURNED/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016Ptr_RETURNED_POINTER/subject.go:40:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016Ptr/CAPTURED_BY_CLOSURE/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016Ptr_CAPTURED_BY_CLOSURE_VALUE/subject.go:58:20: func literal escapes to heap",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016Ptr/CAPTURED_BY_CLOSURE/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016Ptr_CAPTURED_BY_CLOSURE_POINTER/subject.go:57:3: moved to heap: t",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016Ptr/SENT_ON_CHANNEL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016Ptr/SENT_ON_CHANNEL/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016Ptr_SENT_ON_CHANNEL_POINTER/subject.go:47:3: moved to heap: t",
+      "category": "CHANNEL_SEND",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016Ptr/STORED_IN_MAP/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016Ptr/STORED_IN_MAP/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0016Ptr_STORED_IN_MAP_POINTER/subject.go:47:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024Plain/LOCAL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024Plain/LOCAL/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024Plain/RETURNED/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024Plain/RETURNED/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024Plain_RETURNED_POINTER/subject.go:40:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024Plain/CAPTURED_BY_CLOSURE/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024Plain_CAPTURED_BY_CLOSURE_VALUE/subject.go:58:20: func literal escapes to heap",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024Plain/CAPTURED_BY_CLOSURE/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024Plain_CAPTURED_BY_CLOSURE_POINTER/subject.go:57:3: moved to heap: t",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024Plain/SENT_ON_CHANNEL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024Plain/SENT_ON_CHANNEL/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024Plain_SENT_ON_CHANNEL_POINTER/subject.go:47:3: moved to heap: t",
+      "category": "CHANNEL_SEND",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024Plain/STORED_IN_MAP/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024Plain/STORED_IN_MAP/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024Plain_STORED_IN_MAP_POINTER/subject.go:47:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024Ptr/LOCAL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024Ptr/LOCAL/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024Ptr/RETURNED/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024Ptr/RETURNED/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024Ptr_RETURNED_POINTER/subject.go:40:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024Ptr/CAPTURED_BY_CLOSURE/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024Ptr_CAPTURED_BY_CLOSURE_VALUE/subject.go:58:20: func literal escapes to heap",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024Ptr/CAPTURED_BY_CLOSURE/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024Ptr_CAPTURED_BY_CLOSURE_POINTER/subject.go:57:3: moved to heap: t",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024Ptr/SENT_ON_CHANNEL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024Ptr/SENT_ON_CHANNEL/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024Ptr_SENT_ON_CHANNEL_POINTER/subject.go:47:3: moved to heap: t",
+      "category": "CHANNEL_SEND",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024Ptr/STORED_IN_MAP/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024Ptr/STORED_IN_MAP/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0024Ptr_STORED_IN_MAP_POINTER/subject.go:47:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0032Plain/LOCAL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0032Plain/LOCAL/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0032Plain/RETURNED/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0032Plain/RETURNED/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0032Plain_RETURNED_POINTER/subject.go:40:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0032Plain/CAPTURED_BY_CLOSURE/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0032Plain_CAPTURED_BY_CLOSURE_VALUE/subject.go:58:20: func literal escapes to heap",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0032Plain/CAPTURED_BY_CLOSURE/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0032Plain_CAPTURED_BY_CLOSURE_POINTER/subject.go:57:3: moved to heap: t",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0032Plain/SENT_ON_CHANNEL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0032Plain/SENT_ON_CHANNEL/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0032Plain_SENT_ON_CHANNEL_POINTER/subject.go:47:3: moved to heap: t",
+      "category": "CHANNEL_SEND",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0032Plain/STORED_IN_MAP/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0032Plain/STORED_IN_MAP/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0032Plain_STORED_IN_MAP_POINTER/subject.go:47:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0032Ptr/LOCAL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0032Ptr/LOCAL/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0032Ptr/RETURNED/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0032Ptr/RETURNED/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0032Ptr_RETURNED_POINTER/subject.go:40:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0032Ptr/CAPTURED_BY_CLOSURE/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0032Ptr_CAPTURED_BY_CLOSURE_VALUE/subject.go:58:20: func literal escapes to heap",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0032Ptr/CAPTURED_BY_CLOSURE/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0032Ptr_CAPTURED_BY_CLOSURE_POINTER/subject.go:57:3: moved to heap: t",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0032Ptr/SENT_ON_CHANNEL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0032Ptr/SENT_ON_CHANNEL/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0032Ptr_SENT_ON_CHANNEL_POINTER/subject.go:47:3: moved to heap: t",
+      "category": "CHANNEL_SEND",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0032Ptr/STORED_IN_MAP/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0032Ptr/STORED_IN_MAP/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0032Ptr_STORED_IN_MAP_POINTER/subject.go:47:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0064Plain/LOCAL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0064Plain/LOCAL/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0064Plain/RETURNED/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0064Plain/RETURNED/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0064Plain_RETURNED_POINTER/subject.go:40:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0064Plain/CAPTURED_BY_CLOSURE/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0064Plain_CAPTURED_BY_CLOSURE_VALUE/subject.go:58:20: func literal escapes to heap",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0064Plain/CAPTURED_BY_CLOSURE/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0064Plain_CAPTURED_BY_CLOSURE_POINTER/subject.go:57:3: moved to heap: t",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0064Plain/SENT_ON_CHANNEL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0064Plain/SENT_ON_CHANNEL/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0064Plain_SENT_ON_CHANNEL_POINTER/subject.go:47:3: moved to heap: t",
+      "category": "CHANNEL_SEND",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0064Plain/STORED_IN_MAP/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0064Plain/STORED_IN_MAP/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0064Plain_STORED_IN_MAP_POINTER/subject.go:47:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0064Ptr/LOCAL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0064Ptr/LOCAL/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0064Ptr/RETURNED/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0064Ptr/RETURNED/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0064Ptr_RETURNED_POINTER/subject.go:40:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0064Ptr/CAPTURED_BY_CLOSURE/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0064Ptr_CAPTURED_BY_CLOSURE_VALUE/subject.go:58:20: func literal escapes to heap",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0064Ptr/CAPTURED_BY_CLOSURE/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0064Ptr_CAPTURED_BY_CLOSURE_POINTER/subject.go:57:3: moved to heap: t",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0064Ptr/SENT_ON_CHANNEL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0064Ptr/SENT_ON_CHANNEL/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0064Ptr_SENT_ON_CHANNEL_POINTER/subject.go:47:3: moved to heap: t",
+      "category": "CHANNEL_SEND",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0064Ptr/STORED_IN_MAP/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0064Ptr/STORED_IN_MAP/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0064Ptr_STORED_IN_MAP_POINTER/subject.go:47:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128Plain/LOCAL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128Plain/LOCAL/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128Plain/RETURNED/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128Plain/RETURNED/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128Plain_RETURNED_POINTER/subject.go:40:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128Plain/CAPTURED_BY_CLOSURE/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128Plain_CAPTURED_BY_CLOSURE_VALUE/subject.go:58:20: func literal escapes to heap",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128Plain/CAPTURED_BY_CLOSURE/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128Plain_CAPTURED_BY_CLOSURE_POINTER/subject.go:57:3: moved to heap: t",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128Plain/SENT_ON_CHANNEL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128Plain/SENT_ON_CHANNEL/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128Plain_SENT_ON_CHANNEL_POINTER/subject.go:47:3: moved to heap: t",
+      "category": "CHANNEL_SEND",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128Plain/STORED_IN_MAP/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128Plain/STORED_IN_MAP/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128Plain_STORED_IN_MAP_POINTER/subject.go:47:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128Ptr/LOCAL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128Ptr/LOCAL/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128Ptr/RETURNED/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128Ptr/RETURNED/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128Ptr_RETURNED_POINTER/subject.go:40:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128Ptr/CAPTURED_BY_CLOSURE/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128Ptr_CAPTURED_BY_CLOSURE_VALUE/subject.go:58:20: func literal escapes to heap",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128Ptr/CAPTURED_BY_CLOSURE/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128Ptr_CAPTURED_BY_CLOSURE_POINTER/subject.go:57:3: moved to heap: t",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128Ptr/SENT_ON_CHANNEL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128Ptr/SENT_ON_CHANNEL/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128Ptr_SENT_ON_CHANNEL_POINTER/subject.go:47:3: moved to heap: t",
+      "category": "CHANNEL_SEND",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128Ptr/STORED_IN_MAP/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128Ptr/STORED_IN_MAP/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0128Ptr_STORED_IN_MAP_POINTER/subject.go:47:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0256Plain/LOCAL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0256Plain/LOCAL/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0256Plain/RETURNED/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0256Plain/RETURNED/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0256Plain_RETURNED_POINTER/subject.go:40:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0256Plain/CAPTURED_BY_CLOSURE/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0256Plain_CAPTURED_BY_CLOSURE_VALUE/subject.go:57:3: moved to heap: t",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0256Plain/CAPTURED_BY_CLOSURE/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0256Plain_CAPTURED_BY_CLOSURE_POINTER/subject.go:57:3: moved to heap: t",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0256Plain/SENT_ON_CHANNEL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0256Plain/SENT_ON_CHANNEL/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0256Plain_SENT_ON_CHANNEL_POINTER/subject.go:47:3: moved to heap: t",
+      "category": "CHANNEL_SEND",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0256Plain/STORED_IN_MAP/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0256Plain/STORED_IN_MAP/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0256Plain_STORED_IN_MAP_POINTER/subject.go:47:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0256Ptr/LOCAL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0256Ptr/LOCAL/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0256Ptr/RETURNED/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0256Ptr/RETURNED/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0256Ptr_RETURNED_POINTER/subject.go:40:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0256Ptr/CAPTURED_BY_CLOSURE/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0256Ptr_CAPTURED_BY_CLOSURE_VALUE/subject.go:57:3: moved to heap: t",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0256Ptr/CAPTURED_BY_CLOSURE/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0256Ptr_CAPTURED_BY_CLOSURE_POINTER/subject.go:57:3: moved to heap: t",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0256Ptr/SENT_ON_CHANNEL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0256Ptr/SENT_ON_CHANNEL/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0256Ptr_SENT_ON_CHANNEL_POINTER/subject.go:47:3: moved to heap: t",
+      "category": "CHANNEL_SEND",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0256Ptr/STORED_IN_MAP/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0256Ptr/STORED_IN_MAP/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0256Ptr_STORED_IN_MAP_POINTER/subject.go:47:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0512Plain/LOCAL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0512Plain/LOCAL/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0512Plain/RETURNED/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0512Plain/RETURNED/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0512Plain_RETURNED_POINTER/subject.go:40:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0512Plain/CAPTURED_BY_CLOSURE/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0512Plain_CAPTURED_BY_CLOSURE_VALUE/subject.go:57:3: moved to heap: t",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0512Plain/CAPTURED_BY_CLOSURE/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0512Plain_CAPTURED_BY_CLOSURE_POINTER/subject.go:57:3: moved to heap: t",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0512Plain/SENT_ON_CHANNEL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0512Plain/SENT_ON_CHANNEL/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0512Plain_SENT_ON_CHANNEL_POINTER/subject.go:47:3: moved to heap: t",
+      "category": "CHANNEL_SEND",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0512Plain/STORED_IN_MAP/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0512Plain/STORED_IN_MAP/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0512Plain_STORED_IN_MAP_POINTER/subject.go:47:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0512Ptr/LOCAL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0512Ptr/LOCAL/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0512Ptr/RETURNED/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0512Ptr/RETURNED/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0512Ptr_RETURNED_POINTER/subject.go:40:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0512Ptr/CAPTURED_BY_CLOSURE/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0512Ptr_CAPTURED_BY_CLOSURE_VALUE/subject.go:57:3: moved to heap: t",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0512Ptr/CAPTURED_BY_CLOSURE/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0512Ptr_CAPTURED_BY_CLOSURE_POINTER/subject.go:57:3: moved to heap: t",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0512Ptr/SENT_ON_CHANNEL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0512Ptr/SENT_ON_CHANNEL/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0512Ptr_SENT_ON_CHANNEL_POINTER/subject.go:47:3: moved to heap: t",
+      "category": "CHANNEL_SEND",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0512Ptr/STORED_IN_MAP/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0512Ptr/STORED_IN_MAP/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size0512Ptr_STORED_IN_MAP_POINTER/subject.go:47:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024Plain/LOCAL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024Plain/LOCAL/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024Plain/RETURNED/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024Plain/RETURNED/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024Plain_RETURNED_POINTER/subject.go:40:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024Plain/CAPTURED_BY_CLOSURE/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024Plain_CAPTURED_BY_CLOSURE_VALUE/subject.go:57:3: moved to heap: t",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024Plain/CAPTURED_BY_CLOSURE/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024Plain_CAPTURED_BY_CLOSURE_POINTER/subject.go:57:3: moved to heap: t",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024Plain/SENT_ON_CHANNEL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024Plain/SENT_ON_CHANNEL/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024Plain_SENT_ON_CHANNEL_POINTER/subject.go:47:3: moved to heap: t",
+      "category": "CHANNEL_SEND",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024Plain/STORED_IN_MAP/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024Plain/STORED_IN_MAP/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024Plain_STORED_IN_MAP_POINTER/subject.go:47:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024Ptr/LOCAL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024Ptr/LOCAL/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024Ptr/RETURNED/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024Ptr/RETURNED/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024Ptr_RETURNED_POINTER/subject.go:40:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024Ptr/CAPTURED_BY_CLOSURE/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024Ptr_CAPTURED_BY_CLOSURE_VALUE/subject.go:57:3: moved to heap: t",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024Ptr/CAPTURED_BY_CLOSURE/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024Ptr_CAPTURED_BY_CLOSURE_POINTER/subject.go:57:3: moved to heap: t",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024Ptr/SENT_ON_CHANNEL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024Ptr/SENT_ON_CHANNEL/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024Ptr_SENT_ON_CHANNEL_POINTER/subject.go:47:3: moved to heap: t",
+      "category": "CHANNEL_SEND",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024Ptr/STORED_IN_MAP/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size1024Ptr/STORED_IN_MAP/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size1024Ptr_STORED_IN_MAP_POINTER/subject.go:47:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size2048Plain/LOCAL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size2048Plain/LOCAL/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size2048Plain/RETURNED/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size2048Plain/RETURNED/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size2048Plain_RETURNED_POINTER/subject.go:40:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size2048Plain/CAPTURED_BY_CLOSURE/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size2048Plain_CAPTURED_BY_CLOSURE_VALUE/subject.go:57:3: moved to heap: t",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size2048Plain/CAPTURED_BY_CLOSURE/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size2048Plain_CAPTURED_BY_CLOSURE_POINTER/subject.go:57:3: moved to heap: t",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size2048Plain/SENT_ON_CHANNEL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size2048Plain/SENT_ON_CHANNEL/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size2048Plain_SENT_ON_CHANNEL_POINTER/subject.go:47:3: moved to heap: t",
+      "category": "CHANNEL_SEND",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size2048Plain/STORED_IN_MAP/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size2048Plain/STORED_IN_MAP/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size2048Plain_STORED_IN_MAP_POINTER/subject.go:47:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size2048Ptr/LOCAL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size2048Ptr/LOCAL/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size2048Ptr/RETURNED/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size2048Ptr/RETURNED/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size2048Ptr_RETURNED_POINTER/subject.go:40:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size2048Ptr/CAPTURED_BY_CLOSURE/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size2048Ptr_CAPTURED_BY_CLOSURE_VALUE/subject.go:57:3: moved to heap: t",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size2048Ptr/CAPTURED_BY_CLOSURE/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size2048Ptr_CAPTURED_BY_CLOSURE_POINTER/subject.go:57:3: moved to heap: t",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size2048Ptr/SENT_ON_CHANNEL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size2048Ptr/SENT_ON_CHANNEL/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size2048Ptr_SENT_ON_CHANNEL_POINTER/subject.go:47:3: moved to heap: t",
+      "category": "CHANNEL_SEND",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size2048Ptr/STORED_IN_MAP/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size2048Ptr/STORED_IN_MAP/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size2048Ptr_STORED_IN_MAP_POINTER/subject.go:47:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size4096Plain/LOCAL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size4096Plain/LOCAL/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size4096Plain/RETURNED/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size4096Plain/RETURNED/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size4096Plain_RETURNED_POINTER/subject.go:40:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size4096Plain/CAPTURED_BY_CLOSURE/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size4096Plain_CAPTURED_BY_CLOSURE_VALUE/subject.go:57:3: moved to heap: t",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size4096Plain/CAPTURED_BY_CLOSURE/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size4096Plain_CAPTURED_BY_CLOSURE_POINTER/subject.go:57:3: moved to heap: t",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size4096Plain/SENT_ON_CHANNEL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size4096Plain/SENT_ON_CHANNEL/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size4096Plain_SENT_ON_CHANNEL_POINTER/subject.go:47:3: moved to heap: t",
+      "category": "CHANNEL_SEND",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size4096Plain/STORED_IN_MAP/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size4096Plain/STORED_IN_MAP/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size4096Plain_STORED_IN_MAP_POINTER/subject.go:47:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size4096Ptr/LOCAL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size4096Ptr/LOCAL/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size4096Ptr/RETURNED/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size4096Ptr/RETURNED/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size4096Ptr_RETURNED_POINTER/subject.go:40:2: moved to heap: t",
+      "category": "RETURN_POINTER",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size4096Ptr/CAPTURED_BY_CLOSURE/VALUE",
+      "escapes": true,
+      "compilerReason": "subjects\\Size4096Ptr_CAPTURED_BY_CLOSURE_VALUE/subject.go:57:3: moved to heap: t",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size4096Ptr/CAPTURED_BY_CLOSURE/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size4096Ptr_CAPTURED_BY_CLOSURE_POINTER/subject.go:57:3: moved to heap: t",
+      "category": "CLOSURE_CAPTURE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size4096Ptr/SENT_ON_CHANNEL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size4096Ptr/SENT_ON_CHANNEL/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size4096Ptr_SENT_ON_CHANNEL_POINTER/subject.go:47:3: moved to heap: t",
+      "category": "CHANNEL_SEND",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size4096Ptr/STORED_IN_MAP/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size4096Ptr/STORED_IN_MAP/POINTER",
+      "escapes": true,
+      "compilerReason": "subjects\\Size4096Ptr_STORED_IN_MAP_POINTER/subject.go:47:3: moved to heap: t",
+      "category": "CONTAINER_STORE",
+      "status": "OK"
+    }
+  ]
+}

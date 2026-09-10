@@ -19,6 +19,7 @@ Dépôt de prospection : identification, évaluation et cadrage de projets d'exp
 | `EscapeBench/` | Projet P1 prêt au lancement : noyau de spécification complet (`docs/` — vision, FR/NFR/C/H, modèle d'entités, diagramme, UC-001 à UC-005, tableau de bord), `CLAUDE.md`, six skills, deux sous-agents, quatre hooks avec leur contrôle (`selftest.sh`), squelette Go compilable (`go.mod`, `Makefile`, `cmd/`, `internal/`), CI, `LANCEMENT.md` | À copier dans un dépôt dédié ; gabarit pour P2–P8 |
 | `REVUE-PRELANCEMENT_2026-09-10.md` | Revue du dépôt avant développement : constats, corrections appliquées, points laissés au chercheur | Avant d'ouvrir le code |
 | `DECISION.md` | Décisions prises pendant la construction d'EscapeBench : écarts de processus assumés, conception du harnais, méthode statistique, limites | Avant de modifier le banc ou de lancer une campagne |
+| `RAPPORT-CAMPAGNE_C-2026-09-10-1.md` | Première campagne de référence : six verdicts, audit contradictoire, trois défauts de construction avec leurs contre-épreuves, hypothèses successeurs proposées | Avant de citer un verdict, et avant la campagne suivante |
 
 ## Ordre de lecture
 
@@ -31,7 +32,7 @@ Dépôt de prospection : identification, évaluation et cadrage de projets d'exp
 
 | Projet | Statut | Prochaine étape |
 |---|---|---|
-| P1 EscapeBench | **Implémenté.** UC-001 à UC-005 codés et testés (couverture 93,6 %, `go test -race -shuffle=on` vert), chaîne complète validée de bout en bout ; aucune campagne de référence exécutée, aucun verdict d'hypothèse | Lancer la première campagne : `matrix --reference` → `escape` → `campaign` → `compare` → `verdict` (voir `EscapeBench/README.md`) |
+| P1 EscapeBench | **Première campagne exécutée.** UC-001 à UC-005 implémentés et testés (couverture 93,6 %) ; campagne `C-2026-09-10-1` sur la matrice de référence, 230 sujets, 29 min, six verdicts ; audit contradictoire mené, trois défauts de construction identifiés et démontrés | Rédiger H-007 à H-011 (`RAPPORT-CAMPAGNE_C-2026-09-10-1.md`, §7), puis rejouer sur `arm64` (C-006) |
 | P2–P8 | Fiches de cadrage seulement | Rédiger `docs/vision.md` et le catalogue `H-###` avant tout code |
 
 Conventions : français pour la prose, anglais pour les identifiants et le code ; pages citées = folios imprimés des PDF ; marqueurs *Confirmé / Probable / Hypothèse / À vérifier / Adaptation*.
