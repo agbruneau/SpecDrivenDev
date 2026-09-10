@@ -1,0 +1,26 @@
+name: ci
+# Pipeline de spécification (SDD ch. 9, p. 141) : à chaque commit, vet + suite unitaire ;
+# un échec identifie un cas d'utilisation dont le comportement a dérivé.
+on:
+  push:
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - name: gofmt
+        run: test -z "$(gofmt -l ./cmd ./internal)"
+      - name: vet
+        run: go vet ./...
+      - name: test
+        run: go test -race -shuffle=on -count=1 ./...
+      - name: spec-lint
+        run: |
+          for f in docs/use-cases/UC-*.md; do
+            printf '{"tool_input":{"file_path":"%s"}}' "$PWD/$f" | CLAUDE_PROJECT_DIR="$PWD" bash .claude/hooks/spec-lint.sh
+          done

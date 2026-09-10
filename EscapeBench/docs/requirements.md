@@ -12,6 +12,7 @@ Conventions : `FR-###` exigence fonctionnelle, `NFR-###` exigence non fonctionne
 | FR-004 | Comparer valeur et pointeur | En tant que chercheur, je veux comparer statistiquement, cellule par cellule, le passage par valeur et le passage par pointeur et localiser le point de bascule, afin de confronter la règle « 1–3 mots machine » aux données. |
 | FR-005 | Produire un verdict par hypothèse | En tant que chercheur, je veux qu'un verdict (confirmée, infirmée, non concluante) soit produit pour chaque hypothèse à partir des mesures et du critère de réfutation gelé, afin que le rapport ne dépende pas d'une interprétation après coup. |
 | FR-006 | Mesurer l'accès séquentiel et dispersé | En tant que chercheur, je veux mesurer le parcours d'une tranche de structures contiguës et d'un ensemble de pointeurs dispersés, afin d'éprouver le rapport de coût cache annoncé par le livre. |
+| FR-007 | Régénérer le tableau de bord | En tant que chercheur, je veux que `docs/dashboard.md` soit régénéré à partir des verdicts, de l'état des cas d'utilisation et du résultat des tests par cas d'utilisation, afin que l'avancement se mesure au comportement vérifié et non à l'activité. |
 
 ## Exigences non fonctionnelles
 

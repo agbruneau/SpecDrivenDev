@@ -1,12 +1,23 @@
 # Project Guidelines — EscapeBench
 
-- `/docs` fait autorité : tout changement de comportement commence par la spécification (vision, requirements, entity-model, use-cases). Toute demande d'implémentation nomme un `UC-###` ou un `H-###` ; une demande sans identifiant est refusée.
-- Go 1.25 ou plus récent ; bibliothèque standard uniquement dans `cmd/` et `internal/`. Dépendances externes seulement si couvertes par un `C-###` de `docs/requirements.md`.
-- Layout : `cmd/escapebench` (composition root), `internal/models` (stdlib seulement), `internal/service` (cas d'utilisation, aucune I/O directe), `internal/ports` (interfaces), `internal/adapters` (compilateur, système de fichiers, benchmark runner). `adapters` dépend du core, jamais l'inverse.
-- Toute fonction d'I/O prend un `context.Context` en premier paramètre ; erreurs enveloppées avec `%w`, inspectées avec `errors.Is`/`errors.As` aux bords uniquement.
-- Tests : table-driven, sous-tests nommés d'après le cas d'utilisation et le flux (`TestUC003_MainFlow`, `TestUC003_A1_HarnessModified`) ; `go vet ./...` et `go test -race -shuffle=on ./...` avant tout commit.
-- Benchmarks : `b.ReportAllocs()`, setup hors de la boucle `b.N`, exécutés uniquement via `make bench` avec les drapeaux fixés par `C-003`.
-- `internal/harness/` et `results/` ne sont jamais modifiés par un skill d'implémentation ; `results/` est en écriture seule pour le runner de campagne.
-- Synchroniser, ne pas régénérer : un changement de spécification produit un diff proportionnel ; les changements restent limités au UC demandé.
-- Référencer l'ID du cas d'utilisation en commentaire d'en-tête de chaque fonction de service produite.
-- Langue : spécifications et commentaires en français ; identifiants (`UC-`, `FR-`, `NFR-`, `C-`, `H-`, `BR-`) et noms Go en anglais.
+Banc de réfutation Go (bibliothèque standard) qui éprouve des affirmations de *Building Enterprise Projects with Go* ; processus AI Unified Process : `docs/` fait autorité.
+
+## Règles de processus
+- Toute demande d'implémentation nomme un `UC-###` ou un `H-###` et passe par un skill : `/spec-review`, `/implement`, `/go-test`, `/spec-coverage`, `/bench`, `/refute`. Une demande sans identifiant est refusée ; « améliore », « optimise », « nettoie » ne sont pas des instructions valides.
+- Tout changement de comportement commence dans `docs/` (cas d'utilisation, exigences, modèle d'entités), puis est synchronisé dans le code. Synchroniser, ne jamais régénérer : diff proportionnel au changement de spécification.
+- Un UC se code uniquement au statut `Approved` ; le passage `Reviewed → Approved` est une décision humaine.
+- Identifiants (`FR/NFR/C/H/UC/BR`) jamais réutilisés ; un critère de réfutation ne se modifie pas, on crée une nouvelle `H-###`.
+
+## Règles de construction (BEPG ch. 4, 6, 14, 20)
+- Go 1.25+, bibliothèque standard uniquement ; dépendance externe seulement si couverte par un `C-###`.
+- Layout : `cmd/escapebench` (composition root, sous-commandes = UC), `internal/models` (stdlib seulement, sans tags), `internal/service` (UC, aucune I/O), `internal/ports` (interfaces côté consommateur), `internal/adapters/<nom>`, `internal/harness` (code de mesure figé pendant une campagne). `adapters` dépend du core, jamais l'inverse.
+- Toute I/O prend un `context.Context` en premier paramètre ; erreurs enveloppées avec `%w`, inspectées avec `errors.Is`/`errors.As` aux bords ; jamais de `panic` sur un chemin de requête.
+- Tests : table-driven, sous-tests nommés d'après le UC et le flux (`TestUC003_MainFlow`, `TestUC003_A1_HarnessModified`, `TestUC003_BR1_...`), `testing/synctest` pour tout comportement temporel ou concurrent, jamais de `time.Sleep`. Commande de référence : `make vet test`.
+- Benchmarks : `b.ReportAllocs()`, setup hors de la boucle `b.N`, exécutés par le binaire selon `C-003`.
+- `results/`, `matrices/` et `docs/dashboard.md` ne sont jamais écrits par un agent (hook `guard-paths`) ; `internal/harness/` est figé si `results/.campaign-lock` existe.
+- Référencer l'ID du UC en commentaire d'en-tête de chaque fonction de service ; préfixer les commits par `UC-###:` ou `H-###:`.
+
+## Contexte
+- Langue : spécifications, commentaires et rapports en français ; identifiants et noms Go en anglais.
+- Aucun serveur MCP n'est configuré (pas de `.mcp.json`) ; `go doc <pkg>` suffit pour la bibliothèque standard.
+- Ne pas charger `docs/` en entier : les skills lisent uniquement le UC demandé, ses exigences liées et ses entités.

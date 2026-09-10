@@ -1,0 +1,5 @@
+bin/
+matrices/*/cells/
+results/.campaign-lock
+.claude/settings.local.json
+CLAUDE.local.md

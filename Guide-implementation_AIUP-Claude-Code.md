@@ -1,10 +1,10 @@
 # Guide d'implémentation — *Spec-Driven Development* (AI Unified Process) avec Claude Code pour les projets d'exploration Go
 
-**Sources :** Simon Martinelli, *Spec-Driven Development: From Specs to Code with AI Agents*, Apress Pocket Guides, 2026, ISBN 979-8-8688-2851-5, DOI 10.1007/979-8-8688-2851-5, 152 p. (ci-après **SDD**) ; Saeed Shahsavan, *Building Enterprise Projects with Go*, Apress, 2026 (ci-après **BEPG**). Pages citées = folios imprimés.
+**Sources :** Simon Martinelli, *Spec-Driven Development: From Specs to Code with AI Agents*, Apress Pocket Guides, 2026, ISBN 979-8-8688-2851-5, DOI 10.1007/979-8-8688-2851-5, 152 p. (ci-après **SDD**) ; Saeed Shahsavan, *Building Enterprise Projects with Go*, Apress, 2026 (ci-après **BEPG**) ; Eden Marco, *Agentic Coding with Claude Code*, Packt, mars 2026, ISBN 978-1-80602-259-5, 349 p. (ci-après **ACC**). Pages citées = folios imprimés.
 
-**Portée :** méthode commune aux huit projets de `Projets-candidats_Building-Enterprise-Projects-with-Go.md`. Le dossier `EscapeBench/` fournit l'exemple travaillé (noyau de spécification du projet P1).
+**Portée :** méthode commune aux huit projets de `Projets-candidats_Building-Enterprise-Projects-with-Go.md`. Le dossier `EscapeBench/` fournit l'exemple travaillé et opérationnel (noyau de spécification, skills, hooks, sous-agents, squelette Go du projet P1) ; `EscapeBench/LANCEMENT.md` en est la procédure de démarrage.
 
-**Date :** 2026-09-10 · **Longueur :** ~3 100 mots.
+**Date :** 2026-09-10 · **Version :** 2 (réglages Claude Code issus d'ACC, §6 bis) · **Longueur :** ~3 900 mots.
 
 ---
 
@@ -106,6 +106,7 @@ Les projets sans composante d'exécution longue (P3 LeakLab, P4 HexaGuard) garde
 
 | Skill | Lit | Produit | Contraintes issues de BEPG |
 |---|---|---|---|
+| `/spec-review UC-###` | UC, `requirements.md`, `entity-model.md` | Délègue au sous-agent `spec-reviewer` ; verdict APPROVE/REVISE et constatations numérotées ; n'écrit rien | Trois tests d'exécutabilité (SDD, p. 48), observable seulement, mots vagues, une règle par énoncé |
 | `/implement UC-###` | UC, exigences liées, `entity-model.md`, `CLAUDE.md`, code existant | Code dans `internal/` + tests unitaires nommés par flux ; mode synchronisation si le UC existe déjà | Layout hexagonal (p. 368–369) ; erreurs enveloppées `%w`, `errors.Is/As` aux bords (p. 177–190) ; `context.Context` premier paramètre de tout I/O (p. 539–545) |
 | `/go-test UC-###` | UC, code du UC | Tests table-driven, sous-tests nommés `UC###/<flux>` ; `testing/synctest` pour tout comportement temporel ou concurrent | Table-driven + `t.Run` (p. 213–216) ; `-race` et `-shuffle=on` (p. 231) ; horloge injectée plutôt qu'attentes réelles (p. 225–227) |
 | `/integration-test UC-###` | UC, ports/adapters | Tests sous `//go:build integration_test`, conteneur partagé par `sync.Once` | Pattern « one container, many tests » (p. 433–435) ; images figées, jamais `latest` (p. 444) |
@@ -129,20 +130,40 @@ Les projets sans composante d'exécution longue (P3 LeakLab, P4 HexaGuard) garde
 - results/ n'est jamais modifié par un skill d'implémentation.
 ```
 
-**Hooks.** `PostToolUse` sur édition de fichiers Go : `go vet ./...` puis `go test -race ./...` ; sur édition sous `docs/use-cases/` : contrôle de la présence des sections obligatoires et de la syntaxe des identifiants. Le contrôle d'architecture (`hexaguard`, projet P4) devient un hook dès qu'il existe.
+**Hooks (implémentés dans `EscapeBench/.claude/settings.json` et `.claude/hooks/`).** `PreToolUse` sur `Edit|Write|MultiEdit` : `guard-paths.sh` bloque toute écriture d'agent dans `results/`, `matrices/`, `docs/dashboard.md`, et dans `internal/harness/` quand `results/.campaign-lock` existe. `PostToolUse` : `go-check.sh` (gofmt + `go vet`, volontairement léger, ACC p. 56) et `spec-lint.sh` (sections obligatoires du gabarit SDD, identifiants existants dans `requirements.md`, mots vagues de SDD p. 51). `Stop` : `go-test.sh` exécute `go test -race -shuffle=on` avant que Claude ne conclue ; en cas d'échec, Claude reçoit la sortie et continue. Format JSON `matcher`/`hooks`/`type`/`command` (ACC p. 55). Le contrôle d'architecture (`hexaguard`, projet P4) rejoindra `PostToolUse` dès qu'il existera.
 
-**Sous-agents.** Un sous-agent « réviseur » reçoit le UC et le *diff*, sans accès au raisonnement de l'agent implémenteur, et répond aux cinq questions de l'ordre de revue (SDD, p. 76) et aux trois questions sur les tests (p. 95). Voir §7.
+**Sous-agents (implémentés dans `EscapeBench/.claude/agents/`).** `spec-reviewer` (outils `Read, Grep, Glob`) applique les critères SDD ch. 3–4 à un UC ; `code-reviewer` (`Read, Grep, Glob, Bash`) compare le *diff* au UC, exécute les tests et répond aux cinq questions de l'ordre de revue (SDD, p. 76) et aux trois questions sur les tests (p. 95). Chaque sous-agent reçoit un seul prompt, sans l'historique, et ne renvoie qu'une réponse condensée (ACC p. 181–188) : le format de réponse est donc imposé dans leur corps. Leur `description` est injectée dans le system prompt de l'agent principal et décide du déclenchement (ACC p. 187–191). Voir §7.
 
 **MCP.** Les deux livres n'en prescrivent aucun pour Go. Pour la bibliothèque standard, `go doc` suffit et reste vrai par construction. Pour `testcontainers-go`, `pulsar-client-go`, `oapi-codegen`, un serveur de documentation générique (le *marketplace* configure `context7` dans ses `.mcp.json` — *Confirmé*) est une option, *à vérifier* selon la pile.
 
 **Exécution non surveillée.** `claude -p` planifié pour les campagnes longues (P2, P6, P8), avec `CLAUDE.md` interdisant toute modification du harnais ; la sortie attendue est un dossier `results/<campagne>/` et une ligne dans `dashboard.md`, pas un changement de code.
+
+## 6 bis. Réglages Claude Code retenus d'*Agentic Coding with Claude Code*
+
+ACC est le manuel d'exploitation ; SDD fixe le processus ; BEPG fixe les règles de construction. Les réglages ci-dessous sont ceux appliqués dans `EscapeBench/`.
+
+| Sujet | Réglage retenu | ACC |
+|---|---|---|
+| Mémoire | `./CLAUDE.md` court et spécifique ; hiérarchie à cinq niveaux (managed policy, `~/.claude/CLAUDE.md`, `./CLAUDE.md` ou `./.claude/CLAUDE.md`, `./.claude/rules/*.md`, `./CLAUDE.local.md` ignoré par Git) ; découverte ascendante depuis le cwd, chargement paresseux des sous-dossiers | p. 57–59, 65 |
+| Ce qui ne va pas dans `CLAUDE.md` | Le contexte spécialisé d'un flux (il serait chargé à chaque prompt) ; il vit dans le skill concerné, chargé à la demande | p. 59, 256 |
+| Skills | `.claude/skills/<nom>/SKILL.md` ; la sélection ne dépend **que** du frontmatter (`name`, `description`) — tous les déclencheurs y figurent ; ~100–200 tokens par skill au démarrage, corps chargé à l'activation ; `disable-model-invocation: true` pour les workflows réservés au slash command ; `allowed-tools` pour le moindre privilège (`Bash(go:*)`, `Bash(git diff:*)`) ; `$ARGUMENTS` porte l'identifiant | p. 70–74, 267, 272 |
+| Sous-agents | `.claude/agents/<nom>.md`, `name` et `description` obligatoires, `tools` restreints (un réviseur n'a pas besoin d'écrire), `model: inherit` ; contexte isolé, réponse unique | p. 166, 171, 176, 181–188 |
+| Hooks | Événements `PreToolUse`, `PostToolUse`, `Stop`, `UserPromptSubmit`, `Notification` ; portée projet ; garder les hooks légers ; redémarrer Claude Code après ajout | p. 51–56 |
+| MCP | Aucun serveur par défaut ; un serveur ne s'ajoute qu'en portée projet (`.mcp.json`) et se mesure avec `/context` ; `--strict-mcp-config` si une config utilisateur existe | p. 100–112 |
+| Plan mode | `/plan` (lecture seule) pour rédiger ou réviser une spécification ; Opus pour le plan, Sonnet pour le code — choix de l'auteur, à ajuster | p. 33, 47, 152–153 |
+| Rewind | `Esc Esc` ou `/rewind` : restaurer code et/ou conversation ; ne remplace pas Git | p. 66–70 |
+| Parallélisme | *Worktrees* seulement pour des tâches indépendantes ; contre-productif pour des UC couplés, de petites tâches ou du travail exploratoire — cas d'EscapeBench | p. 157–163, 295–296, 316–317 |
+| Primitives | Skill = standardiser une procédure récurrente (contexte principal) ; sous-agent = tâche lourde ou isolée ; MCP = service externe ; slash command = raccourci utilisateur | Table 9.1, p. 274–275 |
+| Sécurité | Relire tout skill, sous-agent ou serveur MCP d'origine externe avant installation ; `allowed-tools` limite le rayon d'action en cas de contexte empoisonné | p. 73–74, 91, 127, 191 |
+
+**Divergences internes d'ACC à connaître.** Format JSON des hooks du ch. 1 (p. 11) incompatible avec celui généré par `/hooks` au ch. 3 (p. 55) — retenir le ch. 3 ; ajout de mémoire par `/memory add` (p. 11) contre `#` et `/memory` (p. 59) ; « three-tier » (p. 8) contre cinq niveaux (p. 58) ; installation de *marketplace* par `/plugin add marketplace anthropic/skills` (p. 257) contre l'UI `/plugin` (p. 126) et la forme `/plugin marketplace add …` de la page AIUP. Les champs `context: fork` et `agent:` des skills (p. 272) ne sont pas utilisés ici.
 
 ## 7. Cycle de travail par cas d'utilisation
 
 Ordre invariable, aligné sur SDD p. 23–24 et p. 129–130.
 
 1. **Specify.** Écrire ou modifier le UC (`/use-case-spec UC-###`), les `H-###` liées et, si le domaine change, `entity-model.md`. Vérifier les trois tests d'exécutabilité (p. 48). Statut `Draft` → `Review`.
-2. **Review de la spécification** (avant tout code). Premier temps : sous-agent réviseur ; second temps : relecture humaine à froid, idéalement à une autre session que celle de rédaction — *Adaptation* de la règle « reviewed by someone who did not write it » (p. 151). Statut `Approved`.
+2. **Review de la spécification** (avant tout code). Premier temps : `/spec-review UC-###` (sous-agent `spec-reviewer`) ; second temps : relecture humaine à froid, idéalement à une autre session que celle de rédaction — *Adaptation* de la règle « reviewed by someone who did not write it » (p. 151). Statut `Approved`, décision humaine consignée dans le fichier du UC.
 3. **Generate.** `/implement UC-###` (création) ou `/implement UC-###` sur UC modifié (synchronisation ; le *diff* doit être proportionnel au changement de spec, p. 77–78). Puis `/go-test`, `/integration-test` ou `/bench` selon le UC.
 4. **Validate.** `make vet test` ; `make integration_test` si adapters touchés ; `/spec-coverage UC-###` doit rapporter zéro flux et zéro règle sans test.
 5. **Review du code.** Cinq questions (p. 76) ; pour chaque test généré, les trois questions (p. 95), la troisième exécutée réellement : casser la règle, constater l'échec du test. Statut `Implemented` puis `Verified`.
@@ -189,6 +210,7 @@ Le livre exempte du plein processus les prototypes et scripts jetables (p. 150).
 
 - Martinelli, S. *Spec-Driven Development: From Specs to Code with AI Agents*. Apress Pocket Guides, 2026. DOI 10.1007/979-8-8688-2851-5. PDF analysé : `Spec-Driven Development.pdf` (167 p.).
 - Shahsavan, S. *Building Enterprise Projects with Go*. Apress, 2026. DOI 10.1007/979-8-8688-2370-1.
+- Marco, E. *Agentic Coding with Claude Code: The everyday developer's guide to agentic coding with Claude Code*. Packt, mars 2026. ISBN 978-1-80602-259-5. PDF analysé : `Agentic_Coding_with_Claude_Code.pdf` (377 p.).
 - AI Unified Process Marketplace : https://github.com/AI-Unified-Process/marketplace (consulté le 2026-09-10).
 - AI Unified Process, page outils : https://unifiedprocess.ai/tools.html (consulté le 2026-09-10).
 - Dépôt d'étude de cas du livre SDD : https://github.com/ai-unified-process/task-manager (cité SDD p. 112 ; non consulté).

@@ -12,7 +12,8 @@ erDiagram
     Campaign }o--|| Matrix : measures
     Measurement }o--|| Cell : "of"
     Campaign ||--|| Provenance : carries
-    Comparison }o--|| Campaign : "derived from"
+    ComparisonSet ||--|{ Comparison : groups
+    ComparisonSet }o--|| Campaign : "derived from"
     Comparison }o--|| Cell : "value side"
     Comparison }o--|| Cell : "pointer side"
     Hypothesis ||--o{ Verdict : receives
@@ -26,7 +27,7 @@ Description d'un type `struct` généré.
 | Attribut | Type | Règles de validation |
 |---|---|---|
 | name | String | Requis, unique dans la matrice, identifiant Go valide |
-| sizeBytes | Integer | Requis, puissance de deux entre 8 et 4096 |
+| sizeBytes | Integer | Requis, multiple de 8 entre 8 et 4096 |
 | wordCount | Integer | Dérivé : `sizeBytes / 8` sur 64 bits |
 | hasPointerField | Boolean | Requis |
 
@@ -67,6 +68,7 @@ Résultat de la classification d'une cellule par le compilateur.
 | escapes | Boolean | Requis |
 | compilerReason | String | Ligne brute rapportée par `-gcflags=-m` ; vide si `escapes` est faux |
 | category | Enum | Requis ; valeurs : `RETURN_POINTER`, `CLOSURE_CAPTURE`, `CHANNEL_SEND`, `CONTAINER_STORE`, `OTHER`, `NONE` |
+| status | Enum | Requis ; valeurs : `OK`, `COMPILE_ERROR` ; `escapes` et `category` sont ignorés si `COMPILE_ERROR` |
 
 ## Provenance
 
@@ -85,6 +87,7 @@ Résultat de la classification d'une cellule par le compilateur.
 | id | String | Requis, unique, immuable ; forme `C-<date>-<n>` |
 | matrixId | String | Requis, référence une Matrix |
 | harnessDigest | String | Requis ; empreinte SHA-256 de `internal/harness/` au démarrage |
+| hypothesesDigest | String | Requis ; empreinte SHA-256 des énoncés et critères des Hypothesis liées, lus dans `docs/requirements.md` au démarrage |
 | count | Integer | Requis, ≥ 20 (NFR-003) |
 | status | Enum | Requis ; valeurs : `RUNNING`, `COMPLETED`, `ABORTED` |
 | provenance | Provenance | Requis |
@@ -98,6 +101,8 @@ Résultat de la classification d'une cellule par le compilateur.
 | nsPerOp | Liste de Decimal | Exactement `count` valeurs |
 | bytesPerOp | Liste de Integer | Exactement `count` valeurs |
 | allocsPerOp | Liste de Integer | Exactement `count` valeurs |
+| status | Enum | Requis ; valeurs : `COMPLETE`, `FAILED` ; les listes sont vides si `FAILED` |
+| failureReason | String | Requis si `FAILED` |
 
 ## Comparison
 
@@ -109,6 +114,18 @@ Résultat de la classification d'une cellule par le compilateur.
 | deltaNsPerOp | Decimal | Médiane pointeur − médiane valeur |
 | ciLow, ciHigh | Decimal | Bornes de l'intervalle de confiance à 95 % de `deltaNsPerOp` |
 | significant | Boolean | Vrai si l'intervalle exclut zéro |
+
+## ComparisonSet
+
+Fichier de comparaison d'une Campaign (UC-004).
+
+| Attribut | Type | Règles de validation |
+|---|---|---|
+| campaignId | String | Requis |
+| computedAt | DateTime (UTC) | Requis |
+| comparisons | Liste de Comparison | Au moins une |
+| tippingPoints | Map LifetimeProfile → Integer ou « non observé » | Une entrée par profil présent |
+| excludedPairs | Liste de { valueCellId, pointerCellId, reason } | Peut être vide ; jamais omise |
 
 ## Hypothesis
 
@@ -125,4 +142,5 @@ Résultat de la classification d'une cellule par le compilateur.
 | hypothesisId | String | Requis |
 | campaignId | String | Requis |
 | outcome | Enum | Requis ; valeurs : `CONFIRMED`, `REFUTED`, `INCONCLUSIVE` |
-| rationale | String | Requis ; cite les Comparison ou Measurement utilisés |
+| rationale | String | Requis ; cite les cellules ou paires utilisées |
+| resultFiles | Liste de String | Requis ; chemins des fichiers de résultats utilisés |

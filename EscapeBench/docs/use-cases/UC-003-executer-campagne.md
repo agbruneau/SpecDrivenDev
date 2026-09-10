@@ -9,6 +9,7 @@
 **Status:** Reviewed
 
 **Linked Requirements:** FR-003, FR-006, NFR-001, NFR-003, NFR-004, NFR-005, C-001, C-002, C-003, C-005, C-006
+**Révision :** 2026-09-10 — ajout de l'empreinte des critères (étape 3, BR-003-5) à la demande de UC-005 ; spécification modifiée avant tout code.
 **Linked Hypotheses:** H-001, H-002, H-003, H-004, H-005
 **Entities:** Matrix, Cell, Campaign, Measurement, Provenance
 
@@ -22,7 +23,7 @@
 
 1. Le chercheur demande l'exécution d'une campagne sur une Matrix identifiée, avec un nombre de répétitions.
 2. Le système vérifie que le nombre de répétitions satisfait NFR-003 et que l'empreinte du harnais est celle de la Matrix.
-3. Le système crée une Campaign avec un identifiant nouveau, sa Provenance et l'empreinte du harnais, au statut `RUNNING`.
+3. Le système crée une Campaign avec un identifiant nouveau, sa Provenance, l'empreinte du harnais et l'empreinte des critères des hypothèses liées (lus dans `docs/requirements.md`), au statut `RUNNING`.
 4. Le système affiche l'identifiant de la Campaign, la Provenance et le nombre de cellules à mesurer.
 5. Le système mesure chaque Cell selon C-003 et enregistre une Measurement contenant exactement `count` valeurs de `nsPerOp`, `bytesPerOp` et `allocsPerOp`.
 6. Le système écrit chaque Measurement dans `results/campaigns/<campaignId>/` dès qu'elle est complète.
@@ -61,7 +62,7 @@
 ## Postconditions
 
 **Success:**
-- Une Campaign au statut `COMPLETED` existe, avec une Provenance complète et une Measurement par Cell mesurée.
+- Une Campaign au statut `COMPLETED` existe, avec une Provenance complète, l'empreinte des critères des hypothèses liées et une Measurement par Cell mesurée.
 - Aucun fichier de `results/` antérieur à la campagne n'a été modifié.
 - `internal/harness/` est identique à son état de l'étape 3.
 
@@ -81,6 +82,9 @@ Le runner de campagne crée des fichiers dans `results/` et n'en modifie ni n'en
 
 ### BR-003-4: Une cellule, un processus
 Chaque Cell est mesurée dans un processus `go test` distinct afin qu'aucun état du runtime ne se propage d'une cellule à la suivante.
+
+### BR-003-5: Critères gelés à la création
+L'empreinte des critères de réfutation est calculée à la création de la Campaign ; UC-005 refuse tout verdict si les critères ont changé depuis.
 
 ## Notes de revue
 
