@@ -142,21 +142,17 @@ func TestUC005_H011_DonneesInsuffisantes(t *testing.T) {
 
 func TestUC005_ToutesLesHypothesesOntUnEvaluateur(t *testing.T) {
 	t.Parallel()
-	// C-008 puis C-009 étant satisfaites, douze des treize hypothèses du catalogue s'évaluent
-	// mécaniquement. H-013 n'a pas d'évaluateur et n'en aura pas avant C-010 : son critère lit une
-	// attestation de quiétude que Measurement ne porte pas, et UC-005 rend donc INCONCLUSIVE en
-	// nommant l'absence d'évaluateur, ce qui est le comportement voulu.
+	// C-008, C-009 puis C-010 étant satisfaites, les treize hypothèses du catalogue s'évaluent
+	// mécaniquement. Une hypothèse sans évaluateur recevrait INCONCLUSIVE en nommant cette absence,
+	// ce qui reste le comportement voulu pour les hypothèses à venir.
 	// Mutation : retirer une entrée du registre ⇒ échec attendu.
 	for _, id := range []string{"H-001", "H-002", "H-003", "H-004", "H-005", "H-006",
-		"H-007", "H-008", "H-009", "H-010", "H-011", "H-012"} {
+		"H-007", "H-008", "H-009", "H-010", "H-011", "H-012", "H-013"} {
 		if _, ok := evaluators[id]; !ok {
 			t.Fatalf("%s doit avoir un évaluateur", id)
 		}
 	}
-	if _, ok := evaluators["H-013"]; ok {
-		t.Fatal("H-013 ne doit pas avoir d'évaluateur tant que C-010 n'est pas satisfaite")
-	}
-	if len(evaluators) != 12 {
-		t.Fatalf("%d évaluateurs, 12 attendus", len(evaluators))
+	if len(evaluators) != 13 {
+		t.Fatalf("%d évaluateurs, 13 attendus", len(evaluators))
 	}
 }

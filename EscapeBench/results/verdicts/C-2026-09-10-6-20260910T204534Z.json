@@ -1,0 +1,15 @@
+{
+  "campaignId": "C-2026-09-10-6",
+  "producedAt": "2026-09-10T20:45:34.5302293Z",
+  "verdicts": [
+    {
+      "hypothesisId": "H-013",
+      "campaignId": "C-2026-09-10-6",
+      "outcome": "INCONCLUSIVE",
+      "rationale": "machine occupée à 23.0 % hors du sujet pendant la fenêtre de probe/POINTER_CHASE/16384, le seuil de C-010 est 12.0 % : la latence relevée n'est pas imputable à la seule hiérarchie mémoire",
+      "resultFiles": [
+        "results/campaigns/C-2026-09-10-6/campaign.json"
+      ]
+    }
+  ]
+}

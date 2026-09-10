@@ -23,6 +23,7 @@ Dépôt de prospection : identification, évaluation et cadrage de projets d'exp
 | `REVUE-C008_2026-09-10.md` | Revue contradictoire des capacités ajoutées par C-008 : sept constats survivants sur trente-cinq, cinq correctifs, deux limites renvoyées à des hypothèses successeurs | Avant de lancer une campagne sur H-007 à H-011 |
 | `RAPPORT-CAMPAGNE_C-2026-09-10-3.md` | Première épreuve de H-007 à H-013 : sept verdicts, infirmation de H-010 et de H-011, comparaison d'une campagne chargée et d'une campagne propre | Avant de citer un verdict de la seconde génération d'hypothèses |
 | `RAPPORT-CAMPAGNE_C-2026-09-10-4.md` | Première épreuve de H-012 sur une matrice à réplicats : confirmation, et ce que la cellule écartée du jugement mesure | Avant de citer le verdict de H-012 |
+| `RAPPORT-CAMPAGNE_C-2026-09-10-5.md` | Première épreuve de H-013 : confirmation sur une machine attestée au repos, et la même campagne rendue non concluante sous charge délibérée | Avant de citer le verdict de H-013, et avant de lire celui de H-008 |
 
 ## Ordre de lecture
 

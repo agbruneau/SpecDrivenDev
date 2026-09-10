@@ -11,6 +11,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/agbruneau/escapebench/internal/models"
 	"github.com/agbruneau/escapebench/internal/ports"
@@ -21,6 +22,9 @@ type Result struct {
 	Stdout   string
 	Stderr   string
 	ExitCode int
+	// TreeCPU est le temps processeur cumulé de l'arbre de processus de la commande (C-010).
+	TreeCPU         time.Duration
+	TreeCPUMeasured bool
 }
 
 // Combined rend la sortie standard et la sortie d'erreur concaténées.
@@ -38,15 +42,24 @@ func (r Result) Combined() string {
 // n'aient jamais besoin de la chaîne d'outils réelle.
 type CommandRunner func(ctx context.Context, dir string, name string, args ...string) (Result, error)
 
-// ExecRunner exécute réellement la commande.
+// ExecRunner exécute réellement la commande. Le temps processeur de tout l'arbre de processus est
+// relevé au passage : `go test` compile, lie puis exécute dans des processus enfants, et C-010 doit
+// retrancher ce travail de la fraction d'occupation, faute de quoi la garde de quiétude refuserait
+// les campagnes saines.
 func ExecRunner(ctx context.Context, dir string, name string, args ...string) (Result, error) {
 	cmd := exec.CommandContext(ctx, name, args...)
 	cmd.Dir = dir
 	var stdout, stderr strings.Builder
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
-	err := cmd.Run()
+	var tracker *treeCPUTracker
+	err := cmd.Start()
+	if err == nil {
+		tracker = startTreeCPU(cmd)
+		err = cmd.Wait()
+	}
 	result := Result{Stdout: stdout.String(), Stderr: stderr.String()}
+	result.TreeCPU, result.TreeCPUMeasured = tracker.total()
 	var exitErr *exec.ExitError
 	switch {
 	case err == nil:
@@ -64,6 +77,22 @@ type Toolchain struct {
 	run     CommandRunner
 	goBin   string
 	rootDir string
+	// quietude relève les temps processeur de la machine autour de chaque mesure (C-010). Elle est
+	// injectée depuis la racine de composition : un adaptateur n'en importe pas un autre. Nulle,
+	// la mesure se déclare non faite et H-013 rend non concluant.
+	quietude QuietudeSampler
+	cpus     int
+}
+
+// QuietudeSampler rend le temps processeur cumulé de la machine passé hors de la boucle
+// d'inactivité, et si la plateforme sait le produire (C-010).
+type QuietudeSampler func() (busy time.Duration, ok bool)
+
+// WithQuietude branche la sonde de quiétude sur la chaîne d'outils.
+func (t *Toolchain) WithQuietude(sample QuietudeSampler, cpus int) *Toolchain {
+	t.quietude = sample
+	t.cpus = cpus
+	return t
 }
 
 // New construit une Toolchain. rootDir est la racine du module principal, utilisée par le
@@ -168,7 +197,14 @@ func (t *Toolchain) Run(ctx context.Context, matrixDir, subjectID string, opts p
 	}
 	args = append(args, packagePath(subjectID))
 
+	// C-010 : la fenêtre de mesure est encadrée par deux relevés des temps processeur de la
+	// machine. Le travail de la campagne elle-même en est retranché ; ce qui reste est l'occupation
+	// des cœurs par tout ce qui n'est pas le sujet.
+	busyBefore, quietudeOK := t.sampleQuietude()
+	startedAt := time.Now()
 	result, err := t.run(ctx, matrixDir, t.goBin, args...)
+	elapsed := time.Since(startedAt)
+	busyAfter, afterOK := t.sampleQuietude()
 	if err != nil {
 		return failed(subjectID, err.Error()), nil
 	}
@@ -188,7 +224,44 @@ func (t *Toolchain) Run(ctx context.Context, matrixDir, subjectID string, opts p
 		m.BytesPerOp = append(m.BytesPerOp, s.BytesPerOp)
 		m.AllocsPerOp = append(m.AllocsPerOp, s.AllocsPerOp)
 	}
+	if quietudeOK && afterOK && result.TreeCPUMeasured {
+		m.QuietudeOccupancy, m.QuietudeMeasured = occupancyOf(
+			busyBefore, busyAfter, result.TreeCPU, elapsed, t.cpus)
+	}
 	return m, nil
+}
+
+// sampleQuietude relève les temps processeur de la machine, si la sonde est branchée.
+func (t *Toolchain) sampleQuietude() (time.Duration, bool) {
+	if t.quietude == nil || t.cpus <= 0 {
+		return 0, false
+	}
+	return t.quietude()
+}
+
+// occupancyOf rend la fraction d'occupation des cœurs non mesurés (C-010). Elle est bornée à
+// [0, 1] : un dépassement ne peut venir que d'un arrondi ou d'un compteur qui recule.
+func occupancyOf(before, after, own, elapsed time.Duration, cpus int) (float64, bool) {
+	if elapsed <= 0 || cpus <= 0 {
+		return 0, false
+	}
+	busy := after - before
+	if busy < 0 {
+		return 0, false
+	}
+	other := busy - own
+	if other < 0 {
+		other = 0
+	}
+	fraction := float64(other) / float64(time.Duration(cpus)*elapsed)
+	switch {
+	case fraction < 0:
+		return 0, true
+	case fraction > 1:
+		return 1, true
+	default:
+		return fraction, true
+	}
 }
 
 // failed construit une Measurement au statut FAILED (UC-003, A3).

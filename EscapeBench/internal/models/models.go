@@ -553,7 +553,28 @@ type Measurement struct {
 	AllocsPerOp   []int64
 	Status        MeasurementStatus
 	FailureReason string
+	// QuietudeOccupancy est l'attestation de quiétude de C-010 : la fraction de la capacité de la
+	// machine consommée pendant la fenêtre de mesure par tout ce qui n'est pas le sujet, une fois
+	// retranché le travail de la campagne elle-même. Elle vaut de 0 à 1 et ne se lit que si
+	// QuietudeMeasured est vrai. Le champ est facultatif : un fichier de résultats antérieur à
+	// C-010 reste valide, et une campagne qui ne le porte pas rend H-013 non concluante plutôt
+	// que fausse. Deux champs plutôt qu'un pointeur : une occupation nulle est une valeur
+	// légitime, qu'une absence ne doit pas imiter.
+	QuietudeOccupancy float64
+	QuietudeMeasured  bool
 }
+
+// QuietudeThreshold est le seuil qu'annonce C-010 : au-delà, la machine faisait pendant la fenêtre
+// de mesure assez de travail étranger pour que la latence non résidente de H-013 ne soit plus
+// imputable à la seule hiérarchie mémoire.
+//
+// Sa valeur est fixée avant toute mesure de H-013, à partir de deux relevés faits sur la machine du
+// catalogue le 2026-09-10 : au repos, sans campagne, l'occupation vaut de 4,2 à 7,5 pour cent ;
+// un seul cœur occupé sur les vingt-quatre en ajoute 4,2. Un seuil de 12 pour cent laisse donc
+// passer le bruit de fond d'un poste de travail ordinaire et refuse tout ce qui occupe un cœur
+// entier de plus. C'est la classe de charge avec laquelle la contre-épreuve du même jour a produit
+// ses fausses infirmations.
+const QuietudeThreshold = 0.12
 
 // Validate applique les règles de validation du modèle d'entités pour un `count` donné.
 func (m Measurement) Validate(count int) error {

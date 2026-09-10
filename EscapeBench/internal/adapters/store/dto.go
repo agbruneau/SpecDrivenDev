@@ -328,22 +328,34 @@ type measurementDTO struct {
 	AllocsPerOp   []int64   `json:"allocsPerOp"`
 	Status        string    `json:"status"`
 	FailureReason string    `json:"failureReason,omitempty"`
+	// L'attestation de quiétude est un pointeur : une occupation nulle est une valeur légitime que
+	// l'absence du champ ne doit pas imiter (C-010).
+	QuietudeOccupancy *float64 `json:"quietudeOccupancy,omitempty"`
 }
 
 func toMeasurementDTO(m models.Measurement) measurementDTO {
-	return measurementDTO{
+	dto := measurementDTO{
 		CampaignID: m.CampaignID, SubjectID: m.SubjectID, NsPerOp: m.NsPerOp,
 		BytesPerOp: m.BytesPerOp, AllocsPerOp: m.AllocsPerOp,
 		Status: string(m.Status), FailureReason: m.FailureReason,
 	}
+	if m.QuietudeMeasured {
+		occupancy := m.QuietudeOccupancy
+		dto.QuietudeOccupancy = &occupancy
+	}
+	return dto
 }
 
 func (d measurementDTO) toModel() models.Measurement {
-	return models.Measurement{
+	m := models.Measurement{
 		CampaignID: d.CampaignID, SubjectID: d.SubjectID, NsPerOp: d.NsPerOp,
 		BytesPerOp: d.BytesPerOp, AllocsPerOp: d.AllocsPerOp,
 		Status: models.MeasurementStatus(d.Status), FailureReason: d.FailureReason,
 	}
+	if d.QuietudeOccupancy != nil {
+		m.QuietudeOccupancy, m.QuietudeMeasured = *d.QuietudeOccupancy, true
+	}
+	return m
 }
 
 type comparisonDTO struct {

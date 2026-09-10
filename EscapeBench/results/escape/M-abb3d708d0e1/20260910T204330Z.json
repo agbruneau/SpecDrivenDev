@@ -1,0 +1,30 @@
+{
+  "matrixId": "M-abb3d708d0e1",
+  "provenance": {
+    "goVersion": "go1.27.0",
+    "goos": "windows",
+    "goarch": "amd64",
+    "cpuModel": "Intel64 Family 6 Model 198 Stepping 2, GenuineIntel",
+    "l1DataCacheBytes": 49152,
+    "lastLevelCacheBytes": 37748736,
+    "pageSizeBytes": 4096,
+    "gomaxprocs": 24,
+    "capturedAt": "2026-09-10T20:43:30.0143773Z"
+  },
+  "verdicts": [
+    {
+      "cellId": "Size0008FieldsPlain/LOCAL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008FieldsPlain/LOCAL/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    }
+  ]
+}

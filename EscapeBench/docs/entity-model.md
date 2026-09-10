@@ -2,6 +2,8 @@
 
 Le modèle sert de glossaire : les noms ci-dessous sont repris tels quels dans les exigences, les cas d'utilisation, le code (`internal/models`) et les tests.
 
+Révision du 2026-09-10, satisfaction de C-010 : `Measurement` porte une attestation de quiétude. Elle est facultative, comme les quatre champs de `Provenance` ajoutés par C-008 : un fichier de résultats antérieur reste valide. Elle ne participe à aucune identité et n'entre dans aucune empreinte.
+
 Révision du 2026-09-10, satisfaction de C-009 : `Cell` porte un rang de réplicat. Il n'entre ni dans `Comparison`, ni dans `ComparisonSet.tippingPoints` : H-012 groupe ses réplicats par la taille, la disposition, la présence d'un champ pointeur et le profil, tous déjà présents dans `Comparison`, et les distingue par `valueCellId`. Faire entrer un champ de plus dans la clé des points de bascule rendrait H-002 non concluante sur toute campagne future, sans erreur ni trace. Ce qu'aucun critère ne lit, le modèle ne le porte pas. Corollaire assumé : le point de bascule d'une série répliquée n'est pas défini, le balayage descendant dépendant alors de l'ordre du fichier, et UC-004 ne le publie pas.
 
 Révision du 2026-09-10, synchronisée avec l'implémentation de UC-001 à UC-005 : `Matrix` porte ses paramètres normalisés et l'empreinte du harnais ; `EscapeVerdict` porte le message du compilateur en cas d'échec de compilation ; `Campaign` porte les identifiants d'hypothèses couverts et les horodatages de son cycle de vie ; `Comparison` recopie la taille, la présence d'un champ pointeur et le profil de sa paire ; `ComparisonSet` porte la matrice et la méthode d'estimation ; `Hypothesis` porte son énoncé et ses cas d'utilisation. Aucun de ces ajouts ne touche un critère de réfutation.
@@ -142,6 +144,7 @@ Les quatre champs ajoutés par C-008 ne sont pas exigés par NFR-001 : un fichie
 | allocsPerOp | Liste de Integer | Exactement `count` valeurs |
 | status | Enum | Requis ; valeurs : `COMPLETE`, `FAILED` ; les listes sont vides si `FAILED` |
 | failureReason | String | Requis si `FAILED` |
+| quietudeOccupancy | Decimal | Ajouté par C-010 ; facultatif ; fraction de la capacité de la machine consommée pendant la fenêtre de mesure par tout ce qui n'est pas le sujet, une fois retranché le travail de la campagne. Vaut de 0 à 1. Absent d'un fichier antérieur à C-010, et absent quand la plateforme ne sait pas le produire : H-013 se déclare alors non concluante plutôt que de supposer une quiétude |
 
 ## Comparison
 

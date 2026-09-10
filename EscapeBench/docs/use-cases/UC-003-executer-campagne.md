@@ -88,6 +88,8 @@ L'empreinte des critères de réfutation est calculée à la création de la Cam
 
 ## Notes de revue
 
+- Révision du 2026-09-10, satisfaction de C-010 : chaque mesure est encadrée de deux relevés des temps processeur de la machine, et la fraction d'occupation des cœurs non mesurés est consignée dans la Measurement. Le temps retranché est celui de tout l'arbre de processus, `go test` compilant, liant puis exécutant dans des processus enfants ; sans cette agrégation, le travail légitime de la campagne gonflerait la fraction et la garde de H-013 refuserait les campagnes saines. Une plateforme qui n'expose pas ces compteurs laisse le champ absent, ce qui rend H-013 non concluante plutôt que fausse.
+
 - Révision du 2026-09-10, satisfaction de C-009 : une campagne dont la liste gelée contient H-007 est refusée sur une matrice à réplicats. H-007 indexe ses Comparison par taille et n'en retient qu'une, arbitrairement ; sur une série répliquée elle jugerait donc un réplicat tiré de l'ordre du fichier, sans erreur ni trace. Le refus est une précondition, donc aucune Campaign n'est créée. C'est H-012 qui lit une série répliquée. Une campagne sans sélection explicite retient tout le catalogue, donc H-007 : sur une matrice à réplicats, `--hypotheses` devient obligatoire, et c'est le comportement voulu.
 
 - Les drapeaux exacts (`-benchmem`, `-count`, `-cpu`) relèvent de C-003, pas de ce cas d'utilisation.

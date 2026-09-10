@@ -20,6 +20,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/agbruneau/escapebench/internal/adapters/cli"
 	"github.com/agbruneau/escapebench/internal/adapters/dashboard"
@@ -133,10 +134,16 @@ func newDeps(rootFlag string) (*deps, error) {
 	}
 	clock := system.Clock{}
 	return &deps{
-		root:       root,
-		store:      store.New(root),
-		renderer:   renderer,
-		toolchain:  gotool.New(nil, root),
+		root:     root,
+		store:    store.New(root),
+		renderer: renderer,
+		// C-010 : la sonde de quiétude est branchée ici, à la racine de composition. Un adaptateur
+		// n'en importe pas un autre ; sur une plateforme qui ne sait pas la produire, la mesure se
+		// déclare non faite et H-013 rend non concluant.
+		toolchain: gotool.New(nil, root).WithQuietude(func() (time.Duration, bool) {
+			sample := system.NewQuietudeProbe().Sample()
+			return sample.Busy, sample.Measured
+		}, system.CPUCount()),
 		classifier: escape.New(),
 		specs:      specs.NewReader(root),
 		index:      specs.NewIndex(root),
