@@ -16,14 +16,14 @@ Statuts (SDD, p. 140) : Draft → Review → Approved → Implemented → Verifi
 
 ## Hypothèses
 
-| Hypothèse | Source BEPG | UC liés | Critère gelé | Campagne | Verdict |
+| Hypothèse | Source BEPG | UC liés | Critère gelé (au statut `Approved`) | Campagne | Verdict |
 |---|---|---|---|---|---|
-| H-001 | p. 245, 253 | UC-003, UC-004, UC-005 | Oui | — | — |
-| H-002 | p. 253 | UC-003, UC-004, UC-005 | Oui | — | — |
-| H-003 | p. 256 | UC-003, UC-005 | Oui | — | — |
-| H-004 | p. 254 | UC-003, UC-004, UC-005 | Oui | — | — |
-| H-005 | p. 114 | UC-003, UC-005 | Oui | — | — |
-| H-006 | p. 238–242 | UC-002, UC-005 | Oui | — | — |
+| H-001 | p. 245, 253 | UC-003, UC-004, UC-005 | Non | — | — |
+| H-002 | p. 253 | UC-003, UC-004, UC-005 | Non | — | — |
+| H-003 | p. 256 | UC-003, UC-005 | Non | — | — |
+| H-004 | p. 254 | UC-003, UC-005 | Non | — | — |
+| H-005 | p. 114 | UC-003, UC-005 | Non | — | — |
+| H-006 | p. 238–242 | UC-002, UC-005 | Non | — | — |
 
 ## Synthèse
 

@@ -10,12 +10,12 @@
 
 **Linked Requirements:** FR-005, FR-007, NFR-001, NFR-004
 **Linked Hypotheses:** H-001, H-002, H-003, H-004, H-005, H-006
-**Entities:** Hypothesis, Verdict, Campaign, Comparison, Measurement, EscapeVerdict
+**Entities:** Hypothesis, Verdict, Campaign, Comparison, Measurement, Probe, EscapeVerdict
 
 ## Preconditions
 
 - `docs/requirements.md` contient les hypothèses avec leur énoncé réfutable et leur critère de réfutation.
-- Les résultats fournis existent : une Campaign `COMPLETED` avec au moins un fichier de comparaison (H-001, H-002, H-004), des Measurement (H-003, H-005), ou un fichier de verdicts d'échappement (H-006).
+- Les résultats fournis existent : une Campaign `COMPLETED` avec au moins un fichier de comparaison (H-001, H-002), des Measurement de Cell (H-003) ou de Probe (H-004, H-005), ou un fichier de verdicts d'échappement (H-006).
 - L'empreinte des critères enregistrée par la Campaign correspond aux critères courants de `docs/requirements.md`.
 
 ## Main Success Scenario
@@ -39,9 +39,9 @@
 3. Le chercheur crée une nouvelle hypothèse pour le nouveau critère (identifiants jamais réutilisés) et lance une nouvelle campagne.
 
 ### A2: Données insuffisantes pour une hypothèse
-**Trigger:** À l'étape 3, les paires ou cellules nécessaires manquent (exclues en UC-004 ou `FAILED` en UC-003).
+**Trigger:** À l'étape 3, les paires, cellules ou sondes nécessaires manquent (exclues en UC-004 ou `FAILED` en UC-003).
 **Flow:**
-1. Le système attribue `INCONCLUSIVE` avec la liste des cellules manquantes.
+1. Le système attribue `INCONCLUSIVE` avec la liste des sujets manquants.
 2. Le scénario principal continue à l'étape 4 pour les autres hypothèses.
 
 ## Postconditions

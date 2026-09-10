@@ -5,12 +5,14 @@ Le modèle sert de glossaire : les noms ci-dessous sont repris tels quels dans l
 ```mermaid
 erDiagram
     Matrix ||--o{ Cell : contains
+    Matrix ||--o{ Probe : contains
     Cell }o--|| TypeSpec : "instantiates"
     Cell }o--|| LifetimeProfile : "runs under"
     Cell ||--o| EscapeVerdict : "classified by"
     Campaign ||--|{ Measurement : produces
     Campaign }o--|| Matrix : measures
-    Measurement }o--|| Cell : "of"
+    Measurement }o--o| Cell : "of"
+    Measurement }o--o| Probe : "of"
     Campaign ||--|| Provenance : carries
     ComparisonSet ||--|{ Comparison : groups
     ComparisonSet }o--|| Campaign : "derived from"
@@ -50,12 +52,24 @@ Unité de mesure : un `TypeSpec` × un `LifetimeProfile` × un mode de passage.
 | passingMode | Enum | Requis ; valeurs : `VALUE`, `POINTER` |
 | sourceFile | String | Requis ; chemin relatif du fichier Go généré |
 
+## Probe
+
+Sonde de mesure indépendante des TypeSpec (FR-006, H-004, H-005) ; mesurée par UC-003 comme une Cell, jamais classée par UC-002.
+
+| Attribut | Type | Règles de validation |
+|---|---|---|
+| id | String | Requis, unique, immuable ; forme `probe/<kind>/<parameter>` (disjoint des identifiants de Cell : le deuxième segment n'est jamais un code de LifetimeProfile) |
+| kind | Enum | Requis ; valeurs : `SEQUENTIAL_SCAN`, `SCATTERED_SCAN`, `APPEND_PREALLOC`, `APPEND_GROW` |
+| parameter | Integer | Requis, > 0 ; jeu de travail en octets pour `*_SCAN`, nombre d'éléments pour `APPEND_*` |
+| sourceFile | String | Requis ; chemin relatif du fichier Go généré |
+
 ## Matrix
 
 | Attribut | Type | Règles de validation |
 |---|---|---|
 | id | String | Requis, unique ; forme `M-<sha256 court des paramètres>` |
 | cells | Liste de Cell | Au moins une cellule |
+| probes | Liste de Probe | Peut être vide ; jamais omise |
 | generatedAt | DateTime (UTC) | Requis |
 
 ## EscapeVerdict
@@ -97,7 +111,7 @@ Résultat de la classification d'une cellule par le compilateur.
 | Attribut | Type | Règles de validation |
 |---|---|---|
 | campaignId | String | Requis |
-| cellId | String | Requis |
+| subjectId | String | Requis ; identifiant d'une Cell ou d'une Probe de la Matrix |
 | nsPerOp | Liste de Decimal | Exactement `count` valeurs |
 | bytesPerOp | Liste de Integer | Exactement `count` valeurs |
 | allocsPerOp | Liste de Integer | Exactement `count` valeurs |
@@ -124,7 +138,7 @@ Fichier de comparaison d'une Campaign (UC-004).
 | campaignId | String | Requis |
 | computedAt | DateTime (UTC) | Requis |
 | comparisons | Liste de Comparison | Au moins une |
-| tippingPoints | Map LifetimeProfile → Integer ou « non observé » | Une entrée par profil présent |
+| tippingPoints | Map (LifetimeProfile, hasPointerField) → Integer ou « non observé » | Une entrée par couple présent dans les Comparison |
 | excludedPairs | Liste de { valueCellId, pointerCellId, reason } | Peut être vide ; jamais omise |
 
 ## Hypothesis

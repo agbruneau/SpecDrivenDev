@@ -6,9 +6,10 @@ Procédure de la première itération complète (UC-001 → UC-005, première ca
 
 | Élément | Exigence | Source |
 |---|---|---|
-| Go | ≥ 1.25 (`go version`) ; `go.mod` déclare `go 1.25`, la toolchain se télécharge seule si `GOTOOLCHAIN=auto` | C-001 ; vérifié : le squelette compile avec go1.25.0 |
+| Go | ≥ 1.25 (`go version`) ; `go.mod` déclare `go 1.25`, la toolchain se télécharge seule si `GOTOOLCHAIN=auto` | C-001 ; vérifié : le squelette compile avec go1.25.0 et go1.27.0 (poste au 2026-09-10 ; la campagne consigne la version réelle, NFR-001) |
 | Claude Code | version 2.x ; sous Windows, travailler dans WSL2 | ACC p. 20, 67 |
 | `jq`, `bash`, `git` | requis par les hooks | `.claude/hooks/*.sh` |
+| `make` | requis par `CLAUDE.md` (`make vet test`) et par `/implement` ; **absent du poste Windows au 2026-09-10** — installer (`winget install GnuWin32.Make`) ou travailler en WSL2 | `Makefile` |
 | Docker | non requis pour P1 | — |
 | `benchstat` | optionnel : `go install golang.org/x/perf/cmd/benchstat@latest` | C-002 (hors BEPG) |
 | Plugin `aiup-core` | optionnel, pour rédiger de futurs UC : `/plugin marketplace add ai-unified-process/marketplace` puis `/plugin install aiup-core` | unifiedprocess.ai/tools.html ; ACC passe par l'UI `/plugin` (p. 126) |
@@ -74,7 +75,7 @@ Modèle : plan mode (`/plan`, lecture seule, ACC p. 152) avec Opus pour toute no
 
 1. `make matrix` (UC-001, matrice de référence) puis `make escape MATRIX=<id>` (UC-002) — sans agent : ce sont des exécutions déterministes du binaire.
 2. Contrôle de H-006 sans campagne : `make verdict CAMPAIGN=` n'est pas applicable ; utiliser `./bin/escapebench verdict --escape results/escape/<matrixId>/<fichier>.json`.
-3. Campagne de fumée sur la plus petite hypothèse : `/bench H-005` (préallocation, quelques cellules) ; vérifier la Provenance et la durée.
+3. Campagne de fumée sur la plus petite hypothèse : `/bench H-005` (préallocation, deux Probe) ; vérifier la Provenance et la durée.
 4. Campagne complète : `make campaign MATRIX=<id> COUNT=20` en terminal (durée cible NFR-005 : < 60 min), ou en exécution non surveillée `claude -p "/bench H-001 H-002 H-003 H-004"` (*À vérifier* : invocation d'un skill en mode `-p`, ACC p. 269 ne montre que des prompts libres). Pendant la campagne, `results/.campaign-lock` fige `internal/harness/`.
 5. `make compare CAMPAIGN=<id>` puis `/refute <id>` ; lire `docs/dashboard.md` ; commit `H-00x: verdict <CONFIRMED|REFUTED|INCONCLUSIVE>` avec les fichiers de `results/`.
 6. Répéter sur `arm64` si disponible (C-006) : nouvelle campagne, mêmes critères.

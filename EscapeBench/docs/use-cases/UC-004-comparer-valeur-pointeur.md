@@ -9,7 +9,7 @@
 **Status:** Reviewed
 
 **Linked Requirements:** FR-004, NFR-003, NFR-004, C-002
-**Linked Hypotheses:** H-001, H-002, H-004
+**Linked Hypotheses:** H-001, H-002
 **Entities:** Campaign, Cell, Measurement, Comparison
 
 ## Preconditions
@@ -23,9 +23,9 @@
 2. Le système vérifie que la Campaign est `COMPLETED` et que son empreinte de harnais est celle de la Matrix.
 3. Le système apparie les cellules `VALUE` et `POINTER` par TypeSpec et LifetimeProfile.
 4. Pour chaque paire, le système calcule `deltaNsPerOp` (médiane du pointeur moins médiane de la valeur), l'intervalle de confiance à 95 % de cette différence et le drapeau `significant` (vrai si l'intervalle exclut zéro).
-5. Pour chaque LifetimeProfile, le système détermine le point de bascule : la plus petite taille telle que, pour cette taille et toutes les tailles supérieures mesurées, le pointeur est significativement plus rapide ; s'il n'en existe pas, le point de bascule est « non observé ».
+5. Pour chaque couple (LifetimeProfile, présence d'un champ pointeur), le système détermine le point de bascule : la plus petite taille telle que, pour cette taille et toutes les tailles supérieures mesurées du couple, la Comparison a `significant` vrai et `deltaNsPerOp` < 0 ; s'il n'en existe pas, le point de bascule est « non observé ».
 6. Le système écrit `results/campaigns/<campaignId>/comparison-<timestamp>.json` contenant les Comparison, les points de bascule et la liste des paires exclues avec leur raison.
-7. Le système affiche un tableau par profil : taille, `deltaNsPerOp`, intervalle, significatif, et le point de bascule.
+7. Le système affiche un tableau par couple (profil, champ pointeur) : taille, `deltaNsPerOp`, intervalle, significatif, et le point de bascule.
 
 ## Alternative Flows
 
@@ -43,10 +43,10 @@
 3. À l'étape 7, le système affiche le nombre de paires exclues.
 
 ### A3: Aucune bascule observée
-**Trigger:** À l'étape 5, aucune taille ne satisfait la condition pour un profil.
+**Trigger:** À l'étape 5, aucune taille ne satisfait la condition pour un couple.
 **Flow:**
-1. Le système enregistre « non observé » pour ce profil.
-2. Le système signale ce profil dans l'affichage de l'étape 7.
+1. Le système enregistre « non observé » pour ce couple.
+2. Le système signale ce couple dans l'affichage de l'étape 7.
 
 ## Postconditions
 
@@ -72,3 +72,4 @@ Un fichier de comparaison n'est jamais réécrit ; un nouveau calcul produit un 
 
 - La méthode d'estimation de l'intervalle (bootstrap, quantiles) est une implémentation ; elle est documentée dans le code et dans le fichier de comparaison, non dans ce cas d'utilisation.
 - `benchstat` (C-002) peut servir de contrôle externe des résultats ; il n'est pas requis par le flux.
+- Révision du 2026-09-10 : H-004 retirée (elle se lit sur des Probe, UC-003 et UC-005, non sur des paires valeur/pointeur) ; point de bascule calculé par couple (profil, champ pointeur), chaque taille ayant deux paires.
