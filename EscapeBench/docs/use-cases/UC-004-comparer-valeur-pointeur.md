@@ -9,7 +9,7 @@
 **Status:** Implemented
 
 **Linked Requirements:** FR-004, NFR-003, NFR-004, C-002
-**Linked Hypotheses:** H-001, H-002
+**Linked Hypotheses:** H-001, H-002, H-007, H-010
 **Entities:** Campaign, Cell, Measurement, Comparison
 
 ## Preconditions

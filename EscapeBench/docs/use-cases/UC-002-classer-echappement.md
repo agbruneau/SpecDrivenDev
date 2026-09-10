@@ -9,7 +9,7 @@
 **Status:** Implemented
 
 **Linked Requirements:** FR-002, NFR-001, NFR-002, C-001, C-003, C-005
-**Linked Hypotheses:** H-006
+**Linked Hypotheses:** H-006, H-009
 **Entities:** Matrix, Cell, EscapeVerdict, Provenance
 
 ## Preconditions

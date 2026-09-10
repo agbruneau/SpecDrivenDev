@@ -32,7 +32,7 @@ Dépôt de prospection : identification, évaluation et cadrage de projets d'exp
 
 | Projet | Statut | Prochaine étape |
 |---|---|---|
-| P1 EscapeBench | **Première campagne exécutée.** UC-001 à UC-005 implémentés et testés (couverture 93,6 %) ; campagne `C-2026-09-10-1` sur la matrice de référence, 230 sujets, 29 min, six verdicts ; audit contradictoire mené, trois défauts de construction identifiés et démontrés | Rédiger H-007 à H-011 (`RAPPORT-CAMPAGNE_C-2026-09-10-1.md`, §7), puis rejouer sur `arm64` (C-006) |
+| P1 EscapeBench | **Première campagne exécutée, seconde génération d'hypothèses écrite.** UC-001 à UC-005 implémentés et testés (couverture 93,7 %) ; campagne `C-2026-09-10-1`, 230 sujets, 29 min, six verdicts ; audit contradictoire mené, trois défauts de construction démontrés ; H-007 à H-011 au catalogue, contrainte `C-008` pour les capacités qu'elles exigent | Satisfaire `C-008` (dispositions de type, sonde à chaîne dépendante, deux profils de conteneur, tailles de cache en provenance), puis campagne portant H-007 à H-011 ; rejouer sur `arm64` (C-006) |
 | P2–P8 | Fiches de cadrage seulement | Rédiger `docs/vision.md` et le catalogue `H-###` avant tout code |
 
 Conventions : français pour la prose, anglais pour les identifiants et le code ; pages citées = folios imprimés des PDF ; marqueurs *Confirmé / Probable / Hypothèse / À vérifier / Adaptation*.

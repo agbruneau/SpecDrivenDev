@@ -105,19 +105,21 @@ Les évaluateurs ne consomment qu'une partie des données mesurées, et le reste
 - **Deux points de bascule sur dix séries** ont été observés. Les huit autres ne basculent jamais jusqu'à 4096 octets. Ni le verdict ni le tableau de bord ne le disent.
 - Les **quatre sondes de parcours sous le seuil** sont mesurées et ignorées, alors que celle de 256 Ko donne le témoin qui tranche la conception de la sonde : un rapport de ×1,29 sur un jeu entièrement résident mesure le surcoût d'indirection pur.
 
-## 7. Hypothèses successeurs proposées
+## 7. Hypothèses successeurs — écrites au catalogue
 
-Les critères de H-001 à H-006 sont gelés et le resteront. Ce que la campagne apprend se formule en nouvelles hypothèses, à rédiger dans `docs/requirements.md` avant toute mesure. Ajouter des identifiants ne touche pas l'empreinte de la campagne écoulée, qui ne porte que sur les six premiers.
+Les critères de H-001 à H-006 sont gelés et le resteront. Ce que la campagne apprend est écrit en cinq hypothèses nouvelles dans `docs/requirements.md`, et la contrainte `C-008` y nomme les capacités de mesure qu'elles exigent. La campagne écoulée a été relue après cet ajout : son empreinte gelée valide toujours et ses six verdicts sont inchangés, `Campaign.hypothesesDigest` ne portant que sur les hypothèses qu'elle a elle-même retenues.
 
-| Nouvelle | Objet | Ce qu'elle corrige |
-|---|---|---|
-| H-007 | Point de bascule sur des structures à champs nommés, passables en registres | Sépare l'effet de taille de l'effet de disposition (§3.1) |
-| H-008 | Rapport dispersé/séquentiel avec chaîne de pointeurs dépendante, jeu de travail supérieur au L3 relevé de la machine | Mesure une latence, sur un jeu réellement hors cache (§3.2) |
-| H-009 | Causes d'échappement au-delà des bornes du corpus : taille supérieure à la limite de pile, appel d'interface, `fmt` | Rend H-006 réfutable (§3.3) |
-| H-010 | Rapport d'allocations avec une base non nulle des deux côtés | Éprouve le « doublement » du livre, que 0 → 1 n'éprouve pas |
-| H-011 | Facteur de gain en temps de la préallocation, seuil serré autour du ×6 annoncé | Teste l'affirmation du livre plutôt qu'une borne trois fois plus lâche |
+| Nouvelle | Objet | Ce qu'elle corrige | Mesurable |
+|---|---|---|---|
+| H-007 | Point de bascule sur des structures à champs nommés, passables en registres, avec plancher de bruit mesuré par témoin nul | Sépare l'effet de taille de l'effet de disposition (§3.1) | après C-008 |
+| H-008 | Latence par accès sur chaîne de pointeurs dépendante, bandes définies par les tailles de cache relevées de la machine | Mesure une latence, sur un jeu réellement hors cache (§3.2) | après C-008 |
+| H-009 | La généralisation de la quatrième cause aux tranches et aux structs, que le livre affirme réellement | Rend la question réfutable, et cesse de prêter au livre une exhaustivité qu'il ne revendique pas (§3.3) | après C-008 |
+| H-010 | Doublement des allocations sur une base non nulle qui varie, avec quorum d'étalement | Éprouve le « doublement » du livre, que 0 → 1 n'éprouve pas | après C-008 |
+| H-011 | Les trois chiffres de la page 114 aux tolérances du livre, non concluante sur la présente campagne | Teste l'affirmation du livre plutôt qu'une borne trois fois plus lâche | immédiatement |
 
-Chacune demande aussi, au minimum : consigner dans la provenance les tailles de cache, `GOMAXPROCS` et le type de cœur ; épingler l'affinité ; faire porter le rééchantillonnage sur plusieurs binaires et non sur les seules répétitions d'un binaire ; imposer un plancher d'effet, par exemple un cycle CPU, pour qu'aucun verdict ne bascule sur trois centièmes de cycle.
+Trois précautions traversent ces énoncés, chacune tirée d'un échec de cette campagne. Un critère ne bascule plus sur un écart inférieur au bruit, H-007 mesurant son plancher au lieu de le postuler. Un critère exige un témoin, de sensibilité ou de spécificité, sans quoi un verdict ne distingue pas un banc muet d'une affirmation vraie. Enfin H-011 se déclare non concluante sur `C-2026-09-10-1` : un critère écrit après les données qu'il évalue n'éprouve rien.
+
+Restent à faire, hors catalogue : consigner dans la provenance les tailles de cache, la taille de page, `GOMAXPROCS` et le type de cœur ; épingler l'affinité processeur ; faire porter le rééchantillonnage sur plusieurs binaires et non sur les seules répétitions d'un binaire ; archiver le `b.N` de chaque répétition.
 
 ## 8. Limites de validité externe
 

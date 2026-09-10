@@ -25,9 +25,9 @@ UC003 ..> UC001 : <<include>>
 UC004 ..> UC003 : <<include>>
 UC005 ..> UC004 : <<include>>
 
-note right of UC001 : FR-001 · Status: Implemented
-note right of UC002 : FR-002 · H-006 · Status: Implemented
+note right of UC001 : FR-001 · C-008 · H-007..H-010 · Status: Implemented
+note right of UC002 : FR-002 · H-006, H-009 · Status: Implemented
 note right of UC003 : FR-003, FR-006 · NFR-001..005 · C-003, C-005 · Status: Implemented
-note right of UC004 : FR-004 · H-001, H-002 · Status: Implemented
-note right of UC005 : FR-005 · H-001..H-006 · Status: Implemented
+note right of UC004 : FR-004 · H-001, H-002, H-007, H-010 · Status: Implemented
+note right of UC005 : FR-005 · H-001..H-011 · Status: Implemented
 @enduml

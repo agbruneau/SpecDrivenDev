@@ -18,7 +18,12 @@ var evaluators = map[string]evaluator{
 	"H-004": evaluateH004,
 	"H-005": evaluateH005,
 	"H-006": evaluateH006,
+	"H-011": evaluateH011,
 }
+
+// H-007 à H-010 n'ont volontairement pas d'évaluateur : les sujets qu'elles nomment n'existent pas
+// encore (C-008). UC-005 les rend INCONCLUSIVE en nommant cette absence, ce qui est le
+// comportement voulu tant que le banc n'a pas acquis la capacité de les mesurer.
 
 // SmallStructBytes est la borne « 1 à 3 mots machine » de BEPG p. 253, en octets sur 64 bits.
 const SmallStructBytes = 24
@@ -285,6 +290,70 @@ func evaluateH006(e Evidence) evaluation {
 	return evaluation{
 		Outcome:   models.OutcomeConfirmed,
 		Rationale: fmt.Sprintf("les %d cellules qui échappent se classent toutes dans les quatre causes du livre", escaping),
+		Files:     files,
+	}
+}
+
+// AppendTimeFactorFloor est le facteur de gain en temps minimal exigé par H-011 : la borne basse
+// de l'« about 6× » du livre, à 20 % près.
+const AppendTimeFactorFloor = 4.8
+
+// Bornes du facteur de gain en mémoire de H-011, autour du « one-fifth » du livre, à 20 % près.
+const (
+	AppendMemoryFactorLow  = 4.0
+	AppendMemoryFactorHigh = 6.0
+)
+
+// PreH011CampaignID désigne la campagne dont les mesures précèdent la rédaction du critère de
+// H-011. Un critère écrit après les données qu'il évalue n'éprouve rien : cette campagne rend
+// H-011 non concluante, par construction et non par accident.
+const PreH011CampaignID = "C-2026-09-10-1"
+
+// evaluateH011 — les trois chiffres de la préallocation annoncés par BEPG p. 114, aux tolérances
+// que le livre s'accorde lui-même. Infirmée si le gain en temps passe sous 4,8, si le gain en
+// mémoire sort de [4, 6], si la préallocation ne ramène pas les allocations à exactement une, ou
+// si la version sans préallocation en compte moins de deux.
+func evaluateH011(e Evidence) evaluation {
+	if e.Campaign.ID == PreH011CampaignID {
+		return inconclusive("les mesures de la campagne %s précèdent la rédaction du critère de H-011 : elles ne peuvent pas le mettre à l'épreuve", PreH011CampaignID)
+	}
+	prealloc := models.Probe{Kind: models.ProbeAppendPrealloc, Parameter: AppendProbeSize}.ID()
+	grow := models.Probe{Kind: models.ProbeAppendGrow, Parameter: AppendProbeSize}.ID()
+	preallocM, okPrealloc := completeMeasurement(e, prealloc)
+	growM, okGrow := completeMeasurement(e, grow)
+	if !okPrealloc || !okGrow {
+		return inconclusive("sondes d'append n = %d incomplètes dans la campagne %s", AppendProbeSize, e.Campaign.ID)
+	}
+	if preallocM.MedianNs() == 0 || preallocM.MedianBytes() == 0 {
+		return inconclusive("médianes nulles pour %s : les facteurs sont indéfinis", prealloc)
+	}
+	timeFactor := growM.MedianNs() / preallocM.MedianNs()
+	memoryFactor := growM.MedianBytes() / preallocM.MedianBytes()
+	preallocAllocs := preallocM.MedianAllocs()
+	growAllocs := growM.MedianAllocs()
+	detail := fmt.Sprintf("temps ×%.2f, mémoire ×%.2f, allocations %.0f → %.0f (n = %d)",
+		timeFactor, memoryFactor, growAllocs, preallocAllocs, AppendProbeSize)
+	files := []string{e.MeasurementPaths[prealloc], e.MeasurementPaths[grow]}
+
+	var breaches []string
+	if timeFactor < AppendTimeFactorFloor {
+		breaches = append(breaches, fmt.Sprintf("gain en temps ×%.2f sous le plancher de %.1f", timeFactor, AppendTimeFactorFloor))
+	}
+	if memoryFactor < AppendMemoryFactorLow || memoryFactor > AppendMemoryFactorHigh {
+		breaches = append(breaches, fmt.Sprintf("gain en mémoire ×%.2f hors de [%.0f, %.0f]", memoryFactor, AppendMemoryFactorLow, AppendMemoryFactorHigh))
+	}
+	if preallocAllocs != 1 {
+		breaches = append(breaches, fmt.Sprintf("%.0f allocation(s) avec préallocation au lieu d'une seule", preallocAllocs))
+	}
+	if growAllocs < 2 {
+		breaches = append(breaches, fmt.Sprintf("%.0f allocation(s) sans préallocation, la base est trop faible pour parler de réduction", growAllocs))
+	}
+	if len(breaches) > 0 {
+		return evaluation{Outcome: models.OutcomeRefuted, Rationale: join(breaches) + " — " + detail, Files: files}
+	}
+	return evaluation{
+		Outcome:   models.OutcomeConfirmed,
+		Rationale: "les trois chiffres de la page 114 sont tenus : " + detail,
 		Files:     files,
 	}
 }
