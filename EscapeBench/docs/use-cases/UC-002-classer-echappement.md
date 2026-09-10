@@ -8,7 +8,7 @@
 **Goal:** Obtenir, pour chaque cellule d'une matrice, un verdict d'échappement reproductible accompagné de la raison rapportée par le compilateur et de sa catégorie
 **Status:** Implemented
 
-**Linked Requirements:** FR-002, NFR-001, NFR-002, C-001, C-003, C-005
+**Linked Requirements:** FR-002, NFR-001, NFR-002, C-001, C-003, C-005, C-009
 **Linked Hypotheses:** H-006, H-009
 **Entities:** Matrix, Cell, EscapeVerdict, Provenance
 

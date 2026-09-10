@@ -8,8 +8,8 @@
 **Goal:** Obtenir, pour chaque paire de cellules (`VALUE`, `POINTER`) d'une campagne complétée, la différence de temps par opération avec son intervalle de confiance, et le point de bascule par profil de durée de vie
 **Status:** Implemented
 
-**Linked Requirements:** FR-004, NFR-003, NFR-004, C-002
-**Linked Hypotheses:** H-001, H-002, H-007, H-010
+**Linked Requirements:** FR-004, NFR-003, NFR-004, C-002, C-009
+**Linked Hypotheses:** H-001, H-002, H-007, H-010, H-012
 **Entities:** Campaign, Cell, Measurement, Comparison
 
 ## Preconditions
