@@ -1,0 +1,576 @@
+{
+  "matrixId": "M-57477f022103",
+  "provenance": {
+    "goVersion": "go1.27.0",
+    "goos": "windows",
+    "goarch": "amd64",
+    "cpuModel": "Intel64 Family 6 Model 198 Stepping 2, GenuineIntel",
+    "l1DataCacheBytes": 49152,
+    "lastLevelCacheBytes": 37748736,
+    "pageSizeBytes": 4096,
+    "gomaxprocs": 24,
+    "capturedAt": "2026-09-10T20:16:09.1940719Z"
+  },
+  "verdicts": [
+    {
+      "cellId": "Size0008FieldsPlain/LOCAL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008FieldsPlain/LOCAL/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008FieldsPtr/LOCAL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008FieldsPtr/LOCAL/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016FieldsPlain/LOCAL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016FieldsPlain/LOCAL/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016FieldsPtr/LOCAL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016FieldsPtr/LOCAL/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024FieldsPlain/LOCAL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024FieldsPlain/LOCAL/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024FieldsPtr/LOCAL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024FieldsPtr/LOCAL/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128FieldsPlain/LOCAL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128FieldsPlain/LOCAL/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128FieldsPtr/LOCAL/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128FieldsPtr/LOCAL/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008FieldsPlain/LOCAL_X2/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008FieldsPlain/LOCAL_X2/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008FieldsPtr/LOCAL_X2/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008FieldsPtr/LOCAL_X2/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016FieldsPlain/LOCAL_X2/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016FieldsPlain/LOCAL_X2/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016FieldsPtr/LOCAL_X2/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016FieldsPtr/LOCAL_X2/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024FieldsPlain/LOCAL_X2/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024FieldsPlain/LOCAL_X2/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024FieldsPtr/LOCAL_X2/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024FieldsPtr/LOCAL_X2/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128FieldsPlain/LOCAL_X2/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128FieldsPlain/LOCAL_X2/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128FieldsPtr/LOCAL_X2/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128FieldsPtr/LOCAL_X2/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008FieldsPlain/LOCAL_X3/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008FieldsPlain/LOCAL_X3/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008FieldsPtr/LOCAL_X3/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008FieldsPtr/LOCAL_X3/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016FieldsPlain/LOCAL_X3/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016FieldsPlain/LOCAL_X3/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016FieldsPtr/LOCAL_X3/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016FieldsPtr/LOCAL_X3/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024FieldsPlain/LOCAL_X3/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024FieldsPlain/LOCAL_X3/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024FieldsPtr/LOCAL_X3/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024FieldsPtr/LOCAL_X3/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128FieldsPlain/LOCAL_X3/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128FieldsPlain/LOCAL_X3/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128FieldsPtr/LOCAL_X3/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128FieldsPtr/LOCAL_X3/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008FieldsPlain/LOCAL_X4/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008FieldsPlain/LOCAL_X4/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008FieldsPtr/LOCAL_X4/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008FieldsPtr/LOCAL_X4/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016FieldsPlain/LOCAL_X4/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016FieldsPlain/LOCAL_X4/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016FieldsPtr/LOCAL_X4/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016FieldsPtr/LOCAL_X4/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024FieldsPlain/LOCAL_X4/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024FieldsPlain/LOCAL_X4/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024FieldsPtr/LOCAL_X4/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024FieldsPtr/LOCAL_X4/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128FieldsPlain/LOCAL_X4/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128FieldsPlain/LOCAL_X4/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128FieldsPtr/LOCAL_X4/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128FieldsPtr/LOCAL_X4/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008FieldsPlain/LOCAL_X5/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008FieldsPlain/LOCAL_X5/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008FieldsPtr/LOCAL_X5/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0008FieldsPtr/LOCAL_X5/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016FieldsPlain/LOCAL_X5/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016FieldsPlain/LOCAL_X5/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016FieldsPtr/LOCAL_X5/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0016FieldsPtr/LOCAL_X5/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024FieldsPlain/LOCAL_X5/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024FieldsPlain/LOCAL_X5/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024FieldsPtr/LOCAL_X5/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0024FieldsPtr/LOCAL_X5/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128FieldsPlain/LOCAL_X5/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128FieldsPlain/LOCAL_X5/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128FieldsPtr/LOCAL_X5/VALUE",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    },
+    {
+      "cellId": "Size0128FieldsPtr/LOCAL_X5/POINTER",
+      "escapes": false,
+      "compilerReason": "",
+      "category": "NONE",
+      "status": "OK"
+    }
+  ]
+}

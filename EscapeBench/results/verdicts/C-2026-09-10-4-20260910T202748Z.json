@@ -1,0 +1,35 @@
+{
+  "campaignId": "C-2026-09-10-4",
+  "producedAt": "2026-09-10T20:27:48.2491625Z",
+  "verdicts": [
+    {
+      "hypothesisId": "H-005",
+      "campaignId": "C-2026-09-10-4",
+      "outcome": "CONFIRMED",
+      "rationale": "les deux rapports PREALLOC / GROW restent ≤ 1/2 : ns/op ×0.232, B/op ×0.196 (n = 100000)",
+      "resultFiles": [
+        "results/campaigns/C-2026-09-10-4/measurements/probe_APPEND_PREALLOC_100000.json",
+        "results/campaigns/C-2026-09-10-4/measurements/probe_APPEND_GROW_100000.json"
+      ]
+    },
+    {
+      "hypothesisId": "H-011",
+      "campaignId": "C-2026-09-10-4",
+      "outcome": "REFUTED",
+      "rationale": "gain en temps ×4.31 sous le plancher de 4.8 — temps ×4.31, mémoire ×5.11, allocations 27 → 1 (n = 100000)",
+      "resultFiles": [
+        "results/campaigns/C-2026-09-10-4/measurements/probe_APPEND_PREALLOC_100000.json",
+        "results/campaigns/C-2026-09-10-4/measurements/probe_APPEND_GROW_100000.json"
+      ]
+    },
+    {
+      "hypothesisId": "H-012",
+      "campaignId": "C-2026-09-10-4",
+      "outcome": "CONFIRMED",
+      "rationale": "aucune des 5 cellules jugées ne donne l'avantage au pointeur, et toutes sont résolues : 8 octets sans champ pointeur : plancher 0.0121, barrière 0.0802, seuil 0.0802, ciHigh [-0.0185, 0.0293, 0.0406, 0.0153, 0.0267], 0/5 réplicats franchissent, 16 octets sans champ pointeur : plancher 0.0337, barrière 0.0902, seuil 0.0902, ciHigh [-0.0314, -0.0302, -0.0064, -0.0235, -0.0109], 0/5 réplicats franchissent, 24 octets sans champ pointeur : plancher 0.0032, barrière 0.0771, seuil 0.0771, ciHigh [0.3742, 0.3717, 0.3644, 0.3700, 0.3660], 0/5 réplicats franchissent, 16 octets avec champ pointeur : plancher 0.0190, barrière 0.0834, seuil 0.0834, ciHigh [0.1265, 0.0900, 0.0786, 0.0894, 0.1154], 0/5 réplicats franchissent, 24 octets avec champ pointeur : plancher 0.0145, barrière 0.0783, seuil 0.0783, ciHigh [0.3600, 0.4096, 0.3781, 0.3654, 0.3687], 0/5 réplicats franchissent, 8 octets avec champ pointeur : plancher 0.0359, barrière 0.0799, seuil 0.0799, ciHigh [-0.2480, -0.1831, -0.2258, -0.2044, -0.1766], 5/5 réplicats franchissent [écartée du jugement : le type n'a qu'un champ, qui est le pointeur]",
+      "resultFiles": [
+        "results/campaigns/C-2026-09-10-4/comparison-20260910T202742Z.json"
+      ]
+    }
+  ]
+}
