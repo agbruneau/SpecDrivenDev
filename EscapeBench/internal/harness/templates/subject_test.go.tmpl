@@ -1,0 +1,17 @@
+// Code généré par EscapeBench (UC-001) — ne pas modifier à la main.
+// Sujet : {{.SubjectID}}
+package subject
+
+import "testing"
+
+// sink empêche l'élimination du résultat de Run par le compilateur.
+var sink uint64
+
+// BenchmarkSubject mesure un seul sujet par processus `go test` (BR-003-4). Le setup est hors de
+// la boucle b.N et le compteur est remis à zéro après lui (BEPG p. 219).
+func BenchmarkSubject(b *testing.B) {
+	Setup()
+	b.ReportAllocs()
+	b.ResetTimer()
+	sink = Run(b.N)
+}

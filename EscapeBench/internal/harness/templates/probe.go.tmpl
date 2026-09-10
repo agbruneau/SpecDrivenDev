@@ -1,0 +1,90 @@
+// Code généré par EscapeBench (UC-001) — ne pas modifier à la main.
+// Sujet : {{.SubjectID}}
+// Sonde : {{.Kind}} · Paramètre : {{.Parameter}}
+package subject
+{{if .IsScan}}
+// Le jeu de travail fait exactement {{.Parameter}} octets, réparti en éléments d'une ligne de cache.
+const (
+	workBytes = {{.Parameter}}
+	elemBytes = 64
+	elemCount = workBytes / elemBytes
+)
+
+// elem occupe une ligne de cache : un parcours dispersé provoque un défaut par élément.
+type elem struct {
+	V   uint64
+	Pad [7]uint64
+}
+
+var (
+	data []elem
+{{- if .IsScattered}}
+	ptrs []*elem
+{{- end}}
+)
+
+// Setup construit le jeu de travail hors de la boucle b.N (BEPG p. 219) et n'agit qu'une fois.
+func Setup() {
+	if len(data) == elemCount {
+		return
+	}
+	data = make([]elem, elemCount)
+	for i := range data {
+		data[i].V = uint64(i)
+	}
+{{- if .IsScattered}}
+	ptrs = make([]*elem, elemCount)
+	for i := range ptrs {
+		ptrs[i] = &data[i]
+	}
+	// Permutation déterministe (Fisher-Yates à générateur congruentiel fixe) : l'ordre de
+	// parcours doit être rejouable d'une campagne à l'autre, sans source d'aléa.
+	state := uint64(0x9E3779B97F4A7C15)
+	for i := elemCount - 1; i > 0; i-- {
+		state = state*6364136223846793005 + 1442695040888963407
+		j := int((state >> 33) % uint64(i+1))
+		ptrs[i], ptrs[j] = ptrs[j], ptrs[i]
+	}
+{{- end}}
+}
+
+// Run parcourt l'intégralité du jeu de travail à chaque itération.
+func Run(n int) uint64 {
+	var s uint64
+	for i := 0; i < n; i++ {
+{{- if .IsScattered}}
+		for j := range ptrs {
+			s += ptrs[j].V
+		}
+{{- else}}
+		for j := range data {
+			s += data[j].V
+		}
+{{- end}}
+	}
+	return s
+}
+{{else}}
+// count est le nombre d'entiers ajoutés à chaque itération.
+const count = {{.Parameter}}
+
+// Setup n'a rien à préparer : chaque itération part d'une tranche neuve.
+func Setup() {}
+
+// Run construit une tranche de count entiers à chaque itération.
+func Run(n int) uint64 {
+	var s uint64
+	for i := 0; i < n; i++ {
+{{- if .IsPrealloc}}
+		buf := make([]int, 0, count)
+{{- else}}
+		var buf []int
+{{- end}}
+		for j := 0; j < count; j++ {
+			buf = append(buf, j)
+		}
+		s += uint64(len(buf))
+	}
+	return s
+}
+{{end}}

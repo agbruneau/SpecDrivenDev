@@ -1,0 +1,154 @@
+// Code généré par EscapeBench (UC-001) — ne pas modifier à la main.
+// Sujet : {{.SubjectID}}
+// Profil : {{.Profile}} · Mode : {{.PassingMode}} · Taille : {{.SizeBytes}} octets · Champ pointeur : {{.HasPointerField}}
+package subject
+
+import "unsafe"
+
+// {{.TypeName}} occupe exactement {{.SizeBytes}} octets.
+type {{.TypeName}} struct {
+{{- if .HasPointerField}}
+	P *byte
+{{- else}}
+	Tag uint64
+{{- end}}
+	Fill [{{.FillLen}}]uint64
+}
+
+// Contrôle à la compilation : la disposition dérivée par le générateur donne bien {{.SizeBytes}} octets.
+// Une taille différente rend la constante négative et le paquet ne compile pas.
+const _ = uint(unsafe.Sizeof({{.TypeName}}{}) - {{.SizeBytes}})
+
+// anchor est la cible du champ pointeur : elle ne fait jamais échapper la valeur qui la référence.
+var anchor byte
+
+// sum lit le premier et, si le type en compte plus d'un, le dernier mot de la valeur. Le
+// remplissage est dimensionné à la génération : l'accès n'existe que s'il est valide.
+func (t {{.TypeName}}) sum() uint64 {
+	var s uint64
+{{- if .HasPointerField}}
+	s = uint64(uintptr(unsafe.Pointer(t.P)))
+{{- else}}
+	s = t.Tag
+{{- end}}
+{{- if .HasFill}}
+	s += t.Fill[{{.LastFill}}]
+{{- end}}
+	return s
+}
+
+// newValue construit une valeur dont le premier et le dernier mot dépendent de i.
+func newValue(i int) {{.TypeName}} {
+	var t {{.TypeName}}
+{{- if .HasPointerField}}
+	t.P = &anchor
+{{- else}}
+	t.Tag = uint64(i)
+{{- end}}
+{{- if .HasFill}}
+	t.Fill[{{.LastFill}}] = uint64(i)
+{{- end}}
+	return t
+}
+{{if .NeedConsumeValue}}
+//go:noinline
+func consumeValue(t {{.TypeName}}) uint64 { return t.sum() }
+{{end}}
+{{- if .NeedConsumePointer}}
+//go:noinline
+func consumePointer(t *{{.TypeName}}) uint64 { return t.sum() }
+{{end}}
+{{- if .NeedProduceValue}}
+//go:noinline
+func produceValue(i int) {{.TypeName}} { return newValue(i) }
+{{end}}
+{{- if .NeedProducePointer}}
+//go:noinline
+func producePointer(i int) *{{.TypeName}} {
+	t := newValue(i)
+	return &t
+}
+{{end}}
+{{- if .NeedClosure}}
+// keptClosure conserve la dernière closure reçue : la capture survit à la trame appelante, ce qui
+// est le motif « capture par closure » de BEPG p. 238-242. Une closure appelée puis oubliée
+// n'échappe pas et n'exercerait pas la cause étudiée.
+var keptClosure func() uint64
+
+//go:noinline
+func keepClosure(f func() uint64) uint64 {
+	keptClosure = f
+	return f()
+}
+{{end}}
+// Setup prépare l'état du sujet ; il est appelé hors de la boucle b.N (BEPG p. 219).
+func Setup() {}
+
+// Run exécute n itérations du travail mesuré et rend une valeur consommée par l'appelant, afin
+// que le compilateur ne puisse pas éliminer la boucle.
+func Run(n int) uint64 {
+	var s uint64
+{{- if eq .Body "LOCAL_VALUE"}}
+	t := newValue(1)
+	for i := 0; i < n; i++ {
+		s += consumeValue(t)
+	}
+{{- else if eq .Body "LOCAL_POINTER"}}
+	t := newValue(1)
+	for i := 0; i < n; i++ {
+		s += consumePointer(&t)
+	}
+{{- else if eq .Body "RETURNED_VALUE"}}
+	for i := 0; i < n; i++ {
+		s += produceValue(i).sum()
+	}
+{{- else if eq .Body "RETURNED_POINTER"}}
+	for i := 0; i < n; i++ {
+		s += producePointer(i).sum()
+	}
+{{- else if eq .Body "CAPTURED_BY_CLOSURE_VALUE"}}
+	for i := 0; i < n; i++ {
+		t := newValue(i)
+		s += keepClosure(func() uint64 { return t.sum() })
+	}
+{{- else if eq .Body "CAPTURED_BY_CLOSURE_POINTER"}}
+	for i := 0; i < n; i++ {
+		t := newValue(i)
+		p := &t
+		s += keepClosure(func() uint64 { return p.sum() })
+	}
+{{- else if eq .Body "SENT_ON_CHANNEL_VALUE"}}
+	ch := make(chan {{.TypeName}}, 1)
+	for i := 0; i < n; i++ {
+		t := newValue(i)
+		ch <- t
+		v := <-ch
+		s += v.sum()
+	}
+{{- else if eq .Body "SENT_ON_CHANNEL_POINTER"}}
+	ch := make(chan *{{.TypeName}}, 1)
+	for i := 0; i < n; i++ {
+		t := newValue(i)
+		ch <- &t
+		v := <-ch
+		s += v.sum()
+	}
+{{- else if eq .Body "STORED_IN_MAP_VALUE"}}
+	m := make(map[int]{{.TypeName}}, 1)
+	for i := 0; i < n; i++ {
+		t := newValue(i)
+		m[0] = t
+		v := m[0]
+		s += v.sum()
+	}
+{{- else if eq .Body "STORED_IN_MAP_POINTER"}}
+	m := make(map[int]*{{.TypeName}}, 1)
+	for i := 0; i < n; i++ {
+		t := newValue(i)
+		m[0] = &t
+		v := m[0]
+		s += v.sum()
+	}
+{{- end}}
+	return s
+}

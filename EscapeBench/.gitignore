@@ -1,4 +1,5 @@
 bin/
+tmpcheck/
 # Sources générées : reproductibles depuis matrix.json et le harnais (BR-001-1) ;
 # chaque matrice est un module imbriqué (C-007), invisible de go ./... .
 matrices/
