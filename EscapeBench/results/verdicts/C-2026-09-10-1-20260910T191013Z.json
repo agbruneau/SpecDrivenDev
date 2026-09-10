@@ -1,0 +1,107 @@
+{
+  "campaignId": "C-2026-09-10-1",
+  "producedAt": "2026-09-10T19:10:13.4087876Z",
+  "verdicts": [
+    {
+      "hypothesisId": "H-001",
+      "campaignId": "C-2026-09-10-1",
+      "outcome": "REFUTED",
+      "rationale": "2 paires ≤ 24 octets ont significant vrai et ciHigh \u003c 0 : 16 o (Δ -0.04 ns, IC [-0.06, -0.01]), 24 o (Δ -0.69 ns, IC [-0.71, -0.67]) (sur 3 paires éligibles)",
+      "resultFiles": [
+        "results/campaigns/C-2026-09-10-1/comparison-20260910T142948Z.json"
+      ]
+    },
+    {
+      "hypothesisId": "H-002",
+      "campaignId": "C-2026-09-10-1",
+      "outcome": "REFUTED",
+      "rationale": "point de bascule ≤ 24 octets pour sans champ pointeur à 16 octets, avec champ pointeur à 24 octets (séries : sans champ pointeur : 16 octets, avec champ pointeur : 24 octets)",
+      "resultFiles": [
+        "results/campaigns/C-2026-09-10-1/comparison-20260910T142948Z.json"
+      ]
+    },
+    {
+      "hypothesisId": "H-003",
+      "campaignId": "C-2026-09-10-1",
+      "outcome": "CONFIRMED",
+      "rationale": "22 paire(s) RETURNED sur 22 atteignent un facteur ≥ 2 : 8 o : 0 → 1 allocs/op, 8 o (champ pointeur) : 0 → 1 allocs/op, 16 o : 0 → 1 allocs/op, 16 o (champ pointeur) : 0 → 1 allocs/op, 24 o : 0 → 1 allocs/op, 24 o (champ pointeur) : 0 → 1 allocs/op, 32 o : 0 → 1 allocs/op, 32 o (champ pointeur) : 0 → 1 allocs/op, 64 o : 0 → 1 allocs/op, 64 o (champ pointeur) : 0 → 1 allocs/op, 128 o : 0 → 1 allocs/op, 128 o (champ pointeur) : 0 → 1 allocs/op, 256 o : 0 → 1 allocs/op, 256 o (champ pointeur) : 0 → 1 allocs/op, 512 o : 0 → 1 allocs/op, 512 o (champ pointeur) : 0 → 1 allocs/op, 1024 o : 0 → 1 allocs/op, 1024 o (champ pointeur) : 0 → 1 allocs/op, 2048 o : 0 → 1 allocs/op, 2048 o (champ pointeur) : 0 → 1 allocs/op, 4096 o : 0 → 1 allocs/op, 4096 o (champ pointeur) : 0 → 1 allocs/op",
+      "resultFiles": [
+        "results/campaigns/C-2026-09-10-1/measurements/Size0008Plain_RETURNED_POINTER.json",
+        "results/campaigns/C-2026-09-10-1/measurements/Size0008Plain_RETURNED_VALUE.json",
+        "results/campaigns/C-2026-09-10-1/measurements/Size0008Ptr_RETURNED_POINTER.json",
+        "results/campaigns/C-2026-09-10-1/measurements/Size0008Ptr_RETURNED_VALUE.json",
+        "results/campaigns/C-2026-09-10-1/measurements/Size0016Plain_RETURNED_POINTER.json",
+        "results/campaigns/C-2026-09-10-1/measurements/Size0016Plain_RETURNED_VALUE.json",
+        "results/campaigns/C-2026-09-10-1/measurements/Size0016Ptr_RETURNED_POINTER.json",
+        "results/campaigns/C-2026-09-10-1/measurements/Size0016Ptr_RETURNED_VALUE.json",
+        "results/campaigns/C-2026-09-10-1/measurements/Size0024Plain_RETURNED_POINTER.json",
+        "results/campaigns/C-2026-09-10-1/measurements/Size0024Plain_RETURNED_VALUE.json",
+        "results/campaigns/C-2026-09-10-1/measurements/Size0024Ptr_RETURNED_POINTER.json",
+        "results/campaigns/C-2026-09-10-1/measurements/Size0024Ptr_RETURNED_VALUE.json",
+        "results/campaigns/C-2026-09-10-1/measurements/Size0032Plain_RETURNED_POINTER.json",
+        "results/campaigns/C-2026-09-10-1/measurements/Size0032Plain_RETURNED_VALUE.json",
+        "results/campaigns/C-2026-09-10-1/measurements/Size0032Ptr_RETURNED_POINTER.json",
+        "results/campaigns/C-2026-09-10-1/measurements/Size0032Ptr_RETURNED_VALUE.json",
+        "results/campaigns/C-2026-09-10-1/measurements/Size0064Plain_RETURNED_POINTER.json",
+        "results/campaigns/C-2026-09-10-1/measurements/Size0064Plain_RETURNED_VALUE.json",
+        "results/campaigns/C-2026-09-10-1/measurements/Size0064Ptr_RETURNED_POINTER.json",
+        "results/campaigns/C-2026-09-10-1/measurements/Size0064Ptr_RETURNED_VALUE.json",
+        "results/campaigns/C-2026-09-10-1/measurements/Size0128Plain_RETURNED_POINTER.json",
+        "results/campaigns/C-2026-09-10-1/measurements/Size0128Plain_RETURNED_VALUE.json",
+        "results/campaigns/C-2026-09-10-1/measurements/Size0128Ptr_RETURNED_POINTER.json",
+        "results/campaigns/C-2026-09-10-1/measurements/Size0128Ptr_RETURNED_VALUE.json",
+        "results/campaigns/C-2026-09-10-1/measurements/Size0256Plain_RETURNED_POINTER.json",
+        "results/campaigns/C-2026-09-10-1/measurements/Size0256Plain_RETURNED_VALUE.json",
+        "results/campaigns/C-2026-09-10-1/measurements/Size0256Ptr_RETURNED_POINTER.json",
+        "results/campaigns/C-2026-09-10-1/measurements/Size0256Ptr_RETURNED_VALUE.json",
+        "results/campaigns/C-2026-09-10-1/measurements/Size0512Plain_RETURNED_POINTER.json",
+        "results/campaigns/C-2026-09-10-1/measurements/Size0512Plain_RETURNED_VALUE.json",
+        "results/campaigns/C-2026-09-10-1/measurements/Size0512Ptr_RETURNED_POINTER.json",
+        "results/campaigns/C-2026-09-10-1/measurements/Size0512Ptr_RETURNED_VALUE.json",
+        "results/campaigns/C-2026-09-10-1/measurements/Size1024Plain_RETURNED_POINTER.json",
+        "results/campaigns/C-2026-09-10-1/measurements/Size1024Plain_RETURNED_VALUE.json",
+        "results/campaigns/C-2026-09-10-1/measurements/Size1024Ptr_RETURNED_POINTER.json",
+        "results/campaigns/C-2026-09-10-1/measurements/Size1024Ptr_RETURNED_VALUE.json",
+        "results/campaigns/C-2026-09-10-1/measurements/Size2048Plain_RETURNED_POINTER.json",
+        "results/campaigns/C-2026-09-10-1/measurements/Size2048Plain_RETURNED_VALUE.json",
+        "results/campaigns/C-2026-09-10-1/measurements/Size2048Ptr_RETURNED_POINTER.json",
+        "results/campaigns/C-2026-09-10-1/measurements/Size2048Ptr_RETURNED_VALUE.json",
+        "results/campaigns/C-2026-09-10-1/measurements/Size4096Plain_RETURNED_POINTER.json",
+        "results/campaigns/C-2026-09-10-1/measurements/Size4096Plain_RETURNED_VALUE.json",
+        "results/campaigns/C-2026-09-10-1/measurements/Size4096Ptr_RETURNED_POINTER.json",
+        "results/campaigns/C-2026-09-10-1/measurements/Size4096Ptr_RETURNED_VALUE.json"
+      ]
+    },
+    {
+      "hypothesisId": "H-004",
+      "campaignId": "C-2026-09-10-1",
+      "outcome": "REFUTED",
+      "rationale": "le rapport dispersé/séquentiel est hors de [10, 200] pour les 2 jeux de travail ≥ 32 MiB : 32 MiB : ×1.8, 128 MiB : ×2.4",
+      "resultFiles": [
+        "results/campaigns/C-2026-09-10-1/measurements/probe_SEQUENTIAL_SCAN_33554432.json",
+        "results/campaigns/C-2026-09-10-1/measurements/probe_SCATTERED_SCAN_33554432.json",
+        "results/campaigns/C-2026-09-10-1/measurements/probe_SEQUENTIAL_SCAN_134217728.json",
+        "results/campaigns/C-2026-09-10-1/measurements/probe_SCATTERED_SCAN_134217728.json"
+      ]
+    },
+    {
+      "hypothesisId": "H-005",
+      "campaignId": "C-2026-09-10-1",
+      "outcome": "CONFIRMED",
+      "rationale": "les deux rapports PREALLOC / GROW restent ≤ 1/2 : ns/op ×0.229, B/op ×0.196 (n = 100000)",
+      "resultFiles": [
+        "results/campaigns/C-2026-09-10-1/measurements/probe_APPEND_PREALLOC_100000.json",
+        "results/campaigns/C-2026-09-10-1/measurements/probe_APPEND_GROW_100000.json"
+      ]
+    },
+    {
+      "hypothesisId": "H-006",
+      "campaignId": "C-2026-09-10-1",
+      "outcome": "CONFIRMED",
+      "rationale": "les 110 cellules qui échappent se classent toutes dans les quatre causes du livre",
+      "resultFiles": [
+        "results/escape/M-823d8b5af441/20260910T152316Z.json"
+      ]
+    }
+  ]
+}
