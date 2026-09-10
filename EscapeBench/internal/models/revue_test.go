@@ -54,11 +54,44 @@ func TestC008_TemoinNulBorneAuxPetitesTailles(t *testing.T) {
 	if fieldsAtSensitivity != 4 {
 		t.Fatalf("cellules du témoin de sensibilité à 128 octets = %d, 4 attendues", fieldsAtSensitivity)
 	}
-	// Le témoin nul reste par ailleurs cantonné au profil LOCAL.
-	horsLocal := p
-	horsLocal.Profiles = []LifetimeProfile{ProfileReturned}
-	if err := horsLocal.Validate(); err == nil {
-		t.Fatal("le témoin nul hors du profil LOCAL doit être refusé")
+	// Le témoin nul reste cantonné au profil LOCAL, mais par saut et non par refus : une matrice
+	// qui demande à la fois le témoin nul et les profils de H-009 et H-010 est légale, et ne
+	// produit simplement aucune cellule témoin hors LOCAL. Refuser aurait forcé trois campagnes
+	// distinctes, donc trois empreintes et trois Provenance.
+	melangee := p
+	melangee.Profiles = []LifetimeProfile{ProfileLocal, ProfileStoredInMap, ProfileReturnedAlloc}
+	if err := melangee.Validate(); err != nil {
+		t.Fatalf("une matrice qui couvre H-007 et H-009 à la fois doit être légale : %v", err)
+	}
+	melangees, _, err := melangee.Expand()
+	if err != nil {
+		t.Fatalf("Expand : %v", err)
+	}
+	var temoinsHorsLocal, conteneurs int
+	for _, c := range melangees {
+		if c.TypeSpec.Layout == LayoutNamedFieldsSham && c.Profile != ProfileLocal {
+			temoinsHorsLocal++
+		}
+		if c.Profile == ProfileStoredInMap {
+			conteneurs++
+		}
+	}
+	if temoinsHorsLocal != 0 {
+		t.Fatalf("aucune cellule témoin ne doit exister hors du profil LOCAL, obtenu %d", temoinsHorsLocal)
+	}
+	if conteneurs == 0 {
+		t.Fatal("les profils conteneurs de H-009 doivent survivre au saut")
+	}
+	// L'invariant du modèle tient toujours : une Cell témoin hors LOCAL construite à la main est
+	// rejetée. C'est le générateur qui ne la produit plus, pas le modèle qui l'autorise.
+	interdite := Cell{
+		TypeSpec:    TypeSpec{Name: "S", SizeBytes: 8, Layout: LayoutNamedFieldsSham},
+		Profile:     ProfileReturned,
+		PassingMode: PassingValue,
+		SourceFile:  "subjects/s/subject.go",
+	}
+	if err := interdite.Validate(); err == nil {
+		t.Fatal("Cell.Validate doit toujours refuser un témoin nul hors du profil LOCAL")
 	}
 }
 

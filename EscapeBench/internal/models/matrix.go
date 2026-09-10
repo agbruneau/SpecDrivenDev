@@ -203,16 +203,6 @@ func (p MatrixParameters) Validate() error {
 	}
 	// Le témoin nul ne se mesure qu'en profil LOCAL : demandé avec d'autres profils, il
 	// produirait des cellules que Cell.Validate refuse.
-	for _, layout := range p.Layouts {
-		if layout != LayoutNamedFieldsSham {
-			continue
-		}
-		for _, profile := range p.Profiles {
-			if profile != ProfileLocal {
-				problems = append(problems, fmt.Sprintf("la disposition %s ne se combine qu'au profil LOCAL, %s demandé", layout, profile))
-			}
-		}
-	}
 	for _, spec := range p.Probes {
 		if !spec.Kind.Valid() {
 			problems = append(problems, fmt.Sprintf("genre de Probe %q inconnu", spec.Kind))
@@ -326,6 +316,16 @@ func (p MatrixParameters) Expand() ([]Cell, []Probe, error) {
 					return nil, nil, err
 				}
 				for _, profile := range n.Profiles {
+					// Le témoin nul ne se mesure qu'en profil LOCAL : ses deux cellules exécutent
+					// le corps du mode VALUE, ce qui n'a de sens que pour une paire dont le bras
+					// valeur est le sujet. Saut et non refus, pour la même raison que la borne de
+					// taille juste au-dessus : H-007 exige le témoin nul, H-009 exige les profils
+					// conteneurs et H-010 le profil qui alloue. Refuser la combinaison forçait à
+					// trois campagnes distinctes, donc trois empreintes et trois Provenance, pour
+					// des hypothèses qu'une seule campagne peut couvrir.
+					if layout == LayoutNamedFieldsSham && profile != ProfileLocal {
+						continue
+					}
 					for _, repeat := range n.Repeats {
 						// Seul un profil qui produit plusieurs instances par opération dépend de
 						// la répétition ; ailleurs elle ne créerait que des doublons.

@@ -143,14 +143,28 @@ func TestTemoinNulSeulementEnLocal(t *testing.T) {
 	if err := ailleurs.Validate(); err == nil {
 		t.Fatal("le témoin nul hors du profil LOCAL doit être refusé")
 	}
+	// Révision du 2026-09-10 : la combinaison n'est plus refusée à la validation, elle est sautée à
+	// la génération. Une matrice qui demande le témoin nul et d'autres profils est légale et ne
+	// produit simplement aucune cellule témoin hors LOCAL.
 	params := MatrixParameters{
 		Sizes: []int{24}, PointerFieldVariants: []bool{false},
 		Profiles: []LifetimeProfile{ProfileLocal, ProfileReturned}, PassingModes: PassingModes(),
 		Layouts: []Layout{LayoutNamedFieldsSham},
 	}
-	err := params.Validate()
-	if err == nil || !strings.Contains(err.Error(), "LOCAL") {
-		t.Fatalf("Validate doit refuser la combinaison : %v", err)
+	if err := params.Validate(); err != nil {
+		t.Fatalf("la combinaison est légale depuis que le refus est devenu un saut : %v", err)
+	}
+	cells, _, err := params.Expand()
+	if err != nil {
+		t.Fatalf("Expand : %v", err)
+	}
+	if len(cells) == 0 {
+		t.Fatal("le profil LOCAL doit produire ses cellules témoins")
+	}
+	for _, c := range cells {
+		if c.Profile != ProfileLocal {
+			t.Fatalf("aucune cellule témoin ne doit exister hors du profil LOCAL : %s", c.ID())
+		}
 	}
 }
 
