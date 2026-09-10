@@ -43,7 +43,7 @@ Ports dans `internal/ports` uniquement pour ce que le service consomme (système
 - Un test par flux et par règle : `TestUC###_MainFlow`, `TestUC###_A1_<slug>`, `TestUC###_BR1_<slug>`, table-driven avec sous-tests nommés.
 - Adapters factices en mémoire pour les tests de service ; aucun accès réel au compilateur ou au disque dans `internal/service`.
 - Tout comportement temporel ou concurrent est testé sous `testing/synctest`.
-- Exécute `make vet test` ; ne conclus pas tant que la suite ne passe pas.
+- Exécute `go vet ./... && go test -race -shuffle=on -count=1 ./...` (ou `make vet test` si `make` est installé) ; ne conclus pas tant que la suite ne passe pas.
 
 ## 6. Rendre compte (format obligatoire)
 ```

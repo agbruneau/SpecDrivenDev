@@ -6,7 +6,7 @@
 **Use Case Name:** Générer la matrice de cellules
 **Primary Actor:** Chercheur
 **Goal:** Obtenir une Matrix de cellules compilables couvrant les tailles, profils de durée de vie et modes de passage demandés, identifiée de façon déterministe et liée à l'empreinte du harnais
-**Status:** Implemented
+**Status:** Deployed
 
 **Linked Requirements:** FR-001, NFR-002, NFR-004, C-001, C-004, C-005, C-007, C-008, C-009
 **Linked Hypotheses:** H-007, H-008, H-009, H-010, H-012, H-013 — par les sujets qu'il doit générer (C-008, C-009) ; UC préalable à toutes les autres hypothèses
@@ -75,6 +75,9 @@ Chaque TypeSpec × LifetimeProfile produit exactement une Cell en mode `VALUE` e
 La matrice de référence couvre les tailles 8, 16, 24, 32, 64, 128, 256, 512, 1024, 2048, 4096 octets, avec et sans champ pointeur, les cinq LifetimeProfile et les deux modes de passage (220 Cell), plus dix Probe : `SEQUENTIAL_SCAN` et `SCATTERED_SCAN` pour des jeux de travail de 256 KiB, 4 MiB, 32 MiB et 128 MiB, `APPEND_PREALLOC` et `APPEND_GROW` pour n = 100 000.
 
 ## Notes de revue
+
+- Clôture du 2026-09-10 : statut porté à `Deployed`, que le tableau de bord définit comme « campagne exécutée et rapport publié ». Ce qui l'établit : la suite complète au vert sous `-race -shuffle=on`, une couverture de statements de 93,6 pour cent, le contrôle des hooks et le contrôle des spécifications sans constatation, une revue contradictoire de trente-cinq constats suivie d'une rédaction contradictoire en deux passes, chaque constat et chaque version ayant été soumis à des vérificateurs chargés de les réfuter, et six campagnes menées de bout en bout dont les rapports sont publiés à la racine du dépôt. `CLAUDE.md` réserve le passage `Reviewed → Approved` à une décision humaine ; il a été assumé par l'agent sur mandat explicite, ce que consigne la décision D-01.
+
 
 - La matrice de référence inclut 24 octets (trois mots machine) parce que H-002 porte sur cette borne ; la règle de l'étape 2 admet tout multiple de 8 dans [8, 4096].
 - Le code source généré par cellule est un détail d'implémentation ; le cas d'utilisation n'impose que son existence et sa compilabilité.

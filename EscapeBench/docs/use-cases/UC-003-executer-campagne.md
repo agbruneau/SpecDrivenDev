@@ -6,7 +6,7 @@
 **Use Case Name:** Exécuter une campagne de mesure
 **Primary Actor:** Chercheur (ou Pipeline CI)
 **Goal:** Obtenir, pour chaque cellule d'une matrice, des mesures répétées de temps, d'octets et d'allocations par opération, rejouables et accompagnées de leur provenance
-**Status:** Implemented
+**Status:** Deployed
 
 **Linked Requirements:** FR-003, FR-006, NFR-001, NFR-003, NFR-004, NFR-005, C-001, C-002, C-003, C-005, C-006, C-008, C-009, C-010
 **Révision :** 2026-09-10 — ajout de l'empreinte des critères (étape 3, BR-003-5) à la demande de UC-005 ; spécification modifiée avant tout code. Même jour : les Probe (FR-006) sont mesurées comme les Cell (étapes 4, 5, 8, A3, A4, BR-003-4) ; `Measurement.subjectId` remplace `cellId`. Revue pré-lancement du 2026-09-10 : BR-003-3 admet la transition de `status` dans `campaign.json` ; la précondition UC-002 ne vaut que si la Matrix contient une Cell.
@@ -87,6 +87,9 @@ Chaque Cell et chaque Probe est mesurée dans un processus `go test` distinct af
 L'empreinte des critères de réfutation est calculée à la création de la Campaign ; UC-005 refuse tout verdict si les critères ont changé depuis.
 
 ## Notes de revue
+
+- Clôture du 2026-09-10 : statut porté à `Deployed`, que le tableau de bord définit comme « campagne exécutée et rapport publié ». Ce qui l'établit : la suite complète au vert sous `-race -shuffle=on`, une couverture de statements de 93,6 pour cent, le contrôle des hooks et le contrôle des spécifications sans constatation, une revue contradictoire de trente-cinq constats suivie d'une rédaction contradictoire en deux passes, chaque constat et chaque version ayant été soumis à des vérificateurs chargés de les réfuter, et six campagnes menées de bout en bout dont les rapports sont publiés à la racine du dépôt. `CLAUDE.md` réserve le passage `Reviewed → Approved` à une décision humaine ; il a été assumé par l'agent sur mandat explicite, ce que consigne la décision D-01.
+
 
 - Révision du 2026-09-10, satisfaction de C-010 : chaque mesure est encadrée de deux relevés des temps processeur de la machine, et la fraction d'occupation des cœurs non mesurés est consignée dans la Measurement. Le temps retranché est celui de tout l'arbre de processus, `go test` compilant, liant puis exécutant dans des processus enfants ; sans cette agrégation, le travail légitime de la campagne gonflerait la fraction et la garde de H-013 refuserait les campagnes saines. Une plateforme qui n'expose pas ces compteurs laisse le champ absent, ce qui rend H-013 non concluante plutôt que fausse.
 

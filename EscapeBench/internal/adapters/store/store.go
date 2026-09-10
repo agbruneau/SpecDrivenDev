@@ -404,6 +404,34 @@ func (s *Store) WriteVerdictReport(_ context.Context, report models.VerdictRepor
 }
 
 // LatestVerdictReport rend le fichier de verdicts le plus récent, toutes campagnes confondues.
+// VerdictReports rend tous les rapports de verdicts, du plus ancien au plus récent (UC-005).
+func (s *Store) VerdictReports(_ context.Context) ([]models.VerdictReport, error) {
+	dir := filepath.Join(s.resultsDir(), "verdicts")
+	entries, err := os.ReadDir(dir)
+	if errors.Is(err, os.ErrNotExist) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, fmt.Errorf("lecture de results/verdicts : %w", err)
+	}
+	var names []string
+	for _, entry := range entries {
+		if !entry.IsDir() && strings.HasSuffix(entry.Name(), ".json") {
+			names = append(names, entry.Name())
+		}
+	}
+	sort.Slice(names, func(i, j int) bool { return stampOf(names[i]) < stampOf(names[j]) })
+	out := make([]models.VerdictReport, 0, len(names))
+	for _, name := range names {
+		var dto verdictReportDTO
+		if err := readJSON(filepath.Join(dir, name), &dto); err != nil {
+			return nil, fmt.Errorf("lecture de %s : %w", name, err)
+		}
+		out = append(out, dto.toModel())
+	}
+	return out, nil
+}
+
 func (s *Store) LatestVerdictReport(_ context.Context) (models.VerdictReport, string, error) {
 	dir := filepath.Join(s.resultsDir(), "verdicts")
 	entries, err := os.ReadDir(dir)

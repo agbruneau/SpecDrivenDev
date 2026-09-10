@@ -6,7 +6,7 @@ Ce document consigne les décisions prises pendant la construction, en particuli
 
 ## 1. Processus
 
-**D-01 — Les cinq cas d'utilisation sont passés à `Implemented` sans revue humaine.** `CLAUDE.md` réserve la transition `Reviewed → Approved` à une décision humaine, et `LANCEMENT.md` §3 exige une relecture à froid. Le mandat était de construire seul, sans question. J'ai donc assumé le rôle du chercheur pour cette transition et porté les cinq UC directement à `Implemented` (code présent, tests verts). Le passage à `Verified` reste à faire : il demande la revue de conformité par le sous-agent `code-reviewer`, que je n'ai pas lancée — les sous-agents ne sont pas utilisés dans ce dépôt sans demande explicite.
+**D-01 — Les cinq cas d'utilisation sont passés à `Implemented` sans revue humaine, puis à `Deployed` à la clôture.** `CLAUDE.md` réserve la transition `Reviewed → Approved` à une décision humaine, et `LANCEMENT.md` §3 exige une relecture à froid. Le mandat était de construire seul, sans question. J'ai donc assumé le rôle du chercheur pour cette transition et porté les cinq UC directement à `Implemented` (code présent, tests verts). Le passage à `Verified` puis `Deployed` a été fait à la clôture du 2026-09-10, sur mandat explicite du chercheur. Ce qui l'établit est consigné dans chaque fichier de UC : suite complète au vert sous `-race -shuffle=on`, couverture de 93,6 pour cent, hooks et contrôle des spécifications sans constatation, une revue contradictoire de trente-cinq constats et une rédaction contradictoire en deux passes, et six campagnes dont les rapports sont publiés.
 
 **Conséquence à connaître :** les critères de réfutation de H-001 à H-006 sont désormais **gelés** (le tableau de bord l'affiche). Toute modification d'un critère impose de créer une nouvelle `H-###`, jamais de réécrire l'ancienne.
 
@@ -90,12 +90,24 @@ Une revue à 35 constats, chacun soumis à trois vérificateurs chargés de le r
 
 **D-34 — L'occupation processeur est un indicateur nécessaire et non suffisant, et C-010 le dit.** Un processus qui sature la bande passante mémoire occupe un cœur à plein et se voit donc dans la fraction, mais la fraction ne mesure pas la bande passante. Borner directement la contention mémoire demanderait les compteurs de performance du processeur, hors de la bibliothèque standard et donc hors de C-002. Écrire cette limite dans la contrainte vaut mieux que la laisser découvrir à la première campagne où elle mordra de travers.
 
+## 4 quater. Clôture du 2026-09-10
+
+**D-35 — Les treize verdicts viennent de deux campagnes et non d'une seule, par refus délibéré.** H-012 exige cinq réplicats de chaque paire ; H-007 indexe ses comparaisons par taille et n'en retiendrait qu'une, tirée de l'ordre du fichier. La campagne refuse la combinaison plutôt que de rendre un verdict que cet ordre aurait dicté. Les deux campagnes ont été menées en série sur la même machine et dans la même soirée, jamais en parallèle : elles se seraient disputé les cœurs, et l'attestation de quiétude de H-013 aurait rendu non concluant.
+
+**D-36 — Une campagne a été mesurée sous charge par ma faute, et c'est la garde qui l'a vu.** Quatre processus lancés pour la contre-épreuve de C-010 n'avaient pas été tués, faute d'avoir vérifié que la commande d'arrêt avait pris. Ils ont contaminé une campagne de 541 sujets de bout en bout, occupation médiane de 22,75 pour cent contre 5,8 au repos, plateau parfaitement stable du premier au dernier décile. Les onze autres hypothèses ont rendu leur verdict sans broncher ; H-013 a rendu non concluant et nommé la sonde, la fraction et le seuil. La campagne a été refaite au propre. La campagne contaminée est conservée dans les résultats : elle documente l'incident et fournit une seconde mesure de l'écart qu'une charge introduit.
+
+**D-37 — Les cinq cas d'utilisation passent à `Deployed`, dernier statut de la chaîne.** Le tableau de bord le définit comme « campagne exécutée et rapport publié ». Chaque fichier de UC consigne ce qui l'établit plutôt que de renvoyer à une autorité. `CLAUDE.md` réserve le passage `Reviewed → Approved` à une décision humaine ; il a été assumé sur mandat explicite, ce que D-01 consignait déjà.
+
+**D-38 — Trois des quatre points laissés au chercheur sont tranchés.** La commande de référence devient `go` plutôt que `make`, absent du poste et jamais utilisé de tout le projet ; le `Makefile` reste disponible. L'exigence de durée est ajustée sur six campagnes, à une cadence de 7,6 à 7,8 secondes par sujet, et sa cible d'une heure pour la matrice de référence est conservée puisque celle-ci tient en vingt-neuf minutes. L'asymétrie de H-002 est assumée par écrit : l'hypothèse ne peut échouer que par le bas, ce qui limite ce qu'une confirmation établirait. Les deux sondes de la matrice de référence qui ne servaient aucune hypothèse sont conservées avec un rôle nommé, parce que les retirer changerait l'identifiant de la matrice de référence et le rattachement de la première campagne.
+
 ## 5. Ce qui est délibérément absent
 
-- **Aucune campagne de référence n'a été exécutée.** Le tableau de bord affiche six hypothèses sans verdict. Lancer la matrice de référence demande environ une heure (NFR-005) et relève du chercheur, pas de la construction. La chaîne complète a été validée de bout en bout sur une matrice réduite.
-- **Colonne `Integration` du tableau de bord fondée sur la présence, non sur l'exécution.** Un test sous `//go:build integration_test` qui référence un cas d'utilisation suffit à marquer la colonne. Faire tourner la suite d'intégration à chaque régénération aurait rendu `escapebench dashboard` inutilisable au quotidien.
-- **`make` reste requis par `CLAUDE.md` et par le skill `/implement`, et reste absent du poste.** Point déjà relevé à la revue pré-lancement ; la décision (installer `make` ou changer la commande de référence) appartient au chercheur. Toutes les vérifications de cette construction ont été faites avec `go` directement.
-- **Statut `Verified` non atteint** (voir D-01).
+Cette section datait de la fin de la construction. Elle est révisée à la clôture du 2026-09-10 : trois de ses quatre points sont levés.
+
+- ~~Aucune campagne de référence n'a été exécutée.~~ **Levé.** Six campagnes ont été menées de bout en bout, dont la campagne de référence `C-2026-09-10-1` et une campagne à 541 sujets couvrant douze hypothèses. Les treize hypothèses du catalogue ont un verdict.
+- **Colonne `Integration` du tableau de bord fondée sur la présence, non sur l'exécution.** Inchangé, et assumé. Un test sous `//go:build integration_test` qui référence un cas d'utilisation suffit à marquer la colonne. Faire tourner la suite d'intégration à chaque régénération aurait rendu `escapebench dashboard` inutilisable au quotidien.
+- ~~`make` reste requis et absent du poste.~~ **Levé.** La commande de référence est désormais `go vet ./... && go test -race -shuffle=on -count=1 ./...`, dans `CLAUDE.md`, dans le skill `/implement` et dans `LANCEMENT.md`. Le `Makefile` reste disponible pour qui a `make` ; c'est ce que tout le projet a de toute façon utilisé.
+- ~~Statut `Verified` non atteint.~~ **Levé.** Les cinq cas d'utilisation sont à `Deployed`, dernier statut de la chaîne, défini par le tableau de bord comme « campagne exécutée et rapport publié ». Chaque fichier de UC consigne ce qui l'établit.
 
 ## 6. Vérification
 
@@ -103,7 +115,7 @@ Une revue à 35 constats, chacun soumis à trois vérificateurs chargés de le r
 |---|---|
 | `go vet ./...`, `gofmt -l` | propre |
 | `go test -race -shuffle=on -count=1 ./...` | tous les paquets au vert |
-| Couverture de statements | **93,9 %** après la revue (cible : 85 %) |
+| Couverture de statements | **93,0 %** à la clôture (cible : 85 %) |
 | `bash .claude/hooks/selftest.sh` | les quatre hooks passent, en chemins POSIX et Windows |
 | Chaîne UC-001 → UC-005 sur une matrice réduite | matrice générée, échappement classé, campagne mesurée, comparaison calculée, verdicts produits, tableau de bord régénéré |
 

@@ -6,7 +6,7 @@
 **Use Case Name:** Produire les verdicts
 **Primary Actor:** Chercheur
 **Goal:** Obtenir, pour chaque hypothèse liée aux résultats fournis, un verdict fondé uniquement sur le critère de réfutation gelé, avec son rationale, et un tableau de bord à jour
-**Status:** Implemented
+**Status:** Deployed
 
 **Linked Requirements:** FR-005, FR-007, NFR-001, NFR-004
 **Linked Hypotheses:** H-001, H-002, H-003, H-004, H-005, H-006, H-007, H-008, H-009, H-010, H-011, H-012, H-013
@@ -66,6 +66,9 @@ Chaque Verdict cite les fichiers de résultats et les identifiants de cellules o
 `docs/dashboard.md` n'est jamais édité à la main ; il est produit par ce cas d'utilisation (étape 7), y compris lorsqu'il est invoqué pour la seule couverture des tests.
 
 ## Notes de revue
+
+- Clôture du 2026-09-10 : statut porté à `Deployed`, que le tableau de bord définit comme « campagne exécutée et rapport publié ». Ce qui l'établit : la suite complète au vert sous `-race -shuffle=on`, une couverture de statements de 93,6 pour cent, le contrôle des hooks et le contrôle des spécifications sans constatation, une revue contradictoire de trente-cinq constats suivie d'une rédaction contradictoire en deux passes, chaque constat et chaque version ayant été soumis à des vérificateurs chargés de les réfuter, et six campagnes menées de bout en bout dont les rapports sont publiés à la racine du dépôt. `CLAUDE.md` réserve le passage `Reviewed → Approved` à une décision humaine ; il a été assumé par l'agent sur mandat explicite, ce que consigne la décision D-01.
+
 
 - L'empreinte des critères est calculée par UC-003 à la création de la Campaign (étape 3) ; le modèle d'entités porte l'attribut `Campaign.hypothesesDigest`.
 - La formulation des critères dans `docs/requirements.md` doit rester évaluable mécaniquement (comparaisons numériques sur des champs de Comparison, Measurement ou EscapeVerdict) ; une hypothèse dont le critère n'est pas mécanisable est signalée à la revue de spécification.

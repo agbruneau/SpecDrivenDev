@@ -9,7 +9,7 @@ Procédure de la première itération complète (UC-001 → UC-005, première ca
 | Go | ≥ 1.25 (`go version`) ; `go.mod` déclare `go 1.25`, la toolchain se télécharge seule si `GOTOOLCHAIN=auto` | C-001 ; vérifié : le squelette compile avec go1.25.0 et go1.27.0 (poste au 2026-09-10 ; la campagne consigne la version réelle, NFR-001) |
 | Claude Code | version 2.x ; sous Windows, Git Bash natif suffit (hooks vérifiés avec des chemins `C:\...` le 2026-09-10) ; WSL2 reste possible | ACC p. 20, 67 ; `.claude/hooks/*.sh` |
 | `jq`, `bash`, `git` | requis par les hooks | `.claude/hooks/*.sh` |
-| `make` | requis par `CLAUDE.md` (`make vet test`) et par `/implement` ; **absent du poste Windows au 2026-09-10** — installer (`winget install GnuWin32.Make`) ou travailler en WSL2 | `Makefile` |
+| `make` | **facultatif depuis le 2026-09-10** ; la commande de référence est `go vet ./... && go test -race -shuffle=on -count=1 ./...`, et le `Makefile` reste disponible pour qui a `make` | `Makefile` |
 | Docker | non requis pour P1 | — |
 | `benchstat` | optionnel : `go install golang.org/x/perf/cmd/benchstat@latest` | C-002 (hors BEPG) |
 | Plugin `aiup-core` | optionnel, pour rédiger de futurs UC : `/plugin marketplace add ai-unified-process/marketplace` puis `/plugin install aiup-core` | unifiedprocess.ai/tools.html ; ACC passe par l'UI `/plugin` (p. 126) |
@@ -18,7 +18,7 @@ Procédure de la première itération complète (UC-001 → UC-005, première ca
 
 1. Copier le dossier `EscapeBench/` hors de `Prospection/` (dépôt dédié, ex. `github.com/agbruneau/escapebench` — module déjà nommé ainsi dans `go.mod`).
 2. `git init && git add -A && git commit -m "init: noyau de spécification AIUP et outillage Claude Code"`.
-3. `make vet test` doit réussir (aucun test, compilation propre).
+3. `go vet ./... && go test -race -shuffle=on -count=1 ./...` doit réussir.
 4. `bash .claude/hooks/selftest.sh` doit afficher « hooks : tous les contrôles passent ».
 5. `chmod +x .claude/hooks/*.sh` si les droits ont été perdus à la copie.
 
@@ -61,7 +61,7 @@ Pour chaque UC :
 
 | Étape | Commande | Critère de passage |
 |---|---|---|
-| Generate | `/implement UC-00n` | rapport « Projection » complet, `make vet test` vert |
+| Generate | `/implement UC-00n` | rapport « Projection » complet, `go vet` et la suite de tests au vert |
 | Tests | `/go-test UC-00n` | matrice flux/règle → test sans trou |
 | Validate | `/spec-coverage UC-00n` | ligne du tableau de bord `Unit ✔` |
 | Review | « Demande au sous-agent code-reviewer une revue de UC-00n » | `Verdict : CONFORME` ; sinon corriger la spec ou relancer `/implement` |

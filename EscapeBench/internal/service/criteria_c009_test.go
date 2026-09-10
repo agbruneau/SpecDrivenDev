@@ -341,3 +341,42 @@ func TestUC004_PointDeBasculeNonPublieSurSerieRepliquee(t *testing.T) {
 		t.Fatal("les séries non répliquées du même fichier doivent rester publiées")
 	}
 }
+
+// UC-005, C-009 : le tableau de bord agrège toutes les campagnes. Une campagne ne couvre que les
+// hypothèses qu'elle a gelées, et H-007 comme H-012 ne peuvent pas cohabiter dans la même. Ne lire
+// que le dernier rapport effacerait donc du tableau les verdicts des campagnes précédentes.
+func TestUC005_LeTableauDeBordAgregeLesCampagnes(t *testing.T) {
+	t.Parallel()
+	f := newVerdictFixture(t)
+	f.store.verdicts = []models.VerdictReport{
+		{CampaignID: "C-1", Verdicts: []models.Verdict{
+			{HypothesisID: "H-001", CampaignID: "C-1", Outcome: models.OutcomeRefuted, Rationale: "r"},
+			{HypothesisID: "H-003", CampaignID: "C-1", Outcome: models.OutcomeConfirmed, Rationale: "r"},
+		}},
+		{CampaignID: "C-2", Verdicts: []models.Verdict{
+			{HypothesisID: "H-006", CampaignID: "C-2", Outcome: models.OutcomeConfirmed, Rationale: "r"},
+		}},
+	}
+	if _, err := f.service.Dashboard(context.Background()); err != nil {
+		t.Fatalf("Dashboard : %v", err)
+	}
+	rows := map[string]string{}
+	for _, h := range f.dashboard.data.Hypotheses {
+		rows[h.ID] = h.CampaignID + "/" + h.Outcome
+	}
+	// Le verdict de la première campagne survit à la seconde, qui ne le couvre pas.
+	if rows["H-001"] != "C-1/REFUTED" {
+		t.Fatalf("H-001 = %q, la campagne précédente doit survivre", rows["H-001"])
+	}
+	if rows["H-003"] != "C-1/CONFIRMED" {
+		t.Fatalf("H-003 = %q", rows["H-003"])
+	}
+	// La seconde campagne ne couvre qu'une hypothèse ; c'est elle qui l'emporte pour celle-là.
+	if rows["H-006"] != "C-2/CONFIRMED" {
+		t.Fatalf("H-006 = %q", rows["H-006"])
+	}
+	// Une hypothèse qu'aucune campagne n'a couverte reste sans verdict.
+	if rows["H-002"] != "/" {
+		t.Fatalf("H-002 = %q, aucun verdict attendu", rows["H-002"])
+	}
+}

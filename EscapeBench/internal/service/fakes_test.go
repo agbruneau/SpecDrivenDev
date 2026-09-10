@@ -343,6 +343,12 @@ func (s *memoryStore) LatestVerdictReport(context.Context) (models.VerdictReport
 	return latest, "results/verdicts/latest.json", nil
 }
 
+// VerdictReports rend tous les rapports, du plus ancien au plus récent (C-009 : le tableau de bord
+// agrège les campagnes, deux hypothèses ne pouvant pas cohabiter dans l'une d'elles).
+func (s *memoryStore) VerdictReports(context.Context) ([]models.VerdictReport, error) {
+	return append([]models.VerdictReport(nil), s.verdicts...), nil
+}
+
 type fakeRunner struct {
 	measurements map[string]models.Measurement
 	err          error

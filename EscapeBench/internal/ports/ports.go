@@ -120,6 +120,11 @@ type CampaignStore interface {
 type VerdictStore interface {
 	WriteVerdictReport(ctx context.Context, report models.VerdictReport) (string, error)
 	LatestVerdictReport(ctx context.Context) (models.VerdictReport, string, error)
+	// VerdictReports rend tous les rapports, du plus ancien au plus récent. Le tableau de bord en
+	// a besoin : une campagne ne couvre que les hypothèses qu'elle a gelées, et deux hypothèses du
+	// catalogue ne peuvent pas cohabiter dans une même campagne (C-009). Ne lire que le dernier
+	// rapport effacerait donc du tableau les verdicts que les campagnes précédentes ont rendus.
+	VerdictReports(ctx context.Context) ([]models.VerdictReport, error)
 }
 
 // HypothesisSource lit les hypothèses et leurs critères dans docs/requirements.md (BR-003-5).

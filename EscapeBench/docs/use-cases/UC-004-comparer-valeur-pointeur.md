@@ -6,7 +6,7 @@
 **Use Case Name:** Comparer valeur et pointeur
 **Primary Actor:** Chercheur
 **Goal:** Obtenir, pour chaque paire de cellules (`VALUE`, `POINTER`) d'une campagne complétée, la différence de temps par opération avec son intervalle de confiance, et le point de bascule par profil de durée de vie
-**Status:** Implemented
+**Status:** Deployed
 
 **Linked Requirements:** FR-004, NFR-003, NFR-004, C-002, C-009
 **Linked Hypotheses:** H-001, H-002, H-007, H-010, H-012
@@ -69,6 +69,9 @@ Aucune Measurement n'est écartée sans qu'une entrée d'exclusion, avec sa rais
 Un fichier de comparaison n'est jamais réécrit ; un nouveau calcul produit un nouveau fichier horodaté.
 
 ## Notes de revue
+
+- Clôture du 2026-09-10 : statut porté à `Deployed`, que le tableau de bord définit comme « campagne exécutée et rapport publié ». Ce qui l'établit : la suite complète au vert sous `-race -shuffle=on`, une couverture de statements de 93,6 pour cent, le contrôle des hooks et le contrôle des spécifications sans constatation, une revue contradictoire de trente-cinq constats suivie d'une rédaction contradictoire en deux passes, chaque constat et chaque version ayant été soumis à des vérificateurs chargés de les réfuter, et six campagnes menées de bout en bout dont les rapports sont publiés à la racine du dépôt. `CLAUDE.md` réserve le passage `Reviewed → Approved` à une décision humaine ; il a été assumé par l'agent sur mandat explicite, ce que consigne la décision D-01.
+
 
 - Révision du 2026-09-10, satisfaction de C-009 : le point de bascule d'une série répliquée n'est pas publié. Une telle série porte plusieurs Comparison par taille ; le balayage descendant de l'étape 5 s'arrête au premier élément défavorable et le tri par taille n'est pas stable, de sorte que le résultat dépendrait de l'ordre du fichier. Aucun critère gelé ne lit ce point de bascule — H-012 groupe ses réplicats par ses propres attributs — et les séries non répliquées du même fichier restent publiées.
 

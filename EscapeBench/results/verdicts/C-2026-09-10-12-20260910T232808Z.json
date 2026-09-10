@@ -1,0 +1,15 @@
+{
+  "campaignId": "C-2026-09-10-12",
+  "producedAt": "2026-09-10T23:28:08.7846251Z",
+  "verdicts": [
+    {
+      "hypothesisId": "H-012",
+      "campaignId": "C-2026-09-10-12",
+      "outcome": "CONFIRMED",
+      "rationale": "aucune des 5 cellules jugées ne donne l'avantage au pointeur, et toutes sont résolues : 8 octets sans champ pointeur : plancher 0.0506, barrière 0.0811, seuil 0.0811, ciHigh [-0.0138, 0.0095, 0.0384, 0.0881, 0.0445], 0/5 réplicats franchissent, 16 octets sans champ pointeur : plancher 0.0262, barrière 0.0918, seuil 0.0918, ciHigh [0.0571, -0.1379, -0.0113, -0.0241, 0.0097], 1/5 réplicats franchissent, 24 octets sans champ pointeur : plancher 0.0580, barrière 0.0748, seuil 0.0748, ciHigh [0.3287, 0.3319, 0.3925, 0.4270, 0.3370], 0/5 réplicats franchissent, 16 octets avec champ pointeur : plancher 0.0252, barrière 0.0831, seuil 0.0831, ciHigh [0.1032, 0.0521, 0.0953, 0.0596, 0.1308], 0/5 réplicats franchissent, 24 octets avec champ pointeur : plancher 0.0388, barrière 0.0769, seuil 0.0769, ciHigh [0.3267, 0.3385, 0.3695, 0.3733, 0.3321], 0/5 réplicats franchissent, 8 octets avec champ pointeur : plancher 0.0789, barrière 0.0787, seuil 0.0789, ciHigh [-0.1326, -0.1399, -0.2562, -0.2154, -0.1871], 5/5 réplicats franchissent [écartée du jugement : le type n'a qu'un champ, qui est le pointeur]",
+      "resultFiles": [
+        "results/campaigns/C-2026-09-10-12/comparison-20260910T232755Z.json"
+      ]
+    }
+  ]
+}

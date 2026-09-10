@@ -253,10 +253,17 @@ func (s *VerdictService) Dashboard(ctx context.Context) (string, error) {
 	}
 
 	frozen := frozenHypotheses(useCases, catalogue)
-	latest, _, err := s.verdicts.LatestVerdictReport(ctx)
+	// Tous les rapports sont lus, du plus ancien au plus récent, et le dernier verdict rendu sur
+	// une hypothèse l'emporte. Ne lire que le dernier rapport effacerait du tableau les hypothèses
+	// que la dernière campagne n'a pas gelées, et deux d'entre elles ne peuvent pas cohabiter dans
+	// une même campagne (C-009).
 	byHypothesis := map[string]models.Verdict{}
-	if err == nil {
-		for _, verdict := range latest.Verdicts {
+	reports, err := s.verdicts.VerdictReports(ctx)
+	if err != nil {
+		return "", err
+	}
+	for _, report := range reports {
+		for _, verdict := range report.Verdicts {
 			byHypothesis[verdict.HypothesisID] = verdict
 		}
 	}

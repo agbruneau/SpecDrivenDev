@@ -6,7 +6,7 @@
 **Use Case Name:** Classer l'échappement
 **Primary Actor:** Chercheur
 **Goal:** Obtenir, pour chaque cellule d'une matrice, un verdict d'échappement reproductible accompagné de la raison rapportée par le compilateur et de sa catégorie
-**Status:** Implemented
+**Status:** Deployed
 
 **Linked Requirements:** FR-002, NFR-001, NFR-002, C-001, C-003, C-005, C-009
 **Linked Hypotheses:** H-006, H-009
@@ -72,6 +72,9 @@ Une raison d'échappement qui n'appartient à aucune des quatre causes de BEPG p
 Un fichier de verdicts n'est jamais réécrit ; toute nouvelle classification crée un nouveau fichier.
 
 ## Notes de revue
+
+- Clôture du 2026-09-10 : statut porté à `Deployed`, que le tableau de bord définit comme « campagne exécutée et rapport publié ». Ce qui l'établit : la suite complète au vert sous `-race -shuffle=on`, une couverture de statements de 93,6 pour cent, le contrôle des hooks et le contrôle des spécifications sans constatation, une revue contradictoire de trente-cinq constats suivie d'une rédaction contradictoire en deux passes, chaque constat et chaque version ayant été soumis à des vérificateurs chargés de les réfuter, et six campagnes menées de bout en bout dont les rapports sont publiés à la racine du dépôt. `CLAUDE.md` réserve le passage `Reviewed → Approved` à une décision humaine ; il a été assumé par l'agent sur mandat explicite, ce que consigne la décision D-01.
+
 
 - Les motifs de classification (expressions reconnues dans la sortie du compilateur) sont une implémentation ; ils vivent dans `internal/adapters/escape` et non dans ce cas d'utilisation.
 - La liste des catégories est celle du modèle d'entités ; l'ajout d'une catégorie passe par une mise à jour de `entity-model.md` puis de ce cas d'utilisation.
