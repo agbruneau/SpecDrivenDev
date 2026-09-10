@@ -2,7 +2,9 @@
 
 **Source analysée :** Saeed Shahsavan, *Building Enterprise Projects with Go: Clarity at Scale in Production-Grade Go Systems*, Apress, 2026, ISBN 979-8-8688-2370-1, DOI 10.1007/979-8-8688-2370-1, 611 pages PDF, 20 chapitres en deux parties. Dépôt de code du livre : `github.com/shahsavan/building-enterprise-projects-with-go` (vérifié en ligne le 2026-09-10 : dix répertoires numérotés `01-hello-world` → `10-more-examples`, sans README).
 
-**Date :** 2026-09-10 · **Longueur :** ~6 300 mots (tableaux compris).
+**Méthode d'implémentation :** Simon Martinelli, *Spec-Driven Development: From Specs to Code with AI Agents*, Apress Pocket Guides, 2026, ISBN 979-8-8688-2851-5 (AI Unified Process) — détaillée dans `Guide-implementation_AIUP-Claude-Code.md` ; exemple travaillé dans `EscapeBench/`.
+
+**Date :** 2026-09-10 · **Version :** 2 (ajout de la méthode d'implémentation et des noyaux de spécification) · **Longueur :** ~8 000 mots (tableaux compris).
 
 ---
 
@@ -16,7 +18,8 @@ Le livre fournit une quarantaine d'affirmations réfutables, concentrées dans l
 - **Ancrage** : concepts et outils du livre uniquement. Les outils absents du livre mais nécessaires à un protocole (ex. `benchstat`, `goleak`, `go/analysis`) sont signalés explicitement comme **hors livre**.
 - **Ligne de base** : Go 1.25 (celle du livre). Vérifié dans les notes de version officielles (go.dev/doc/go1.25, publiée août 2025) : `testing/synctest` est stable en 1.25 ; `GOMAXPROCS` tient compte de la limite CPU cgroup et se met à jour périodiquement ; Green Tea GC est expérimental (`GOEXPERIMENT=greenteagc`) ; `encoding/json/v2` est expérimental (`GOEXPERIMENT=jsonv2`).
 - **Pagination** : les pages citées sont les folios imprimés tels qu'ils figurent dans la table des matières du livre (ex. « ch. 18, p. 469 »). L'extraction texte du PDF présente un décalage variable (de +3 à +10 pages) entre l'index PDF et le folio ; les références ci-dessous ont été alignées sur la table des matières.
-- **Marqueurs épistémiques** : *Confirmé* = présent dans le livre ou vérifié dans une source primaire ; *Probable* = inférence directe ; *Hypothèse* = proposition à éprouver ; *À vérifier* = non vérifiable ici.
+- **Méthode d'implémentation** : chaque projet est conduit selon l'AI Unified Process (Martinelli, 2026) — dossier `/docs` faisant autorité, catalogue `FR/NFR/C` étendu d'un type `H-###` (hypothèse à éprouver, critère de réfutation gelé avant mesure), cas d'utilisation système exécutables, implémentation par Claude Code sur un identifiant (`/implement UC-###`), synchronisation plutôt que régénération. Le guide précise ce qui est repris du livre et ce qui est adapté aux bancs de réfutation.
+- **Marqueurs épistémiques** : *Confirmé* = présent dans le livre ou vérifié dans une source primaire ; *Probable* = inférence directe ; *Hypothèse* = proposition à éprouver ; *À vérifier* = non vérifiable ici ; *Adaptation* = écart délibéré par rapport à un livre, justifié.
 
 ## 3. Points de vigilance relevés dans le livre
 
@@ -29,10 +32,12 @@ Ces écarts méritent d'être connus avant de bâtir un protocole sur le texte.
 | « the new `os.Environ()` iterator » (ch. 12, p. 340) | *À vérifier* — aucune trace d'un itérateur `os.Environ` dans les notes 1.25 consultées | go.dev/doc/go1.25 |
 | Client Pulsar Go v0.18.0 « as of late 2026 » (ch. 18, p. 469) | *Confirmé* — annonce de release 0.18.0 sur la liste `users@pulsar.apache.org` | mail-archive.com |
 | Layout hexagonal du ch. 14 mentionnant Kafka (`adapters/kafka`, `schema/`) alors que le projet utilise Pulsar (ch. 10, p. 305) | *Confirmé* — incohérence interne, sans conséquence sur les projets | PDF |
+| *Stack plugins* AIUP extensibles « à d'autres piles » (SDD, p. 103–104) | *Confirmé* pour Vaadin/jOOQ, Angular/JPA, Blazor/.NET, NestJS/Next.js ; **aucun plugin Go** — la couche Go se construit en skills de projet (guide, §6) | unifiedprocess.ai/tools.html ; github.com/AI-Unified-Process/marketplace |
+| Noms de commandes du livre SDD (`/entity_model` p. 117, `/browerless-test`, `/playwright_-est` p. 130) | *Confirmé* — divergent du *marketplace* (`/entity-model`, `/browserless-test`, `/playwright-test`) ; le livre prévient que les noms sont illustratifs (p. 114) | PDF ; marketplace |
 
 ## 4. Cartographie des affirmations réfutables du livre
 
-Le tableau retient les affirmations formulées de façon assez précise pour être mesurées ou contredites. Chaque ligne alimente au moins un projet de la section 6.
+Le tableau retient les affirmations formulées de façon assez précise pour être mesurées ou contredites. Chaque ligne alimente au moins un projet de la section 7 et devient, dans le noyau de spécification du projet, une hypothèse `H-###` au critère de réfutation gelé.
 
 | Ch. | Section (p.) | Affirmation (paraphrase fidèle) | Projet |
 |---|---|---|---|
@@ -84,7 +89,26 @@ Cinq critères notés de 1 à 5. *Réfutabilité* : nombre et précision des aff
 
 Les scores de P1, P3 et P4 sont indiscernables ; l'ordre P1 → P3 → P4 est dicté par la vitesse de la boucle de rétroaction (P1 se mesure en secondes) et par la dépendance de P3 sur le vocabulaire de P1 (allocations, pression GC).
 
-## 6. Fiches des projets candidats
+## 6. Méthode d'implémentation commune (AI Unified Process)
+
+Les huit projets partagent une même méthode, décrite dans `Guide-implementation_AIUP-Claude-Code.md` et illustrée par `EscapeBench/`. Trois règles gouvernent l'exécution avec Claude Code, toutes issues du livre de Martinelli (SDD) : le comportement ne change jamais sans mise à jour préalable de la spécification (p. 139) ; toute demande à l'agent nomme un identifiant — `/implement UC-###`, jamais « améliore le harnais » (p. 66, 147) ; la revue commence par la spécification, puis vérifie la conformité du code et la couverture des flux par les tests (p. 76). L'adaptation propre à ce portefeuille tient dans le type d'exigence `H-###` : chaque affirmation du tableau de la section 4 devient une hypothèse identifiée, avec source, énoncé réfutable et critère de réfutation gelé au moment où le cas d'utilisation de mesure passe au statut `Approved`.
+
+Chaque fiche de la section 7 se termine par un paragraphe « Noyau de spécification (AIUP) » qui fixe l'acteur, les cas d'utilisation attendus, les entités pivots et les skills Claude Code mobilisés. Le tableau suivant en donne la vue d'ensemble.
+
+| Projet | Acteurs | UC attendus | Entités pivots | Skills (guide, §6) | Infra pour les tests d'intégration |
+|---|---|---|---|---|---|
+| P1 EscapeBench | Chercheur, Pipeline CI | 5 | Cell, EscapeVerdict, Campaign, Measurement, Verdict | `/go-test`, `/bench`, `/refute` | aucune |
+| P2 GoroutineCost | Chercheur, Pipeline CI | 5 | Workload, Executor, CgroupLimit, RuntimeSample, Verdict | `/implement`, `/bench`, `/refute` | Docker (cgroups) |
+| P3 LeakLab | Chercheur | 5 | Case, Detector, DetectionResult, Verdict | `/implement`, `/go-test`, `/spec-coverage` | aucune |
+| P4 HexaGuard | Chercheur, Pipeline CI, Agent d'implémentation | 4 | Module, Layer, ImportEdge, Violation, ChangeCost | `/implement`, `/migration`, `/integration-test` | MySQL (optionnel) |
+| P5 ContractEvo | Chercheur | 7 | Contract, Mutation, DeploymentCombination, DetectionPoint | `/implement`, `/integration-test`, `/refute` | Pulsar |
+| P6 PulsarTune | Chercheur, Pipeline CI | 5 | ParameterSet, LoadProfile, Cell, Metrics, Verdict | `/implement`, `/bench`, `/refute` | Pulsar 4.0.x |
+| P7 EdgeResilience | Chercheur | 5 | Scenario, ServerConfig, RetryPolicy, AmplificationFactor | `/implement`, `/integration-test`, `/bench` | Docker Compose |
+| P8 PersistEcon | Chercheur | 6 | Dataset, PoolConfig, RepositoryImpl, ExecutionPlan | `/migration`, `/implement`, `/integration-test`, `/bench` | MySQL 8.0.44 |
+
+Le nombre de cas d'utilisation est une estimation de cadrage (*Hypothèse*) ; le livre recommande de commencer par un seul, petit et contesté (SDD, p. 149, 152).
+
+## 7. Fiches des projets candidats
 
 Chaque fiche suit le même plan : concepts du livre, question de recherche, affirmations à éprouver, protocole, livrables, rôle de Claude Code, compromis principal, alternative, conditions de renversement, effort (hypothèse).
 
@@ -101,6 +125,8 @@ Chaque fiche suit le même plan : concepts du livre, question de recherche, affi
 **Livrables.** Module Go `escapebench` (générateur de matrice + banc), rapport de résultats par architecture et par version de Go (1.24, 1.25, et la version courante), catalogue des motifs d'échappement observés comparé à la liste p. 238–242.
 
 **Rôle de Claude Code.** Génération de la matrice de types et des benchmarks table-driven (ch. 7, p. 213) ; parseur de la sortie `-gcflags=-m` ; boucle agentique « générer une cellule → exécuter → classer → consigner » avec un `CLAUDE.md` fixant les invariants (ne jamais modifier le harnais pendant une campagne, `-count` minimal, seuils statistiques). Sous-agents pour paralléliser les campagnes par architecture (conteneurs `arm64` via QEMU ou machine distante).
+
+**Noyau de spécification (AIUP).** Acteur : Chercheur (Pipeline CI pour les campagnes). Cas d'utilisation : UC-001 générer la matrice de cellules, UC-002 classer l'échappement, UC-003 exécuter une campagne de mesure, UC-004 comparer valeur et pointeur, UC-005 produire les verdicts. Entités : TypeSpec, LifetimeProfile, Cell, Matrix, EscapeVerdict, Provenance, Campaign, Measurement, Comparison, Hypothesis, Verdict. Hypothèses H-001 à H-006 = affirmations (a) à (f), critères gelés dans `EscapeBench/docs/requirements.md`. Skills : `/go-test`, `/bench H-###`, `/refute H-###`. Noyau rédigé : `EscapeBench/` (UC-002 et UC-003 au statut Reviewed).
 
 **Compromis principal.** Micro-benchmarks : précision élevée, validité externe faible. Le livre lui-même prévient que l'analyse d'échappement « varies between compiler versions » (p. 242) : les résultats sont datés par construction.
 
@@ -124,6 +150,8 @@ Chaque fiche suit le même plan : concepts du livre, question de recherche, affi
 
 **Rôle de Claude Code.** Génération des exécuteurs à partir des listings du ch. 20 ; script Docker de sweep ; collecte et agrégation ; commande `/sweep` dédiée ; hooks pour exécuter `-race` sur les exécuteurs avant chaque campagne.
 
+**Noyau de spécification (AIUP).** Acteur : Chercheur (Pipeline CI pour les sweeps Docker). Cas d'utilisation : générer une charge (durée, nature, cardinalité), exécuter un scénario avec un exécuteur donné, exécuter sous limite cgroup avec changement à chaud, comparer les exécuteurs, produire les verdicts. Entités : Workload, Executor (`GOROUTINE_PER_TASK`, `WORKER_POOL`), CgroupLimit, Run, RuntimeSample (MemStats, NumGoroutine, gctrace), Comparison, Hypothesis, Verdict. Hypothèses H-001 à H-006 = (a) à (f) ; (d) et (e) portent une contrainte `C-###` « cgroups v2 disponibles ». Skills : `/implement` (exécuteurs du ch. 20), `/bench`, `/refute` ; campagne en `claude -p`.
+
 **Compromis principal.** La charge synthétique isole les variables mais ignore les effets d'un vrai broker ou d'une base (les tâches réelles bloquent sur le réseau, ce qui change l'ordonnancement).
 
 **Alternative.** Instrumenter le consommateur Pulsar du ch. 18 avec les deux exécuteurs et mesurer en charge réelle — recoupe P6.
@@ -145,6 +173,8 @@ Chaque fiche suit le même plan : concepts du livre, question de recherche, affi
 **Livrables.** Corpus versionné (chaque cas = un `_test.go` documenté), analyseur `go vet`-compatible, matrice de détectabilité, recommandation de pipeline CI (ordre et coût des détecteurs).
 
 **Rôle de Claude Code.** Génération du corpus par sous-agents indépendants (un sous-agent par anti-patron, chacun produisant cas fautif + correction + test), écriture de l'analyseur, boucle « muter → exécuter les cinq détecteurs → consigner ». Hook post-édition exécutant `go vet` avec l'analyseur maison sur tout le dépôt.
+
+**Noyau de spécification (AIUP).** Acteur : Chercheur. Cas d'utilisation : ajouter un cas au corpus (fautif et correction), exécuter un détecteur sur un cas, exécuter la matrice complète, calculer la matrice de détectabilité, produire les verdicts. Entités : Case (AntiPattern, variant, expectedLeak), Detector (`BARE`, `RACE`, `SYNCTEST`, `NUMGOROUTINE`, `ANALYZER`), Run, DetectionResult, DetectabilityMatrix, Hypothesis, Verdict. Hypothèses H-001 à H-006 = (a) à (f). Skills : `/implement` pour l'analyseur `go/analysis` (**hors livre**), sous-agents par anti-patron pour le corpus, `/go-test` avec `testing/synctest`, `/spec-coverage`.
 
 **Compromis principal.** Un corpus synthétique surestime la détectabilité : les fuites réelles sont enfouies dans des chemins d'erreur rarement exercés. En contrepartie, le corpus est le seul moyen d'obtenir une vérité terrain.
 
@@ -168,6 +198,8 @@ Chaque fiche suit le même plan : concepts du livre, question de recherche, affi
 
 **Rôle de Claude Code.** Scaffolding du squelette à partir des listings des ch. 14–16 ; écriture de `hexaguard` ; exécution des trois changements en boucle agentique avec mesure automatique du diff ; `hexaguard` branché en hook pour empêcher toute violation pendant les changements — ce qui teste en passant si un agent respecte mieux l'architecture avec un garde-fou exécutable qu'avec un `CLAUDE.md` seul (*Hypothèse* secondaire, mesurable par le nombre de violations bloquées).
 
+**Noyau de spécification (AIUP).** Acteurs : Chercheur ; Pipeline CI et Agent d'implémentation (via hook) comme acteurs secondaires. Cas d'utilisation : vérifier la conformité d'un module aux règles (a)–(d), signaler les interfaces à implémentation unique, mesurer le coût d'un scénario de changement (diff par couche, tests touchés), comparer squelette conforme et squelette dégradé. Entités : Module, Package, Layer (`MODELS`, `SERVICE`, `PORTS`, `ADAPTERS`, `CMD`), ImportEdge, Rule, Violation, ChangeScenario, ChangeCost, Hypothesis, Verdict. Hypothèses H-001 à H-006 = (a) à (f). Skills : `/implement` (squelette des ch. 14–16), `/migration` (MySQL), `/integration-test`, `hexaguard` en hook `PostToolUse` dès qu'il existe.
+
 **Compromis principal.** Le coût de changement mesuré sur trois scénarios choisis par l'expérimentateur est sensible au choix des scénarios ; la conclusion vaut pour la classe « remplacement d'adapter », pas pour les changements de domaine.
 
 **Alternative.** Utiliser un outil de règles d'architecture existant (ex. `go-arch-lint`, **hors livre**) plutôt que d'écrire `hexaguard` ; moins de contrôle sur la sémantique des règles (b) et (d).
@@ -189,6 +221,8 @@ Chaque fiche suit le même plan : concepts du livre, question de recherche, affi
 **Livrables.** Matrice mutation × technologie × point de détection, harnais rejouable, note de synthèse sur les mutations « silencieuses » (celles qu'aucune couche ne détecte).
 
 **Rôle de Claude Code.** Génération des trois définitions à partir de la spécification OpenAPI du ch. 15 (p. 379–381) ; application mécanique du catalogue de mutations ; orchestration des quatre combinaisons de déploiement par scénario ; sous-agent par technologie.
+
+**Noyau de spécification (AIUP).** Acteur : Chercheur. Cas d'utilisation : définir le contrat de référence dans les trois IDL, appliquer une mutation du catalogue, générer le code, exécuter les quatre combinaisons de déploiement, exécuter sous une stratégie de compatibilité Avro, consigner le point de détection, produire les verdicts. Entités : Contract (`OPENAPI`, `PROTOBUF`, `AVRO`), Mutation, Generation, DeploymentCombination, CompatibilityStrategy (`BACKWARD`, `FORWARD`, `FULL`), DetectionPoint (`COMPILE`, `REGISTRATION`, `RUNTIME`, `SILENT`), Hypothesis, Verdict. Hypothèses H-001 à H-007 = (a) à (g). Skills : `/implement` (ports génériques du ch. 18, adapters `oapi-codegen`/`protoc`), `/integration-test` (Pulsar sous `testcontainers-go`), `/refute`.
 
 **Compromis principal.** Trois chaînes d'outils et un broker : la surface de configuration est large, et une partie des résultats dépend des versions des générateurs (à figer dans `go.mod` et à consigner).
 
@@ -212,6 +246,8 @@ Chaque fiche suit le même plan : concepts du livre, question de recherche, affi
 
 **Rôle de Claude Code.** Génération du harnais à partir des listings p. 465–467, génération du plan factoriel, exécution non surveillée (mode *headless* `claude -p` planifié), agrégation et tracés. Le `CLAUDE.md` doit interdire toute modification du harnais pendant une campagne et imposer la consignation des versions (broker, client, image).
 
+**Noyau de spécification (AIUP).** Acteurs : Chercheur, Pipeline CI. Cas d'utilisation : définir un plan factoriel, exécuter une cellule (jeu de paramètres × payload × profil de charge), exécuter la campagne, agréger les métriques client et broker, produire les verdicts. Entités : ParameterSet (huit paramètres du ch. 18), Payload, LoadProfile, Cell, Campaign, Metrics (p50, p99, msg/s, RSS, temps de reprise), BrokerMetrics, Hypothesis, Verdict. Hypothèses H-001 à H-008 = (a) à (h) ; chaque critère de réfutation est numérique (ex. écart de débit < 20 % pour (a)) et gelé avant la campagne. Skills : `/implement` (producteur et consommateur génériques, p. 465–467), `/bench`, `/refute` ; exécution non surveillée en `claude -p`.
+
 **Compromis principal.** Coût d'infrastructure et durée des campagnes (des heures) ; la validité dépend fortement de la machine hôte (un broker en conteneur sur portable ne reproduit pas un cluster). C'est le projet le plus proche d'une étude publiable et le plus coûteux.
 
 **Alternative.** Ne tester que (a), (b) et (e) sur un seul payload : un jour de mesure, la moitié de la valeur.
@@ -233,6 +269,8 @@ Chaque fiche suit le même plan : concepts du livre, question de recherche, affi
 **Livrables.** Deux services conformes aux ch. 13 et 19, générateur de charge, courbes erreurs vs grâce et amplification vs retries, recommandation chiffrée.
 
 **Rôle de Claude Code.** Scaffolding des deux services ; écriture du générateur de charge ; exécution des scénarios en boucle avec variation des paramètres ; rédaction du rapport à partir des mesures.
+
+**Noyau de spécification (AIUP).** Acteur : Chercheur. Cas d'utilisation : exécuter un scénario Slowloris, exécuter un rollout avec grâce paramétrée, exécuter une panne aval avec politique de retry et disjoncteur, mesurer le facteur d'amplification, produire les verdicts. Entités : Scenario, ServerConfig (timeouts, grâce), RetryPolicy, BreakerPolicy, LoadRun, ClientOutcome, AmplificationFactor, Hypothesis, Verdict. Hypothèses H-001 à H-006 = (a) à (f). Skills : `/implement` (serveurs des ch. 13 et 19, générateur de charge), `/integration-test` (Docker Compose), `/bench`, `/refute`.
 
 **Compromis principal.** Docker Compose n'est pas Kubernetes : l'ordre SIGTERM → retrait du load balancer diffère, ce qui touche directement (c). Les résultats valent pour un proxy simple, pas pour un ingress.
 
@@ -256,6 +294,8 @@ Chaque fiche suit le même plan : concepts du livre, question de recherche, affi
 
 **Rôle de Claude Code.** Génération des deux adapters et des migrations (`V001__create_assignments.sql`, p. 425) ; sweep et collecte ; analyse des plans `EXPLAIN` ; rédaction.
 
+**Noyau de spécification (AIUP).** Acteur : Chercheur. Cas d'utilisation : préparer le jeu de données, exécuter un sweep de pool, comparer les deux adapters derrière le même port, analyser les plans d'exécution avant et après réordonnancement d'index, tester le non-chevauchement sous concurrence, produire les verdicts. Entités : Dataset, PoolConfig, RepositoryImpl (`GORM`, `SQL`), QueryCase, Run, LatencyProfile, ExecutionPlan, Hypothesis, Verdict. Hypothèses H-001 à H-006 = (a) à (f). Skills : `/migration` (`V001__create_assignments.sql`, p. 425), `/implement` (deux adapters du port `AssignmentRepository`, ch. 16), `/integration-test` (MySQL 8.0.44 partagé par `sync.Once`, ch. 17), `/bench`, `/refute`.
+
 **Compromis principal.** Un MySQL en conteneur sur la même machine que le client mesure aussi la contention CPU locale ; l'optimum de pool observé n'est pas transposable tel quel.
 
 **Alternative.** Base distante (VM séparée) pour découpler client et serveur ; plus fidèle, plus de variables non contrôlées (réseau).
@@ -264,14 +304,14 @@ Chaque fiche suit le même plan : concepts du livre, question de recherche, affi
 
 **Effort (hypothèse).** 5–8 jours.
 
-## 7. Idées secondaires (non développées)
+## 8. Idées secondaires (non développées)
 
 - **S1 — Économie des tests d'intégration** (ch. 17) : mesurer temps total et taux de *flakiness* sur 30 exécutions pour conteneur par test vs partagé, avec/sans snapshots, `-p` ∈ {1, 2, 4, 8}. Absorbable dans P8.
 - **S2 — gRPC vs REST pour les appels internes** (ch. 19, p. 486–489) : taille sérialisée, p99, sockets ouverts, *streaming* vs *polling* pour les mises à jour d'affectation. Absorbable dans P5 (g) et P7.
 - **S3 — MVS et workspaces** (ch. 11, p. 322) : vérifier expérimentalement la résolution MVS sur un conflit `libA v1.2`/`v1.4` entre modules du workspace, et le coût CI d'un monorepo à mesure que les modules s'ajoutent (p. 314). Valeur pédagogique surtout.
 - **S4 — Porte de régression de benchmarks** (ch. 7, p. 218–219 : « CI must treat regressions as warnings or failures ») : concevoir le seuil statistique qui minimise les faux positifs sur une machine bruitée. Requiert `benchstat` (**hors livre**) ; peut devenir l'outillage commun de P1, P2, P6 et P8.
 
-## 8. Séquence recommandée et conditions de renversement
+## 9. Séquence recommandée et conditions de renversement
 
 **Recommandation.** P1 → P3 → P4, puis P5, puis P6. Les trois premiers n'exigent que `go test` (P4 : Docker optionnel pour l'adapter MySQL) et fournissent l'outillage réutilisé ensuite : banc statistique (P1), corpus et analyseur (P3), garde-fou d'architecture (P4). P5 introduit le broker sur un périmètre borné ; P6 en tire le maximum.
 
@@ -285,9 +325,11 @@ Chaque fiche suit le même plan : concepts du livre, question de recherche, affi
 - Objectif de publication : P5 et P3 ont la meilleure originalité ; P1 réplique surtout des résultats connus de la littérature Go.
 - Contrainte de temps totale < 10 jours : P1 + P3 uniquement.
 
-## 9. Références
+## 10. Références
 
 - Shahsavan, S. *Building Enterprise Projects with Go*. Apress, 2026. DOI 10.1007/979-8-8688-2370-1. PDF analysé : `Building_Enterprise_Projects_with_Go.pdf` (611 p.).
+- Martinelli, S. *Spec-Driven Development: From Specs to Code with AI Agents*. Apress Pocket Guides, 2026. DOI 10.1007/979-8-8688-2851-5. PDF analysé : `Spec-Driven Development.pdf` (167 p.).
+- AI Unified Process Marketplace : https://github.com/AI-Unified-Process/marketplace ; page outils : https://unifiedprocess.ai/tools.html (consultés le 2026-09-10).
 - Dépôt de code du livre : https://github.com/shahsavan/building-enterprise-projects-with-go (consulté le 2026-09-10).
 - Go 1.25 Release Notes : https://go.dev/doc/go1.25 (consulté le 2026-09-10) — `testing/synctest` stable, `GOMAXPROCS` cgroup-aware, `GOEXPERIMENT=greenteagc`, `GOEXPERIMENT=jsonv2`.
 - Annonce Apache Pulsar Go Client 0.18.0, liste `users@pulsar.apache.org` : http://www.mail-archive.com/users@pulsar.apache.org/msg02078.html (consulté le 2026-09-10).

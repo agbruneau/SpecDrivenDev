@@ -1,0 +1,33 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+actor "Chercheur" as R
+actor "Pipeline CI" as CI
+
+rectangle "EscapeBench" {
+  usecase "UC-001\nGénérer la matrice de cellules" as UC001
+  usecase "UC-002\nClasser l'échappement" as UC002
+  usecase "UC-003\nExécuter une campagne de mesure" as UC003
+  usecase "UC-004\nComparer valeur et pointeur" as UC004
+  usecase "UC-005\nProduire les verdicts" as UC005
+}
+
+R --> UC001
+R --> UC002
+R --> UC003
+R --> UC004
+R --> UC005
+CI --> UC003
+
+UC002 ..> UC001 : <<include>>
+UC003 ..> UC001 : <<include>>
+UC004 ..> UC003 : <<include>>
+UC005 ..> UC004 : <<include>>
+
+note right of UC001 : FR-001 · Status: Draft
+note right of UC002 : FR-002 · H-006 · Status: Reviewed
+note right of UC003 : FR-003, FR-006 · NFR-001..004 · C-003, C-005 · Status: Reviewed
+note right of UC004 : FR-004 · H-001, H-002, H-004 · Status: Draft
+note right of UC005 : FR-005 · H-001..H-006 · Status: Draft
+@enduml
