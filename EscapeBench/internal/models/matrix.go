@@ -22,12 +22,13 @@ type MatrixParameters struct {
 	PointerFieldVariants []bool
 	Profiles             []LifetimeProfile
 	PassingModes         []PassingMode
-	// Layouts et Repeats sont ajoutés par C-008. Leurs valeurs par défaut — la seule disposition
-	// d'origine et une instance par opération — reproduisent exactement les matrices antérieures,
-	// identifiant compris.
-	Layouts []Layout
-	Repeats []int
-	Probes  []ProbeSpec
+	// Layouts, Repeats et Payloads sont ajoutés par C-008. Leurs valeurs par défaut — la seule
+	// disposition d'origine, une instance par opération et une charge par instance — reproduisent
+	// exactement les matrices antérieures, identifiant compris.
+	Layouts  []Layout
+	Repeats  []int
+	Payloads []int
+	Probes   []ProbeSpec
 }
 
 // DefaultLayouts rend la dimension de disposition par défaut : celle d'avant C-008.
@@ -35,6 +36,16 @@ func DefaultLayouts() []Layout { return []Layout{LayoutArrayFill} }
 
 // DefaultRepeats rend la dimension de répétition par défaut : une instance par opération.
 func DefaultRepeats() []int { return []int{1} }
+
+// DefaultPayloads rend la dimension de charge par défaut : une charge allouée par instance.
+//
+// Cette dimension existe parce que sans elle H-010 n'est pas réfutable. Le bras valeur alloue k
+// charges par instance, le bras pointeur ces mêmes k charges plus la valeur retournée : le rapport
+// mesuré vaut (k+1)/k, fixé par le gabarit et non par le mode de passage. À k = 1 il vaut 2 sur
+// toute machine et pour toute taille, et le critère de H-010 ne peut alors que confirmer. Faire
+// varier k est ce qui met l'énoncé « le surcoût du pointeur est multiplicatif, non additif » à
+// l'épreuve : à k = 2 le rapport tombe à 1,5 et le critère infirme.
+func DefaultPayloads() []int { return []int{1} }
 
 // ReferenceParameters rend les paramètres de la matrice de référence (BR-001-4) :
 // 11 tailles × 2 variantes de champ pointeur × 5 profils × 2 modes = 220 Cell, plus 10 Probe.
@@ -50,6 +61,7 @@ func ReferenceParameters() MatrixParameters {
 		PassingModes:         PassingModes(),
 		Layouts:              DefaultLayouts(),
 		Repeats:              DefaultRepeats(),
+		Payloads:             DefaultPayloads(),
 		Probes: []ProbeSpec{
 			{ProbeSequentialScan, 256 * kiB}, {ProbeScatteredScan, 256 * kiB},
 			{ProbeSequentialScan, 4 * miB}, {ProbeScatteredScan, 4 * miB},
@@ -71,6 +83,10 @@ func (p MatrixParameters) Normalize() MatrixParameters {
 	if len(repeats) == 0 {
 		repeats = DefaultRepeats()
 	}
+	payloads := p.Payloads
+	if len(payloads) == 0 {
+		payloads = DefaultPayloads()
+	}
 	out := MatrixParameters{
 		Sizes:                dedupeSorted(p.Sizes, func(a, b int) bool { return a < b }),
 		PointerFieldVariants: dedupeSorted(p.PointerFieldVariants, func(a, b bool) bool { return !a && b }),
@@ -78,6 +94,7 @@ func (p MatrixParameters) Normalize() MatrixParameters {
 		PassingModes:         orderedSubset(p.PassingModes, PassingModes()),
 		Layouts:              orderedSubset(layouts, Layouts()),
 		Repeats:              dedupeSorted(repeats, func(a, b int) bool { return a < b }),
+		Payloads:             dedupeSorted(payloads, func(a, b int) bool { return a < b }),
 	}
 	seen := make(map[ProbeSpec]bool, len(p.Probes))
 	for _, spec := range p.Probes {
@@ -179,6 +196,11 @@ func (p MatrixParameters) Validate() error {
 			problems = append(problems, fmt.Sprintf("nombre d'instances par opération doit être ≥ 1 (%d)", repeat))
 		}
 	}
+	for _, payload := range p.Payloads {
+		if payload < 1 {
+			problems = append(problems, fmt.Sprintf("nombre de charges par instance doit être ≥ 1 (%d)", payload))
+		}
+	}
 	// Le témoin nul ne se mesure qu'en profil LOCAL : demandé avec d'autres profils, il
 	// produirait des cellules que Cell.Validate refuse.
 	for _, layout := range p.Layouts {
@@ -226,6 +248,9 @@ func (p MatrixParameters) Canonical() string {
 	}
 	if !sameInts(n.Repeats, DefaultRepeats()) {
 		fmt.Fprintf(&b, "repeats=%v\n", n.Repeats)
+	}
+	if !sameInts(n.Payloads, DefaultPayloads()) {
+		fmt.Fprintf(&b, "payloads=%v\n", n.Payloads)
 	}
 	b.WriteString("probes=")
 	for _, spec := range n.Probes {
@@ -282,6 +307,19 @@ func (p MatrixParameters) Expand() ([]Cell, []Probe, error) {
 	var cells []Cell
 	for _, layout := range n.Layouts {
 		for _, size := range n.Sizes {
+			// Le témoin nul ne se produit que sur les tailles dont il borne le bruit. Le plancher
+			// de H-007 est le plus grand |deltaNsPerOp| relevé en NAMED_FIELDS_SHAM sur toute la
+			// série : un témoin à 4096 octets, où le seul coût de copie porte l'écart entre deux
+			// binaires à près d'une nanoseconde, fixerait un plancher plusieurs fois supérieur au
+			// plus grand effet réel des trois tailles examinées, et l'hypothèse ne pourrait plus
+			// qu'être confirmée.
+			//
+			// C'est un saut et non un refus : le même critère gelé exige, dans la même série, un
+			// témoin de sensibilité d'au moins 80 octets en NAMED_FIELDS. Refuser la matrice
+			// entière rendrait H-007 insatisfiable.
+			if layout == LayoutNamedFieldsSham && size > SmallStructBytes {
+				continue
+			}
 			for _, hasPointer := range n.PointerFieldVariants {
 				spec, err := NewTypeSpec(size, hasPointer, layout)
 				if err != nil {
@@ -294,15 +332,22 @@ func (p MatrixParameters) Expand() ([]Cell, []Probe, error) {
 						if repeat > 1 && profile != ProfileReturnedAlloc {
 							continue
 						}
-						// BR-001-3 : une Cell par mode demandé, donc la paire complète quand les
-						// deux le sont.
-						for _, mode := range n.PassingModes {
-							cell := Cell{TypeSpec: spec, Profile: profile, PassingMode: mode, Repeat: repeat}
-							cell.SourceFile = SourcePath(cell.ID())
-							if err := cell.Validate(); err != nil {
-								return nil, nil, err
+						for _, payload := range n.Payloads {
+							// Même règle pour la charge : seul le profil qui en alloue une s'en
+							// décline.
+							if payload > 1 && profile != ProfileReturnedAlloc {
+								continue
 							}
-							cells = append(cells, cell)
+							// BR-001-3 : une Cell par mode demandé, donc la paire complète quand
+							// les deux le sont.
+							for _, mode := range n.PassingModes {
+								cell := Cell{TypeSpec: spec, Profile: profile, PassingMode: mode, Repeat: repeat, Payload: payload}
+								cell.SourceFile = SourcePath(cell.ID())
+								if err := cell.Validate(); err != nil {
+									return nil, nil, err
+								}
+								cells = append(cells, cell)
+							}
 						}
 					}
 				}

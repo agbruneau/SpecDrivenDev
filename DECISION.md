@@ -44,6 +44,24 @@ Ce document consigne les décisions prises pendant la construction, en particuli
 
 **D-15 — Le point de bascule est le début du plus long suffixe favorable.** UC-004 étape 5 demande la plus petite taille telle que, pour elle **et toutes les tailles supérieures**, le pointeur l'emporte significativement. Le calcul parcourt les tailles en ordre décroissant et s'arrête à la première qui ne satisfait pas la condition. Une seule taille intermédiaire défavorable repousse donc la bascule vers le haut, ce qui est le comportement voulu.
 
+## 4 bis. Décisions issues de la revue contradictoire du 2026-09-10
+
+Une revue à 35 constats, chacun soumis à trois vérificateurs chargés de le réfuter, en a confirmé sept. Cinq ont donné lieu à un changement de code, deux à une consignation au catalogue. Le principe qui a tranché chaque cas : **un critère gelé ne se retouche pas, mais le corpus qu'il évalue se corrige**.
+
+**D-16 — Le nombre de charges allouées par instance devient une dimension de matrice.** H-010 affirme que passer du retour par valeur au retour par pointeur double les allocations. Le gabarit allouait une charge par instance côté valeur et cette même charge plus la valeur retournée côté pointeur : le rapport valait donc 1 → 2 par arithmétique du gabarit, sur toute machine et pour toute taille, et le critère ne pouvait que confirmer. La dimension k rend le rapport (k + 1) / k mesurable. Vérifié à l'exécution sur `go1.27.0 windows/amd64` : k = 1 donne 1 → 2, k = 2 donne 2 → 3, k = 3 donne 3 → 4. Le compilateur n'élimine pas les allocations intermédiaires. C'est ce qui rend H-010 réfutable, sans toucher à son texte gelé.
+
+**D-17 — Le témoin nul n'est plus produit au-delà de trois mots machine, par saut à la génération et non par refus à la validation.** Le plancher de bruit de H-007 est le plus grand écart relevé en `NAMED_FIELDS_SHAM` sur toute la série. Mesuré sur cette machine, un témoin à 4096 octets donne 0,910 ns quand le plus grand effet réel des trois tailles examinées vaut 0,384 ns : le plancher devenait 2,4 fois l'effet, et H-007 ne pouvait plus qu'être confirmée. Le refus pur et simple était tentant, mais le même critère gelé exige dans la même série un témoin de sensibilité d'au moins 80 octets : refuser la matrice aurait rendu l'hypothèse insatisfiable. `Expand` saute donc la combinaison, et `Validate` reste silencieuse. `Validate` n'entrant pas dans la représentation canonique, l'identifiant de la matrice de référence est de toute façon intact.
+
+**D-18 — La disposition entre dans la clé des séries de points de bascule ; H-001 et H-002 se limitent à `ARRAY_FILL`.** Sans disposition dans la clé, toutes les Comparison `LOCAL` d'une campagne à plusieurs dispositions tombaient dans un même seau. Le témoin nul, dont l'écart est nul par construction, interrompait le balayage descendant et retournait le point de bascule : sur une série où H-002 était infirmée, l'ajout des quatre témoins la faisait confirmer. Les deux hypothèses ont été gelées quand `ARRAY_FILL` était la seule disposition ; « l'une des deux séries » de leur texte désigne donc ses deux séries, et rien d'autre. Une Comparison sans disposition, lue d'un fichier antérieur à C-008, compte pour `ARRAY_FILL` : un fichier ancien et un fichier neuf tombent dans la même série plutôt que dans deux.
+
+**D-19 — La spécification `--params` retrouve les cinq profils de la matrice de référence.** C-008 a porté le modèle à huit profils, et le défaut du parseur suivait le modèle : la même spécification qui reproduisait la matrice de référence produisait 352 cellules au lieu de 220, sur lesquelles les critères gelés H-001 à H-006 étaient réévalués. Le défaut suit désormais `ReferenceProfiles()`, comme `--reference`. Les trois profils ajoutés restent accessibles en les nommant.
+
+**D-20 — La branche `StarExpr` du classificateur est retirée ; son faux positif latent est consigné plutôt que corrigé.** Aucun gabarit ne produit d'affectation par déréférencement : la branche était inatteignable. Le test écrit pour la remplacer a révélé une limite réelle : écrire l'adresse d'une locale dans le champ d'une struct puis retourner cette struct se classe `CONTAINER_STORE` alors que c'est un retour de pointeur, parce que les alias du classificateur ne traversent pas les champs. Aucun verdict n'en dépend aujourd'hui — le seul site concerné vise une variable de paquet que le compilateur ne déplace jamais sur le tas. Corriger demanderait une analyse de flux que le corpus n'exerce pas ; la limite est donc épinglée par un test qui échouera le jour où le comportement changera.
+
+**D-21 — Deux constats visent le texte gelé et non le code : ils sont consignés au catalogue.** Le témoin nul de H-007 mesure la variance entre deux binaires quasi identiques — vérifié par diff des sources générées et par désassemblage — donc il sous-estime le bruit d'une vraie paire. Et la marge de H-008 au plafond de 200 s'efface sous co-tenance mémoire : huit processus de flux portent le rapport de 168 à 317 et infirment l'hypothèse pour une raison qui lui est étrangère. Dans les deux cas, le remède est une hypothèse successeur, pas une retouche. Les deux limites sont écrites dans `docs/requirements.md`.
+
+**Non-régression vérifiée sur la campagne de référence.** Les six verdicts de `C-2026-09-10-1` sont identiques après ces cinq changements de code, et la commande `verdict` recalcule l'empreinte gelée des critères à chaque exécution : elle a réussi, donc l'ajout de C-008 et des notes de revue au catalogue n'a pas touché le texte des hypothèses que la campagne avait retenues.
+
 ## 5. Ce qui est délibérément absent
 
 - **Aucune campagne de référence n'a été exécutée.** Le tableau de bord affiche six hypothèses sans verdict. Lancer la matrice de référence demande environ une heure (NFR-005) et relève du chercheur, pas de la construction. La chaîne complète a été validée de bout en bout sur une matrice réduite.
@@ -57,7 +75,7 @@ Ce document consigne les décisions prises pendant la construction, en particuli
 |---|---|
 | `go vet ./...`, `gofmt -l` | propre |
 | `go test -race -shuffle=on -count=1 ./...` | tous les paquets au vert |
-| Couverture de statements, `-coverpkg=./...` | **93,6 %** (cible : 85 %) |
+| Couverture de statements | **93,9 %** après la revue (cible : 85 %) |
 | `bash .claude/hooks/selftest.sh` | les quatre hooks passent, en chemins POSIX et Windows |
 | Chaîne UC-001 → UC-005 sur une matrice réduite | matrice générée, échappement classé, campagne mesurée, comparaison calculée, verdicts produits, tableau de bord régénéré |
 

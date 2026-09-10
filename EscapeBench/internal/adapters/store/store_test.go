@@ -326,10 +326,10 @@ func TestComparisonSetRoundTrip(t *testing.T) {
 	if len(relu.Comparisons) != 1 || relu.Comparisons[0].DeltaNsPerOp != -1.5 {
 		t.Fatalf("aller-retour altéré : %+v", relu)
 	}
-	if relu.TippingPoints[models.TippingKey{Profile: models.ProfileLocal, HasPointerField: false}] != 24 {
+	if relu.TippingPoints[models.TippingKey{Profile: models.ProfileLocal, Layout: models.LayoutArrayFill, HasPointerField: false}] != 24 {
 		t.Fatalf("point de bascule altéré : %+v", relu.TippingPoints)
 	}
-	if got := relu.TippingPoints[models.TippingKey{Profile: models.ProfileLocal, HasPointerField: true}]; got != models.TippingNotObserved {
+	if got := relu.TippingPoints[models.TippingKey{Profile: models.ProfileLocal, Layout: models.LayoutArrayFill, HasPointerField: true}]; got != models.TippingNotObserved {
 		t.Fatalf("« non observé » doit survivre à l'aller-retour, obtenu %d", got)
 	}
 	if len(relu.ExcludedPairs) != 1 || relu.ExcludedPairs[0].Reason != "FAILED" {

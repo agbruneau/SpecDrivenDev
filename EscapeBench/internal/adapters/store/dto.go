@@ -51,6 +51,7 @@ type cellDTO struct {
 	Profile     string      `json:"lifetimeProfile"`
 	PassingMode string      `json:"passingMode"`
 	Repeat      int         `json:"repeat,omitempty"`
+	Payload     int         `json:"payload,omitempty"`
 	SourceFile  string      `json:"sourceFile"`
 }
 
@@ -71,6 +72,9 @@ func toCellDTO(c models.Cell) cellDTO {
 	if c.Repeat > 1 {
 		dto.Repeat = c.Repeat
 	}
+	if c.Payload > 1 {
+		dto.Payload = c.Payload
+	}
 	return dto
 }
 
@@ -84,6 +88,10 @@ func (d cellDTO) toModel() models.Cell {
 	if repeat < 1 {
 		repeat = 1
 	}
+	payload := d.Payload
+	if payload < 1 {
+		payload = 1
+	}
 	return models.Cell{
 		TypeSpec: models.TypeSpec{
 			Name:            d.TypeSpec.Name,
@@ -94,6 +102,7 @@ func (d cellDTO) toModel() models.Cell {
 		Profile:     models.LifetimeProfile(d.Profile),
 		PassingMode: models.PassingMode(d.PassingMode),
 		Repeat:      repeat,
+		Payload:     payload,
 		SourceFile:  d.SourceFile,
 	}
 }
@@ -125,6 +134,7 @@ type matrixParametersDTO struct {
 	PassingModes         []string       `json:"passingModes"`
 	Layouts              []string       `json:"layouts,omitempty"`
 	Repeats              []int          `json:"repeats,omitempty"`
+	Payloads             []int          `json:"payloads,omitempty"`
 	Probes               []probeSpecDTO `json:"probes"`
 }
 
@@ -144,6 +154,7 @@ func toParametersDTO(p models.MatrixParameters) matrixParametersDTO {
 		d.Layouts = append(d.Layouts, string(layout))
 	}
 	d.Repeats = p.Repeats
+	d.Payloads = p.Payloads
 	for _, spec := range p.Probes {
 		d.Probes = append(d.Probes, probeSpecDTO{Kind: string(spec.Kind), Parameter: spec.Parameter})
 	}
@@ -162,6 +173,7 @@ func (d matrixParametersDTO) toModel() models.MatrixParameters {
 		p.Layouts = append(p.Layouts, models.Layout(layout))
 	}
 	p.Repeats = d.Repeats
+	p.Payloads = d.Payloads
 	for _, spec := range d.Probes {
 		p.Probes = append(p.Probes, models.ProbeSpec{Kind: models.ProbeKind(spec.Kind), Parameter: spec.Parameter})
 	}
@@ -333,6 +345,7 @@ type comparisonDTO struct {
 
 type tippingPointDTO struct {
 	Profile         string `json:"lifetimeProfile"`
+	Layout          string `json:"layout,omitempty"`
 	HasPointerField bool   `json:"hasPointerField"`
 	SizeBytes       int    `json:"sizeBytes"`
 	Observed        bool   `json:"observed"`
@@ -371,8 +384,12 @@ func toComparisonSetDTO(s models.ComparisonSet) comparisonSetDTO {
 	}
 	for _, key := range sortedTippingKeys(s.TippingPoints) {
 		size := s.TippingPoints[key]
+		layout := ""
+		if key.Layout != "" && key.Layout != models.LayoutArrayFill {
+			layout = string(key.Layout)
+		}
 		d.TippingPoints = append(d.TippingPoints, tippingPointDTO{
-			Profile: string(key.Profile), HasPointerField: key.HasPointerField,
+			Profile: string(key.Profile), Layout: layout, HasPointerField: key.HasPointerField,
 			SizeBytes: size, Observed: size != models.TippingNotObserved,
 		})
 	}
@@ -400,7 +417,11 @@ func (d comparisonSetDTO) toModel() models.ComparisonSet {
 		})
 	}
 	for _, t := range d.TippingPoints {
-		key := models.TippingKey{Profile: models.LifetimeProfile(t.Profile), HasPointerField: t.HasPointerField}
+		layout := models.Layout(t.Layout)
+		if layout == "" {
+			layout = models.LayoutArrayFill
+		}
+		key := models.TippingKey{Profile: models.LifetimeProfile(t.Profile), Layout: layout, HasPointerField: t.HasPointerField}
 		if t.Observed {
 			s.TippingPoints[key] = t.SizeBytes
 		} else {

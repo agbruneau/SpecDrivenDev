@@ -216,17 +216,23 @@ type Cell struct {
 	Profile     LifetimeProfile
 	PassingMode PassingMode
 	Repeat      int
+	Payload     int
 	SourceFile  string
 }
 
 // ProfileSegment rend le deuxième segment de l'identifiant : le code du profil, suffixé du nombre
-// d'instances par opération quand il diffère de un. Une répétition de un ne laisse aucune trace :
-// les identifiants antérieurs à C-008 sont inchangés.
+// d'instances par opération puis du nombre de charges par instance quand l'un ou l'autre diffère de
+// un. Une répétition et une charge de un ne laissent aucune trace : les identifiants antérieurs à
+// C-008 sont inchangés.
 func (c Cell) ProfileSegment() string {
+	segment := string(c.Profile)
 	if c.Repeat > 1 {
-		return fmt.Sprintf("%s_R%d", c.Profile, c.Repeat)
+		segment = fmt.Sprintf("%s_R%d", segment, c.Repeat)
 	}
-	return string(c.Profile)
+	if c.Payload > 1 {
+		segment = fmt.Sprintf("%s_K%d", segment, c.Payload)
+	}
+	return segment
 }
 
 // ID rend l'identifiant immuable de la forme <TypeSpec.name>/<LifetimeProfile.code>/<passingMode>.
@@ -240,6 +246,15 @@ func (c Cell) Repetitions() int {
 		return 1
 	}
 	return c.Repeat
+}
+
+// Payloads rend le nombre de charges allouées par instance, au moins une. C'est le k dont dépend le
+// rapport d'allocations que mesure H-010 : le bras valeur en alloue k, le bras pointeur k + 1.
+func (c Cell) Payloads() int {
+	if c.Payload < 1 {
+		return 1
+	}
+	return c.Payload
 }
 
 // Validate applique les règles de validation du modèle d'entités.
@@ -258,6 +273,9 @@ func (c Cell) Validate() error {
 	}
 	if c.Repeat < 0 {
 		return invalid("Cell.repeat doit être positif (%s)", c.ID())
+	}
+	if c.Payload < 0 {
+		return invalid("Cell.payload doit être positif (%s)", c.ID())
 	}
 	// Le témoin nul n'a de sens que par paire complète : ses deux cellules exécutent le même
 	// corps, celui du mode VALUE.
@@ -596,14 +614,38 @@ type Comparison struct {
 	MedianPointerNs float64
 }
 
-// TippingKey identifie une série de points de bascule : un profil × la présence d'un champ pointeur.
+// EffectiveLayout rend la disposition de la paire, ARRAY_FILL quand elle est absente. Une
+// Comparison lue d'un fichier antérieur à C-008 n'en porte pas ; c'est alors la seule disposition
+// qui existait. Toute clé de série passe par ici, de sorte qu'un fichier ancien et un fichier neuf
+// tombent dans la même série plutôt que dans deux.
+func (c Comparison) EffectiveLayout() Layout {
+	if c.Layout == "" {
+		return LayoutArrayFill
+	}
+	return c.Layout
+}
+
+// TippingKey identifie une série de points de bascule : un profil × une disposition × la présence
+// d'un champ pointeur.
+//
+// Révision du 2026-09-10 : la disposition est entrée dans la clé. Sans elle, une campagne à
+// plusieurs dispositions — toute campagne H-007 — versait ses Comparison ARRAY_FILL, NAMED_FIELDS
+// et NAMED_FIELDS_SHAM dans une même série, et le témoin nul, dont l'écart est nul par
+// construction, suffisait à interrompre le suffixe favorable au pointeur et à retourner le point
+// de bascule.
 type TippingKey struct {
 	Profile         LifetimeProfile
+	Layout          Layout
 	HasPointerField bool
 }
 
 // TippingNotObserved est la valeur de tippingPoints quand aucune taille ne satisfait la condition.
 const TippingNotObserved = -1
+
+// SmallStructBytes est la borne « une à trois mots machine » de BEPG p. 253, en octets sur 64 bits.
+// Elle vit dans le modèle parce que deux couches s'y adossent : les évaluateurs de H-001, H-002 et
+// H-007, et la validation des paramètres de matrice, qui borne le témoin nul à ces tailles.
+const SmallStructBytes = 24
 
 // ExcludedPair consigne une paire écartée et sa raison (BR-004-1).
 type ExcludedPair struct {

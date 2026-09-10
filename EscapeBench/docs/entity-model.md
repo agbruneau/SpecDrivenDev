@@ -34,7 +34,7 @@ Description d'un type `struct` généré.
 | sizeBytes | Integer | Requis, multiple de 8 entre 8 et 4096 |
 | wordCount | Integer | Dérivé : `sizeBytes / 8` sur 64 bits |
 | hasPointerField | Boolean | Requis |
-| layout | Enum | Requis ; valeurs : `ARRAY_FILL` (un mot de tête puis `Fill [n-1]uint64`), `NAMED_FIELDS` (`wordCount` champs déclarés un à un, sans tableau, donc assignable aux registres), `NAMED_FIELDS_SHAM` (même déclaration, témoin nul). Définies par C-008 |
+| layout | Enum | Requis ; valeurs : `ARRAY_FILL` (un mot de tête puis `Fill [n-1]uint64`), `NAMED_FIELDS` (`wordCount` champs déclarés un à un, sans tableau, donc assignable aux registres), `NAMED_FIELDS_SHAM` (même déclaration, témoin nul). Définies par C-008. Le témoin nul n'est produit que sur les tailles de 1 à 3 mots machine : le plancher de bruit de H-007 étant le plus grand écart de toute la série, un témoin de grande taille y fixerait un seuil supérieur au plus grand effet réel des tailles examinées |
 
 ## LifetimeProfile
 
@@ -53,9 +53,10 @@ Unité de mesure : un `TypeSpec` × un `LifetimeProfile` × un mode de passage.
 
 | Attribut | Type | Règles de validation |
 |---|---|---|
-| id | String | Requis, unique, immuable ; forme `<TypeSpec.name>/<LifetimeProfile.code>/<passingMode>`, le code du profil étant suffixé de `_R<n>` quand `repeat` dépasse un |
+| id | String | Requis, unique, immuable ; forme `<TypeSpec.name>/<LifetimeProfile.code>/<passingMode>`, le code du profil étant suffixé de `_R<n>` quand `repeat` dépasse un, puis de `_K<k>` quand `payload` dépasse un |
 | passingMode | Enum | Requis ; valeurs : `VALUE`, `POINTER` |
 | repeat | Integer | Requis, ≥ 1, par défaut 1 ; instances produites par opération, seul le profil `RETURNED_ALLOCATING` s'en décline (C-008) |
+| payload | Integer | Requis, ≥ 1, par défaut 1 ; charges allouées par instance, notées k, seul le profil `RETURNED_ALLOCATING` s'en décline. Le rapport d'allocations que mesure H-010 vaut (k + 1) / k : à k = 1 il vaut 2 par construction, quelle que soit la machine |
 | sourceFile | String | Requis ; chemin relatif du fichier Go généré |
 
 ## Probe
@@ -163,7 +164,7 @@ Fichier de comparaison d'une Campaign (UC-004).
 | computedAt | DateTime (UTC) | Requis |
 | method | String | Requis ; méthode d'estimation de l'intervalle et ses paramètres |
 | comparisons | Liste de Comparison | Au moins une |
-| tippingPoints | Map (LifetimeProfile, hasPointerField) → Integer ou « non observé » | Une entrée par couple présent dans les Comparison |
+| tippingPoints | Map (LifetimeProfile, layout, hasPointerField) → Integer ou « non observé » | Une entrée par triplet présent dans les Comparison. La disposition est entrée dans la clé le 2026-09-10 : sans elle, une campagne à plusieurs dispositions versait ses paires `ARRAY_FILL`, `NAMED_FIELDS` et `NAMED_FIELDS_SHAM` dans une même série, et le témoin nul, dont l'écart est nul par construction, suffisait à retourner le point de bascule. Une Comparison sans disposition, lue d'un fichier antérieur à C-008, compte pour `ARRAY_FILL` |
 | excludedPairs | Liste de { valueCellId, pointerCellId, reason } | Peut être vide ; jamais omise |
 
 ## Hypothesis

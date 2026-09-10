@@ -20,6 +20,7 @@ Dépôt de prospection : identification, évaluation et cadrage de projets d'exp
 | `REVUE-PRELANCEMENT_2026-09-10.md` | Revue du dépôt avant développement : constats, corrections appliquées, points laissés au chercheur | Avant d'ouvrir le code |
 | `DECISION.md` | Décisions prises pendant la construction d'EscapeBench : écarts de processus assumés, conception du harnais, méthode statistique, limites | Avant de modifier le banc ou de lancer une campagne |
 | `RAPPORT-CAMPAGNE_C-2026-09-10-1.md` | Première campagne de référence : six verdicts, audit contradictoire, trois défauts de construction avec leurs contre-épreuves, hypothèses successeurs proposées | Avant de citer un verdict, et avant la campagne suivante |
+| `REVUE-C008_2026-09-10.md` | Revue contradictoire des capacités ajoutées par C-008 : sept constats survivants sur trente-cinq, cinq correctifs, deux limites renvoyées à des hypothèses successeurs | Avant de lancer une campagne sur H-007 à H-011 |
 
 ## Ordre de lecture
 

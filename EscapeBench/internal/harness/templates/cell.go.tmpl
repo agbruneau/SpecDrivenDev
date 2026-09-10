@@ -1,7 +1,7 @@
 // Code généré par EscapeBench (UC-001) — ne pas modifier à la main.
 // Sujet : {{.SubjectID}}
 // Profil : {{.Profile}} · Mode : {{.PassingMode}} · Taille : {{.SizeBytes}} octets · Champ pointeur : {{.HasPointerField}}
-// Disposition : {{.Layout}} · Instances par opération : {{.Repeat}}
+// Disposition : {{.Layout}} · Instances par opération : {{.Repeat}} · Charges par instance : {{.Payload}}
 package subject
 
 import "unsafe"
@@ -56,6 +56,13 @@ func newValue(i int) {{.TypeName}} {
 {{if .NeedPayload}}
 // payload est la charge allouée qui accompagne chaque instance produite : elle donne au bras
 // valeur une base d'allocation non nulle, sans laquelle aucun doublement n'est calculable (H-010).
+//
+// Sa taille — trois mots — est une commodité sans portée : `allocs/op`, la seule grandeur que lise
+// H-010, compte les objets et non les octets, et l'allocateur tiny lui-même les compte un à un. Ce
+// qui porte, c'est leur NOMBRE par instance, k = {{.Payload}} ici : le bras valeur alloue k charges,
+// le bras pointeur ces mêmes k charges plus la valeur retournée, donc un rapport de (k + 1) / k. À
+// k = 1 ce rapport vaut 2 quelle que soit la machine ; c'est en faisant varier k qu'une campagne
+// met à l'épreuve l'affirmation du livre plutôt que d'en relire l'arithmétique du gabarit.
 type payload struct {
 	A uint64
 	B uint64
@@ -85,8 +92,11 @@ func producePointer(i int) *{{.TypeName}} {
 //go:noinline
 func produceValueAlloc(i int) ({{.TypeName}}, *payload) {
 	t := newValue(i)
-	p := new(payload)
-	p.A = uint64(i)
+	var p *payload
+	for k := 0; k < {{.Payload}}; k++ {
+		p = new(payload)
+		p.A = uint64(i + k)
+	}
 	return t, p
 }
 {{end}}
@@ -94,8 +104,11 @@ func produceValueAlloc(i int) ({{.TypeName}}, *payload) {
 //go:noinline
 func producePointerAlloc(i int) (*{{.TypeName}}, *payload) {
 	t := newValue(i)
-	p := new(payload)
-	p.A = uint64(i)
+	var p *payload
+	for k := 0; k < {{.Payload}}; k++ {
+		p = new(payload)
+		p.A = uint64(i + k)
+	}
 	return &t, p
 }
 {{end}}

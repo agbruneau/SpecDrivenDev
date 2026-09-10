@@ -41,13 +41,15 @@ func TestParseParametersComplet(t *testing.T) {
 
 func TestParseParametersDefauts(t *testing.T) {
 	t.Parallel()
-	// Les clés absentes reprennent la couverture complète : les deux variantes de champ
-	// pointeur, tous les profils connus et les deux modes.
+	// Les clés absentes reprennent la matrice de référence : les deux variantes de champ
+	// pointeur, ses cinq profils et les deux modes. Prendre les huit profils du modèle ferait
+	// produire à une spécification antérieure à C-008 une matrice plus grosse que celle de
+	// référence, sur laquelle les critères gelés H-001 à H-006 seraient réévalués.
 	params, err := ParseParameters("sizes=8")
 	if err != nil {
 		t.Fatalf("ParseParameters : %v", err)
 	}
-	if len(params.Profiles) != len(models.LifetimeProfiles()) || len(params.PassingModes) != 2 || len(params.PointerFieldVariants) != 2 {
+	if len(params.Profiles) != len(models.ReferenceProfiles()) || len(params.PassingModes) != 2 || len(params.PointerFieldVariants) != 2 {
 		t.Fatalf("valeurs par défaut inattendues : %+v", params)
 	}
 	if len(params.Probes) != 0 {
@@ -211,15 +213,15 @@ func TestRenderComparison(t *testing.T) {
 				{SizeBytes: 8, Profile: models.ProfileLocal, HasPointerField: true, DeltaNsPerOp: 0, CILow: -1, CIHigh: 1},
 			},
 			TippingPoints: map[models.TippingKey]int{
-				{Profile: models.ProfileLocal, HasPointerField: false}: 24,
-				{Profile: models.ProfileLocal, HasPointerField: true}:  models.TippingNotObserved,
+				{Profile: models.ProfileLocal, Layout: models.LayoutArrayFill, HasPointerField: false}: 24,
+				{Profile: models.ProfileLocal, Layout: models.LayoutArrayFill, HasPointerField: true}:  models.TippingNotObserved,
 			},
 			ExcludedPairs: []models.ExcludedPair{{ValueCellID: "v", PointerCellID: "p", Reason: "FAILED"}},
 		},
 		ExcludedCount: 1,
 	}
 	got := RenderComparison(report)
-	for _, needle := range []string{"LOCAL, sans champ pointeur", "LOCAL, avec champ pointeur",
+	for _, needle := range []string{"LOCAL, ARRAY_FILL, sans champ pointeur", "LOCAL, ARRAY_FILL, avec champ pointeur",
 		"Point de bascule : 24 octets", "Point de bascule : non observé", "Paires exclues : 1", "v / p : FAILED"} {
 		if !strings.Contains(got, needle) {
 			t.Fatalf("%q absent de :\n%s", needle, got)

@@ -133,7 +133,7 @@ func TestUC005_MainFlow(t *testing.T) {
 	f := newVerdictFixture(t)
 	f.withComparisons(t,
 		[]models.Comparison{{SizeBytes: 8, Profile: models.ProfileLocal, DeltaNsPerOp: 2, CILow: 1, CIHigh: 3, Significant: true}},
-		map[models.TippingKey]int{{Profile: models.ProfileLocal}: 32})
+		map[models.TippingKey]int{{Profile: models.ProfileLocal, Layout: models.LayoutArrayFill}: 32})
 	f.withEscapes(t, []models.EscapeVerdict{
 		{CellID: "a", Escapes: true, Category: models.CategoryReturnPointer, Status: models.EscapeStatusOK},
 	})
@@ -249,7 +249,7 @@ func TestUC005_H001_Infirmee(t *testing.T) {
 		{SizeBytes: 8, Profile: models.ProfileLocal, DeltaNsPerOp: -2, CILow: -3, CIHigh: -1, Significant: true},
 		{SizeBytes: 16, Profile: models.ProfileLocal, DeltaNsPerOp: -2, CILow: -3, CIHigh: -1, Significant: true},
 		{SizeBytes: 32, Profile: models.ProfileLocal, DeltaNsPerOp: -5, CILow: -6, CIHigh: -4, Significant: true},
-	}, map[models.TippingKey]int{{Profile: models.ProfileLocal}: 32})
+	}, map[models.TippingKey]int{{Profile: models.ProfileLocal, Layout: models.LayoutArrayFill}: 32})
 	summary, err := f.service.Produce(context.Background(), f.campaign.ID, "")
 	if err != nil {
 		t.Fatalf("Produce : %v", err)
@@ -269,7 +269,7 @@ func TestUC005_H001_UneSeuleTailleNeSuffitPas(t *testing.T) {
 	f.withComparisons(t, []models.Comparison{
 		{SizeBytes: 8, Profile: models.ProfileLocal, DeltaNsPerOp: -2, CILow: -3, CIHigh: -1, Significant: true},
 		{SizeBytes: 16, Profile: models.ProfileLocal, DeltaNsPerOp: 1, CILow: 0.5, CIHigh: 2, Significant: true},
-	}, map[models.TippingKey]int{{Profile: models.ProfileLocal}: models.TippingNotObserved})
+	}, map[models.TippingKey]int{{Profile: models.ProfileLocal, Layout: models.LayoutArrayFill}: models.TippingNotObserved})
 	summary, err := f.service.Produce(context.Background(), f.campaign.ID, "")
 	if err != nil {
 		t.Fatalf("Produce : %v", err)
@@ -287,7 +287,7 @@ func TestUC005_H001_HorsPerimetre(t *testing.T) {
 		{SizeBytes: 8, Profile: models.ProfileReturned, DeltaNsPerOp: -2, CIHigh: -1, Significant: true},
 		{SizeBytes: 8, Profile: models.ProfileLocal, HasPointerField: true, DeltaNsPerOp: -2, CIHigh: -1, Significant: true},
 		{SizeBytes: 32, Profile: models.ProfileLocal, DeltaNsPerOp: -2, CIHigh: -1, Significant: true},
-	}, map[models.TippingKey]int{{Profile: models.ProfileLocal}: 32})
+	}, map[models.TippingKey]int{{Profile: models.ProfileLocal, Layout: models.LayoutArrayFill}: 32})
 	summary, err := f.service.Produce(context.Background(), f.campaign.ID, "")
 	if err != nil {
 		t.Fatalf("Produce : %v", err)
@@ -305,12 +305,12 @@ func TestUC005_H002(t *testing.T) {
 		tipping map[models.TippingKey]int
 		want    models.Outcome
 	}{
-		{"bascule au-delà de 24 octets", map[models.TippingKey]int{{Profile: models.ProfileLocal}: 32}, models.OutcomeConfirmed},
-		{"bascule à 24 octets", map[models.TippingKey]int{{Profile: models.ProfileLocal}: 24}, models.OutcomeRefuted},
-		{"bascule sous 24 octets", map[models.TippingKey]int{{Profile: models.ProfileLocal}: 8}, models.OutcomeRefuted},
-		{"non observé", map[models.TippingKey]int{{Profile: models.ProfileLocal}: models.TippingNotObserved}, models.OutcomeConfirmed},
-		{"série avec champ pointeur seule", map[models.TippingKey]int{{Profile: models.ProfileLocal, HasPointerField: true}: 16}, models.OutcomeRefuted},
-		{"aucune série LOCAL", map[models.TippingKey]int{{Profile: models.ProfileReturned}: 8}, models.OutcomeInconclusive},
+		{"bascule au-delà de 24 octets", map[models.TippingKey]int{{Profile: models.ProfileLocal, Layout: models.LayoutArrayFill}: 32}, models.OutcomeConfirmed},
+		{"bascule à 24 octets", map[models.TippingKey]int{{Profile: models.ProfileLocal, Layout: models.LayoutArrayFill}: 24}, models.OutcomeRefuted},
+		{"bascule sous 24 octets", map[models.TippingKey]int{{Profile: models.ProfileLocal, Layout: models.LayoutArrayFill}: 8}, models.OutcomeRefuted},
+		{"non observé", map[models.TippingKey]int{{Profile: models.ProfileLocal, Layout: models.LayoutArrayFill}: models.TippingNotObserved}, models.OutcomeConfirmed},
+		{"série avec champ pointeur seule", map[models.TippingKey]int{{Profile: models.ProfileLocal, Layout: models.LayoutArrayFill, HasPointerField: true}: 16}, models.OutcomeRefuted},
+		{"aucune série LOCAL", map[models.TippingKey]int{{Profile: models.ProfileReturned, Layout: models.LayoutArrayFill}: 8}, models.OutcomeInconclusive},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {

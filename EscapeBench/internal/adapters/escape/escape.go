@@ -288,9 +288,13 @@ func classifyUsage(body *ast.BlockStmt, name string) models.EscapeCategory {
 
 // isContainerTarget indique si la cible d'une affectation désigne l'intérieur d'un conteneur :
 // un élément indexé, ou le champ d'une struct. Une simple variable n'en est pas un.
+//
+// Révision du 2026-09-10 : la branche `*ast.StarExpr` a été retirée. Aucun gabarit du harnais ne
+// produit d'affectation par déréférencement (`*x = ...`) ; la branche était inatteignable et
+// n'élargissait que la surface de faux positifs.
 func isContainerTarget(lhs ast.Expr) bool {
 	switch lhs.(type) {
-	case *ast.IndexExpr, *ast.SelectorExpr, *ast.StarExpr:
+	case *ast.IndexExpr, *ast.SelectorExpr:
 		return true
 	}
 	return false

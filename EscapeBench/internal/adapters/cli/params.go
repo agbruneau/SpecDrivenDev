@@ -19,11 +19,14 @@ var ErrUsage = errors.New("usage")
 
 // ParseParameters lit une spécification de matrice de la forme
 // `sizes=8,16,24;pointer=false,true;profiles=LOCAL,RETURNED;modes=VALUE,POINTER;probes=SEQUENTIAL_SCAN:65536,APPEND_GROW:1000`.
-// Les clés absentes prennent la valeur de la matrice de référence.
+// Les clés absentes prennent la valeur de la matrice de référence : `profiles` vaut donc les cinq
+// profils de BR-001-4, et non les huit que C-008 a portés au modèle. Prendre LifetimeProfiles() ici
+// ferait produire à une spécification antérieure à C-008 une matrice de 352 cellules au lieu de 220,
+// sur laquelle les critères gelés H-001 à H-006 seraient réévalués.
 func ParseParameters(spec string) (models.MatrixParameters, error) {
 	params := models.MatrixParameters{
 		PointerFieldVariants: []bool{false, true},
-		Profiles:             models.LifetimeProfiles(),
+		Profiles:             models.ReferenceProfiles(),
 		PassingModes:         models.PassingModes(),
 	}
 	for _, clause := range strings.Split(spec, ";") {
@@ -70,6 +73,12 @@ func ParseParameters(spec string) (models.MatrixParameters, error) {
 				return models.MatrixParameters{}, fmt.Errorf("%w : repeats : %s", ErrUsage, err)
 			}
 			params.Repeats = repeats
+		case "payloads":
+			payloads, err := parseInts(value)
+			if err != nil {
+				return models.MatrixParameters{}, fmt.Errorf("%w : payloads : %s", ErrUsage, err)
+			}
+			params.Payloads = payloads
 		case "probes":
 			probes, err := parseProbes(value)
 			if err != nil {
@@ -77,7 +86,7 @@ func ParseParameters(spec string) (models.MatrixParameters, error) {
 			}
 			params.Probes = probes
 		default:
-			return models.MatrixParameters{}, fmt.Errorf("%w : clé %q inconnue (sizes, pointer, profiles, modes, layouts, repeats, probes)", ErrUsage, key)
+			return models.MatrixParameters{}, fmt.Errorf("%w : clé %q inconnue (sizes, pointer, profiles, modes, layouts, repeats, payloads, probes)", ErrUsage, key)
 		}
 	}
 	if len(params.Sizes) == 0 {

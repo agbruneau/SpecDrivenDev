@@ -1,6 +1,6 @@
 # Tableau de bord — EscapeBench
 
-Généré par `escapebench dashboard` et `escapebench verdict` (UC-005, FR-007) ; ne pas éditer à la main (BR-005-3). Régénéré le 2026-09-10 16:42 UTC.
+Généré par `escapebench dashboard` et `escapebench verdict` (UC-005, FR-007) ; ne pas éditer à la main (BR-005-3). Régénéré le 2026-09-10 17:23 UTC.
 
 ## Cas d'utilisation
 

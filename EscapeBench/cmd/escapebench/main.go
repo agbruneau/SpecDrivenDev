@@ -48,6 +48,8 @@ Option commune : --root <répertoire du projet> (par défaut, remonte depuis le 
 
 Spécification de matrice (--params) :
   sizes=8,16,24;pointer=false,true;profiles=LOCAL,RETURNED;modes=VALUE,POINTER;probes=SEQUENTIAL_SCAN:65536
+  Clés reconnues : sizes, pointer, profiles, modes, layouts, repeats, payloads, probes.
+  Les clés absentes prennent la valeur de la matrice de référence (BR-001-4).
 `
 
 // exit codes : 0 succès, 2 usage, 3 échec d'un cas d'utilisation.

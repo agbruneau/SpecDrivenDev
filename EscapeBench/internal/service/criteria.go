@@ -26,7 +26,7 @@ var evaluators = map[string]evaluator{
 }
 
 // SmallStructBytes est la borne « 1 à 3 mots machine » de BEPG p. 253, en octets sur 64 bits.
-const SmallStructBytes = 24
+const SmallStructBytes = models.SmallStructBytes
 
 // inconclusive construit une évaluation non concluante (UC-005, A2 et étape 5).
 func inconclusive(format string, args ...any) evaluation {
@@ -36,6 +36,11 @@ func inconclusive(format string, args ...any) evaluation {
 // evaluateH001 — « copier une petite struct peut être moins cher que passer un pointeur ».
 // Infirmée si, pour au moins deux tailles ≤ 24 octets sans champ pointeur en profil LOCAL, la
 // Comparison est significative avec ciHigh < 0.
+//
+// Les Comparison sont restreintes à la disposition ARRAY_FILL : c'est la seule qui existait quand
+// le critère a été gelé, et la seule qu'il désigne donc. Une campagne à plusieurs dispositions
+// verserait sinon dans le même décompte les paires NAMED_FIELDS et le témoin nul, dont l'écart est
+// nul par construction, et évaluerait le critère gelé sur un corpus qu'il ne nomme pas.
 func evaluateH001(e Evidence) evaluation {
 	if e.ComparisonSet == nil {
 		return inconclusive("aucun fichier de comparaison pour la campagne %s ; exécuter `escapebench compare`", e.Campaign.ID)
@@ -45,14 +50,17 @@ func evaluateH001(e Evidence) evaluation {
 		if comparison.Profile != models.ProfileLocal || comparison.HasPointerField || comparison.SizeBytes > SmallStructBytes {
 			continue
 		}
+		if comparison.EffectiveLayout() != models.LayoutArrayFill {
+			continue
+		}
 		eligible = append(eligible, comparison)
 		if comparison.Significant && comparison.CIHigh < 0 {
 			refuting = append(refuting, comparison)
 		}
 	}
 	if len(eligible) == 0 {
-		return inconclusive("aucune paire LOCAL sans champ pointeur de taille ≤ %d octets dans la campagne %s",
-			SmallStructBytes, e.Campaign.ID)
+		return inconclusive("aucune paire LOCAL %s sans champ pointeur de taille ≤ %d octets dans la campagne %s",
+			models.LayoutArrayFill, SmallStructBytes, e.Campaign.ID)
 	}
 	files := []string{e.ComparisonPath}
 	if len(refuting) >= 2 {
@@ -74,6 +82,9 @@ func evaluateH001(e Evidence) evaluation {
 // evaluateH002 — le point de bascule est supérieur à 24 octets pour le profil LOCAL.
 // Infirmée si l'une des deux séries LOCAL a un point de bascule ≤ 24 octets ; « non observé »
 // n'infirme pas.
+//
+// « L'une des deux séries » est le texte gelé : ce sont les deux séries ARRAY_FILL, avec et sans
+// champ pointeur. Les séries des dispositions ajoutées par C-008 relèvent de H-007, pas d'ici.
 func evaluateH002(e Evidence) evaluation {
 	if e.ComparisonSet == nil {
 		return inconclusive("aucun fichier de comparaison pour la campagne %s ; exécuter `escapebench compare`", e.Campaign.ID)
@@ -82,7 +93,7 @@ func evaluateH002(e Evidence) evaluation {
 	var refuting []string
 	found := false
 	for _, hasPointerField := range []bool{false, true} {
-		key := models.TippingKey{Profile: models.ProfileLocal, HasPointerField: hasPointerField}
+		key := models.TippingKey{Profile: models.ProfileLocal, Layout: models.LayoutArrayFill, HasPointerField: hasPointerField}
 		size, ok := e.ComparisonSet.TippingPoints[key]
 		if !ok {
 			continue
@@ -99,7 +110,8 @@ func evaluateH002(e Evidence) evaluation {
 		}
 	}
 	if !found {
-		return inconclusive("aucun point de bascule LOCAL dans le fichier de comparaison de %s", e.Campaign.ID)
+		return inconclusive("aucun point de bascule LOCAL %s dans le fichier de comparaison de %s",
+			models.LayoutArrayFill, e.Campaign.ID)
 	}
 	files := []string{e.ComparisonPath}
 	if len(refuting) > 0 {

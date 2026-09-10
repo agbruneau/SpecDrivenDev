@@ -83,6 +83,7 @@ type cellData struct {
 	PassingMode     models.PassingMode
 	Pointer         bool
 	Repeat          int
+	Payload         int
 	Body            string
 
 	NeedConsumeValue        bool
@@ -126,6 +127,7 @@ func newCellData(cell models.Cell) cellData {
 		PassingMode:     cell.PassingMode,
 		Pointer:         pointer,
 		Repeat:          cell.Repetitions(),
+		Payload:         cell.Payloads(),
 		Body:            string(cell.Profile) + "_" + string(effectiveMode),
 	}
 	d.Fields, d.FirstWord, d.LastWord, d.HasLastWord, d.Init = layoutOf(namedFields, cell.TypeSpec.HasPointerField, words)

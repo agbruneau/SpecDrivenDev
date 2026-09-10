@@ -114,7 +114,7 @@ func RenderComparison(report service.ComparisonReport) string {
 
 	series := map[models.TippingKey][]models.Comparison{}
 	for _, comparison := range report.Set.Comparisons {
-		key := models.TippingKey{Profile: comparison.Profile, HasPointerField: comparison.HasPointerField}
+		key := models.TippingKey{Profile: comparison.Profile, Layout: comparison.EffectiveLayout(), HasPointerField: comparison.HasPointerField}
 		series[key] = append(series[key], comparison)
 	}
 	keys := make([]models.TippingKey, 0, len(series))
@@ -125,6 +125,9 @@ func RenderComparison(report service.ComparisonReport) string {
 		if keys[i].Profile != keys[j].Profile {
 			return keys[i].Profile < keys[j].Profile
 		}
+		if keys[i].Layout != keys[j].Layout {
+			return keys[i].Layout < keys[j].Layout
+		}
 		return !keys[i].HasPointerField && keys[j].HasPointerField
 	})
 	for _, key := range keys {
@@ -132,7 +135,7 @@ func RenderComparison(report service.ComparisonReport) string {
 		if key.HasPointerField {
 			pointerField = "avec champ pointeur"
 		}
-		fmt.Fprintf(&b, "%s, %s\n", key.Profile, pointerField)
+		fmt.Fprintf(&b, "%s, %s, %s\n", key.Profile, key.Layout, pointerField)
 		fmt.Fprintf(&b, "  %-8s %12s %12s %12s %s\n", "taille", "Δ ns/op", "IC bas", "IC haut", "significatif")
 		rows := series[key]
 		sort.Slice(rows, func(i, j int) bool { return rows[i].SizeBytes < rows[j].SizeBytes })

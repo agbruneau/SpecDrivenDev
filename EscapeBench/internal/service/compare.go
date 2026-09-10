@@ -201,13 +201,13 @@ func percentile(sorted []float64, p float64) float64 {
 	return sorted[index]
 }
 
-// TippingPoints rend, pour chaque couple (profil, champ pointeur), la plus petite taille telle que
+// TippingPoints rend, pour chaque triplet (profil, disposition, champ pointeur), la plus petite taille telle que
 // pour cette taille et toutes les tailles supérieures mesurées du couple, la Comparison est
 // significative et deltaNsPerOp est négatif ; TippingNotObserved sinon (UC-004, étape 5 et A3).
 func TippingPoints(comparisons []models.Comparison) map[models.TippingKey]int {
 	bySeries := map[models.TippingKey][]models.Comparison{}
 	for _, comparison := range comparisons {
-		key := models.TippingKey{Profile: comparison.Profile, HasPointerField: comparison.HasPointerField}
+		key := models.TippingKey{Profile: comparison.Profile, Layout: comparison.EffectiveLayout(), HasPointerField: comparison.HasPointerField}
 		bySeries[key] = append(bySeries[key], comparison)
 	}
 	out := make(map[models.TippingKey]int, len(bySeries))
@@ -237,6 +237,9 @@ func sortedKeys(m map[models.TippingKey]int) []models.TippingKey {
 	sort.Slice(keys, func(i, j int) bool {
 		if keys[i].Profile != keys[j].Profile {
 			return keys[i].Profile < keys[j].Profile
+		}
+		if keys[i].Layout != keys[j].Layout {
+			return keys[i].Layout < keys[j].Layout
 		}
 		return !keys[i].HasPointerField && keys[j].HasPointerField
 	})

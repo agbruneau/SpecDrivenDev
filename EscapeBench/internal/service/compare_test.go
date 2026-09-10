@@ -104,7 +104,7 @@ func TestUC004_MainFlow(t *testing.T) {
 	}
 	// Étape 5 : le point de bascule est la plus petite taille au-delà de laquelle le pointeur
 	// l'emporte partout. Mutation : rendre la plus petite taille favorable ⇒ échec attendu.
-	tipping := report.Set.TippingPoints[models.TippingKey{Profile: models.ProfileLocal}]
+	tipping := report.Set.TippingPoints[models.TippingKey{Profile: models.ProfileLocal, Layout: models.LayoutArrayFill}]
 	if tipping != 24 {
 		t.Fatalf("point de bascule = %d, attendu 24", tipping)
 	}
@@ -138,7 +138,7 @@ func TestUC004_BR2_SignificationParLIntervalleSeulement(t *testing.T) {
 		}
 	}
 	// A3 : aucune bascule observée.
-	if got := report.Set.TippingPoints[models.TippingKey{Profile: models.ProfileLocal}]; got != models.TippingNotObserved {
+	if got := report.Set.TippingPoints[models.TippingKey{Profile: models.ProfileLocal, Layout: models.LayoutArrayFill}]; got != models.TippingNotObserved {
 		t.Fatalf("point de bascule = %d, « non observé » attendu", got)
 	}
 	if len(report.NotObserved) != 1 {
@@ -348,7 +348,7 @@ func TestTippingPoints(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
-			got := TippingPoints(tc.comparisons)[models.TippingKey{Profile: local}]
+			got := TippingPoints(tc.comparisons)[models.TippingKey{Profile: local, Layout: models.LayoutArrayFill}]
 			if got != tc.want {
 				t.Fatalf("point de bascule = %d, attendu %d", got, tc.want)
 			}
@@ -359,10 +359,10 @@ func TestTippingPoints(t *testing.T) {
 		{SizeBytes: 8, Profile: local, DeltaNsPerOp: -1, Significant: true},
 		{SizeBytes: 8, Profile: local, HasPointerField: true, DeltaNsPerOp: 1, Significant: true},
 	})
-	if mixed[models.TippingKey{Profile: local}] != 8 {
-		t.Fatalf("série sans champ pointeur = %d", mixed[models.TippingKey{Profile: local}])
+	if mixed[models.TippingKey{Profile: local, Layout: models.LayoutArrayFill}] != 8 {
+		t.Fatalf("série sans champ pointeur = %d", mixed[models.TippingKey{Profile: local, Layout: models.LayoutArrayFill}])
 	}
-	if mixed[models.TippingKey{Profile: local, HasPointerField: true}] != models.TippingNotObserved {
-		t.Fatalf("série avec champ pointeur = %d", mixed[models.TippingKey{Profile: local, HasPointerField: true}])
+	if mixed[models.TippingKey{Profile: local, Layout: models.LayoutArrayFill, HasPointerField: true}] != models.TippingNotObserved {
+		t.Fatalf("série avec champ pointeur = %d", mixed[models.TippingKey{Profile: local, Layout: models.LayoutArrayFill, HasPointerField: true}])
 	}
 }

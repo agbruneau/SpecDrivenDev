@@ -480,6 +480,9 @@ func sortedTippingKeys(m map[models.TippingKey]int) []models.TippingKey {
 		if keys[i].Profile != keys[j].Profile {
 			return keys[i].Profile < keys[j].Profile
 		}
+		if keys[i].Layout != keys[j].Layout {
+			return keys[i].Layout < keys[j].Layout
+		}
 		return !keys[i].HasPointerField && keys[j].HasPointerField
 	})
 	return keys
