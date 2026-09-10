@@ -2,6 +2,8 @@
 
 Le modèle sert de glossaire : les noms ci-dessous sont repris tels quels dans les exigences, les cas d'utilisation, le code (`internal/models`) et les tests.
 
+Révision du 2026-09-10, satisfaction de C-009 : `Cell` porte un rang de réplicat. Il n'entre ni dans `Comparison`, ni dans `ComparisonSet.tippingPoints` : H-012 groupe ses réplicats par la taille, la disposition, la présence d'un champ pointeur et le profil, tous déjà présents dans `Comparison`, et les distingue par `valueCellId`. Faire entrer un champ de plus dans la clé des points de bascule rendrait H-002 non concluante sur toute campagne future, sans erreur ni trace. Ce qu'aucun critère ne lit, le modèle ne le porte pas. Corollaire assumé : le point de bascule d'une série répliquée n'est pas défini, le balayage descendant dépendant alors de l'ordre du fichier, et UC-004 ne le publie pas.
+
 Révision du 2026-09-10, synchronisée avec l'implémentation de UC-001 à UC-005 : `Matrix` porte ses paramètres normalisés et l'empreinte du harnais ; `EscapeVerdict` porte le message du compilateur en cas d'échec de compilation ; `Campaign` porte les identifiants d'hypothèses couverts et les horodatages de son cycle de vie ; `Comparison` recopie la taille, la présence d'un champ pointeur et le profil de sa paire ; `ComparisonSet` porte la matrice et la méthode d'estimation ; `Hypothesis` porte son énoncé et ses cas d'utilisation. Aucun de ces ajouts ne touche un critère de réfutation.
 
 ```mermaid
@@ -53,10 +55,11 @@ Unité de mesure : un `TypeSpec` × un `LifetimeProfile` × un mode de passage.
 
 | Attribut | Type | Règles de validation |
 |---|---|---|
-| id | String | Requis, unique, immuable ; forme `<TypeSpec.name>/<LifetimeProfile.code>/<passingMode>`, le code du profil étant suffixé de `_R<n>` quand `repeat` dépasse un, puis de `_K<k>` quand `payload` dépasse un |
+| id | String | Requis, unique, immuable ; forme `<TypeSpec.name>/<LifetimeProfile.code>/<passingMode>`, le code du profil étant suffixé de `_R<n>` quand `repeat` dépasse un, puis de `_K<k>` quand `payload` dépasse un, puis de `_X<r>` quand `replicate` dépasse un |
 | passingMode | Enum | Requis ; valeurs : `VALUE`, `POINTER` |
 | repeat | Integer | Requis, ≥ 1, par défaut 1 ; instances produites par opération, seul le profil `RETURNED_ALLOCATING` s'en décline (C-008) |
 | payload | Integer | Requis, ≥ 1, par défaut 1 ; charges allouées par instance, notées k, seul le profil `RETURNED_ALLOCATING` s'en décline. Le rapport d'allocations que mesure H-010 vaut (k + 1) / k : à k = 1 il vaut 2 par construction, quelle que soit la machine |
+| replicate | Integer | Ajouté par C-009 ; requis, ≥ 1, par défaut 1 ; rang de cette mesure parmi les réplicats indépendants de la même paire. Seule la disposition `NAMED_FIELDS` en profil `LOCAL` s'en décline, et le réplicat est la dimension la plus extérieure de la génération : deux réplicats d'une même paire sont séparés par une passe complète de la matrice. Deux réplicats sont deux sujets, donc deux paquets Go, deux binaires et deux processus `go test` : c'est cette indépendance qui fait du plancher de bruit de H-012 une grandeur mesurée et non postulée |
 | sourceFile | String | Requis ; chemin relatif du fichier Go généré |
 
 ## Probe

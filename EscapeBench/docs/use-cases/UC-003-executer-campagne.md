@@ -88,6 +88,8 @@ L'empreinte des critères de réfutation est calculée à la création de la Cam
 
 ## Notes de revue
 
+- Révision du 2026-09-10, satisfaction de C-009 : une campagne dont la liste gelée contient H-007 est refusée sur une matrice à réplicats. H-007 indexe ses Comparison par taille et n'en retient qu'une, arbitrairement ; sur une série répliquée elle jugerait donc un réplicat tiré de l'ordre du fichier, sans erreur ni trace. Le refus est une précondition, donc aucune Campaign n'est créée. C'est H-012 qui lit une série répliquée. Une campagne sans sélection explicite retient tout le catalogue, donc H-007 : sur une matrice à réplicats, `--hypotheses` devient obligatoire, et c'est le comportement voulu.
+
 - Les drapeaux exacts (`-benchmem`, `-count`, `-cpu`) relèvent de C-003, pas de ce cas d'utilisation.
 - La détection du CPU et de la version de Go est un adapter (`internal/adapters/provenance`) ; le service ne fait que consigner ce qu'il reçoit.
 - Les pannes techniques (disque plein, toolchain absente) sont traitées par l'implémentation et n'apparaissent pas comme flux alternatifs.

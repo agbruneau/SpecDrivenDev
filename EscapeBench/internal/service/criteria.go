@@ -23,6 +23,7 @@ var evaluators = map[string]evaluator{
 	"H-009": evaluateH009,
 	"H-010": evaluateH010,
 	"H-011": evaluateH011,
+	"H-012": evaluateH012,
 }
 
 // SmallStructBytes est la borne « 1 à 3 mots machine » de BEPG p. 253, en octets sur 64 bits.

@@ -217,7 +217,12 @@ type Cell struct {
 	PassingMode PassingMode
 	Repeat      int
 	Payload     int
-	SourceFile  string
+	// Replicate est ajouté par C-009 : le rang de cette mesure parmi les réplicats indépendants
+	// de la même paire. Deux réplicats sont deux sujets, donc deux paquets Go, deux binaires et
+	// deux processus `go test` ; c'est cette indépendance qui fait du plancher de H-012 une
+	// grandeur mesurée et non postulée.
+	Replicate  int
+	SourceFile string
 }
 
 // ProfileSegment rend le deuxième segment de l'identifiant : le code du profil, suffixé du nombre
@@ -231,6 +236,9 @@ func (c Cell) ProfileSegment() string {
 	}
 	if c.Payload > 1 {
 		segment = fmt.Sprintf("%s_K%d", segment, c.Payload)
+	}
+	if c.Replicate > 1 {
+		segment = fmt.Sprintf("%s_X%d", segment, c.Replicate)
 	}
 	return segment
 }
@@ -257,6 +265,14 @@ func (c Cell) Payloads() int {
 	return c.Payload
 }
 
+// ReplicateIndex rend le rang du réplicat, au moins un.
+func (c Cell) ReplicateIndex() int {
+	if c.Replicate < 1 {
+		return 1
+	}
+	return c.Replicate
+}
+
 // Validate applique les règles de validation du modèle d'entités.
 func (c Cell) Validate() error {
 	if err := c.TypeSpec.Validate(); err != nil {
@@ -276,6 +292,9 @@ func (c Cell) Validate() error {
 	}
 	if c.Payload < 0 {
 		return invalid("Cell.payload doit être positif (%s)", c.ID())
+	}
+	if c.Replicate < 0 {
+		return invalid("Cell.replicate doit être positif (%s)", c.ID())
 	}
 	// Le témoin nul n'a de sens que par paire complète : ses deux cellules exécutent le même
 	// corps, celui du mode VALUE.

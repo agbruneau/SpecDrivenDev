@@ -70,6 +70,8 @@ Un fichier de comparaison n'est jamais réécrit ; un nouveau calcul produit un 
 
 ## Notes de revue
 
+- Révision du 2026-09-10, satisfaction de C-009 : le point de bascule d'une série répliquée n'est pas publié. Une telle série porte plusieurs Comparison par taille ; le balayage descendant de l'étape 5 s'arrête au premier élément défavorable et le tri par taille n'est pas stable, de sorte que le résultat dépendrait de l'ordre du fichier. Aucun critère gelé ne lit ce point de bascule — H-012 groupe ses réplicats par ses propres attributs — et les séries non répliquées du même fichier restent publiées.
+
 - La méthode d'estimation de l'intervalle (bootstrap, quantiles) est une implémentation ; elle est documentée dans le code et dans le fichier de comparaison, non dans ce cas d'utilisation.
 - `benchstat` (C-002) peut servir de contrôle externe des résultats ; il n'est pas requis par le flux.
 - Révision du 2026-09-10 : H-004 retirée (elle se lit sur des Probe, UC-003 et UC-005, non sur des paires valeur/pointeur) ; point de bascule calculé par couple (profil, champ pointeur), chaque taille ayant deux paires.

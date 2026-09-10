@@ -28,7 +28,11 @@ type MatrixParameters struct {
 	Layouts  []Layout
 	Repeats  []int
 	Payloads []int
-	Probes   []ProbeSpec
+	// Replicates est ajouté par C-009 : le nombre de mesures indépendantes d'une même paire dans
+	// une campagne. Il vaut 1 ou 5 et rien d'autre, de sorte que la composition de la matrice ne
+	// reprenne pas le pouvoir sur le plancher de bruit que la fixation à cinq lui retire (H-012).
+	Replicates int
+	Probes     []ProbeSpec
 }
 
 // DefaultLayouts rend la dimension de disposition par défaut : celle d'avant C-008.
@@ -36,6 +40,14 @@ func DefaultLayouts() []Layout { return []Layout{LayoutArrayFill} }
 
 // DefaultRepeats rend la dimension de répétition par défaut : une instance par opération.
 func DefaultRepeats() []int { return []int{1} }
+
+// ReplicateCount est le nombre de réplicats qu'exige le critère gelé de H-012. Toute autre valeur
+// que celle-ci ou l'absence de réplicat est refusée : le plancher de bruit ne doit ni grandir ni
+// rétrécir avec l'effort de mesure.
+const ReplicateCount = 5
+
+// DefaultReplicates rend la dimension de réplicat par défaut : une seule mesure par paire.
+func DefaultReplicates() int { return 1 }
 
 // DefaultPayloads rend la dimension de charge par défaut : une charge allouée par instance.
 //
@@ -62,6 +74,7 @@ func ReferenceParameters() MatrixParameters {
 		Layouts:              DefaultLayouts(),
 		Repeats:              DefaultRepeats(),
 		Payloads:             DefaultPayloads(),
+		Replicates:           DefaultReplicates(),
 		Probes: []ProbeSpec{
 			{ProbeSequentialScan, 256 * kiB}, {ProbeScatteredScan, 256 * kiB},
 			{ProbeSequentialScan, 4 * miB}, {ProbeScatteredScan, 4 * miB},
@@ -87,6 +100,10 @@ func (p MatrixParameters) Normalize() MatrixParameters {
 	if len(payloads) == 0 {
 		payloads = DefaultPayloads()
 	}
+	replicates := p.Replicates
+	if replicates == 0 {
+		replicates = DefaultReplicates()
+	}
 	out := MatrixParameters{
 		Sizes:                dedupeSorted(p.Sizes, func(a, b int) bool { return a < b }),
 		PointerFieldVariants: dedupeSorted(p.PointerFieldVariants, func(a, b bool) bool { return !a && b }),
@@ -95,6 +112,7 @@ func (p MatrixParameters) Normalize() MatrixParameters {
 		Layouts:              orderedSubset(layouts, Layouts()),
 		Repeats:              dedupeSorted(repeats, func(a, b int) bool { return a < b }),
 		Payloads:             dedupeSorted(payloads, func(a, b int) bool { return a < b }),
+		Replicates:           replicates,
 	}
 	seen := make(map[ProbeSpec]bool, len(p.Probes))
 	for _, spec := range p.Probes {
@@ -201,6 +219,12 @@ func (p MatrixParameters) Validate() error {
 			problems = append(problems, fmt.Sprintf("nombre de charges par instance doit être ≥ 1 (%d)", payload))
 		}
 	}
+	// C-009 fige le nombre de réplicats : le critère de H-012 en dépend, et le laisser libre
+	// rendrait le plancher de bruit dépendant de l'effort de mesure.
+	if p.Replicates != 0 && p.Replicates != DefaultReplicates() && p.Replicates != ReplicateCount {
+		problems = append(problems, fmt.Sprintf("nombre de réplicats doit valoir %d ou %d (%d)",
+			DefaultReplicates(), ReplicateCount, p.Replicates))
+	}
 	// Le témoin nul ne se mesure qu'en profil LOCAL : demandé avec d'autres profils, il
 	// produirait des cellules que Cell.Validate refuse.
 	for _, spec := range p.Probes {
@@ -241,6 +265,9 @@ func (p MatrixParameters) Canonical() string {
 	}
 	if !sameInts(n.Payloads, DefaultPayloads()) {
 		fmt.Fprintf(&b, "payloads=%v\n", n.Payloads)
+	}
+	if n.Replicates != DefaultReplicates() {
+		fmt.Fprintf(&b, "replicates=%d\n", n.Replicates)
 	}
 	b.WriteString("probes=")
 	for _, spec := range n.Probes {
@@ -295,58 +322,72 @@ func (p MatrixParameters) Expand() ([]Cell, []Probe, error) {
 		return nil, nil, err
 	}
 	var cells []Cell
-	for _, layout := range n.Layouts {
-		for _, size := range n.Sizes {
-			// Le témoin nul ne se produit que sur les tailles dont il borne le bruit. Le plancher
-			// de H-007 est le plus grand |deltaNsPerOp| relevé en NAMED_FIELDS_SHAM sur toute la
-			// série : un témoin à 4096 octets, où le seul coût de copie porte l'écart entre deux
-			// binaires à près d'une nanoseconde, fixerait un plancher plusieurs fois supérieur au
-			// plus grand effet réel des trois tailles examinées, et l'hypothèse ne pourrait plus
-			// qu'être confirmée.
-			//
-			// C'est un saut et non un refus : le même critère gelé exige, dans la même série, un
-			// témoin de sensibilité d'au moins 80 octets en NAMED_FIELDS. Refuser la matrice
-			// entière rendrait H-007 insatisfiable.
-			if layout == LayoutNamedFieldsSham && size > SmallStructBytes {
-				continue
-			}
-			for _, hasPointer := range n.PointerFieldVariants {
-				spec, err := NewTypeSpec(size, hasPointer, layout)
-				if err != nil {
-					return nil, nil, err
+	// Le réplicat est la dimension la plus extérieure (C-009) : deux mesures d'une même paire sont
+	// ainsi séparées par tous les autres sujets répliqués de la campagne, soit une passe complète.
+	// C'est cette séparation, et non le seul nombre de réplicats, qui rend opposable le plancher de
+	// bruit de H-012 : cinq processus distincts espacés de plusieurs minutes échantillonnent une
+	// classe de bruit que cinq exécutions consécutives ne verraient pas.
+	for replicate := 1; replicate <= n.Replicates; replicate++ {
+		for _, layout := range n.Layouts {
+			for _, size := range n.Sizes {
+				// Le témoin nul ne se produit que sur les tailles dont il borne le bruit. Le plancher
+				// de H-007 est le plus grand |deltaNsPerOp| relevé en NAMED_FIELDS_SHAM sur toute la
+				// série : un témoin à 4096 octets, où le seul coût de copie porte l'écart entre deux
+				// binaires à près d'une nanoseconde, fixerait un plancher plusieurs fois supérieur au
+				// plus grand effet réel des trois tailles examinées, et l'hypothèse ne pourrait plus
+				// qu'être confirmée.
+				//
+				// C'est un saut et non un refus : le même critère gelé exige, dans la même série, un
+				// témoin de sensibilité d'au moins 80 octets en NAMED_FIELDS. Refuser la matrice
+				// entière rendrait H-007 insatisfiable.
+				if layout == LayoutNamedFieldsSham && size > SmallStructBytes {
+					continue
 				}
-				for _, profile := range n.Profiles {
-					// Le témoin nul ne se mesure qu'en profil LOCAL : ses deux cellules exécutent
-					// le corps du mode VALUE, ce qui n'a de sens que pour une paire dont le bras
-					// valeur est le sujet. Saut et non refus, pour la même raison que la borne de
-					// taille juste au-dessus : H-007 exige le témoin nul, H-009 exige les profils
-					// conteneurs et H-010 le profil qui alloue. Refuser la combinaison forçait à
-					// trois campagnes distinctes, donc trois empreintes et trois Provenance, pour
-					// des hypothèses qu'une seule campagne peut couvrir.
-					if layout == LayoutNamedFieldsSham && profile != ProfileLocal {
-						continue
+				for _, hasPointer := range n.PointerFieldVariants {
+					spec, err := NewTypeSpec(size, hasPointer, layout)
+					if err != nil {
+						return nil, nil, err
 					}
-					for _, repeat := range n.Repeats {
-						// Seul un profil qui produit plusieurs instances par opération dépend de
-						// la répétition ; ailleurs elle ne créerait que des doublons.
-						if repeat > 1 && profile != ProfileReturnedAlloc {
+					for _, profile := range n.Profiles {
+						// Le témoin nul ne se mesure qu'en profil LOCAL : ses deux cellules exécutent
+						// le corps du mode VALUE, ce qui n'a de sens que pour une paire dont le bras
+						// valeur est le sujet. Saut et non refus, pour la même raison que la borne de
+						// taille juste au-dessus : H-007 exige le témoin nul, H-009 exige les profils
+						// conteneurs et H-010 le profil qui alloue. Refuser la combinaison forçait à
+						// trois campagnes distinctes, donc trois empreintes et trois Provenance, pour
+						// des hypothèses qu'une seule campagne peut couvrir.
+						if layout == LayoutNamedFieldsSham && profile != ProfileLocal {
 							continue
 						}
-						for _, payload := range n.Payloads {
-							// Même règle pour la charge : seul le profil qui en alloue une s'en
-							// décline.
-							if payload > 1 && profile != ProfileReturnedAlloc {
+						for _, repeat := range n.Repeats {
+							// Seul un profil qui produit plusieurs instances par opération dépend de
+							// la répétition ; ailleurs elle ne créerait que des doublons.
+							if repeat > 1 && profile != ProfileReturnedAlloc {
 								continue
 							}
-							// BR-001-3 : une Cell par mode demandé, donc la paire complète quand
-							// les deux le sont.
-							for _, mode := range n.PassingModes {
-								cell := Cell{TypeSpec: spec, Profile: profile, PassingMode: mode, Repeat: repeat, Payload: payload}
-								cell.SourceFile = SourcePath(cell.ID())
-								if err := cell.Validate(); err != nil {
-									return nil, nil, err
+							for _, payload := range n.Payloads {
+								// Même règle pour la charge : seul le profil qui en alloue une s'en
+								// décline.
+								if payload > 1 && profile != ProfileReturnedAlloc {
+									continue
 								}
-								cells = append(cells, cell)
+								// BR-001-3 : une Cell par mode demandé, donc la paire complète quand
+								// les deux le sont.
+								for _, mode := range n.PassingModes {
+									cell := Cell{TypeSpec: spec, Profile: profile, PassingMode: mode,
+										Repeat: repeat, Payload: payload, Replicate: replicate}
+									// Le réplicat ne se décline que là où H-012 le lit. Ailleurs il ne
+									// produirait que des doublons, et la clause de séparation de C-009
+									// vaut alors pour le seul sous-ensemble répliqué.
+									if replicate > 1 && (layout != LayoutNamedFields || profile != ProfileLocal) {
+										continue
+									}
+									cell.SourceFile = SourcePath(cell.ID())
+									if err := cell.Validate(); err != nil {
+										return nil, nil, err
+									}
+									cells = append(cells, cell)
+								}
 							}
 						}
 					}

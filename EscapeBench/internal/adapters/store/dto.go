@@ -52,6 +52,7 @@ type cellDTO struct {
 	PassingMode string      `json:"passingMode"`
 	Repeat      int         `json:"repeat,omitempty"`
 	Payload     int         `json:"payload,omitempty"`
+	Replicate   int         `json:"replicate,omitempty"`
 	SourceFile  string      `json:"sourceFile"`
 }
 
@@ -75,6 +76,9 @@ func toCellDTO(c models.Cell) cellDTO {
 	if c.Payload > 1 {
 		dto.Payload = c.Payload
 	}
+	if c.Replicate > 1 {
+		dto.Replicate = c.Replicate
+	}
 	return dto
 }
 
@@ -92,6 +96,12 @@ func (d cellDTO) toModel() models.Cell {
 	if payload < 1 {
 		payload = 1
 	}
+	// Un réplicat perdu à la lecture rendrait deux cellules homonymes et Matrix.Validate
+	// refuserait la matrice rechargée pour identifiants en double (C-009).
+	replicate := d.Replicate
+	if replicate < 1 {
+		replicate = 1
+	}
 	return models.Cell{
 		TypeSpec: models.TypeSpec{
 			Name:            d.TypeSpec.Name,
@@ -103,6 +113,7 @@ func (d cellDTO) toModel() models.Cell {
 		PassingMode: models.PassingMode(d.PassingMode),
 		Repeat:      repeat,
 		Payload:     payload,
+		Replicate:   replicate,
 		SourceFile:  d.SourceFile,
 	}
 }
@@ -135,6 +146,7 @@ type matrixParametersDTO struct {
 	Layouts              []string       `json:"layouts,omitempty"`
 	Repeats              []int          `json:"repeats,omitempty"`
 	Payloads             []int          `json:"payloads,omitempty"`
+	Replicates           int            `json:"replicates,omitempty"`
 	Probes               []probeSpecDTO `json:"probes"`
 }
 
@@ -155,6 +167,9 @@ func toParametersDTO(p models.MatrixParameters) matrixParametersDTO {
 	}
 	d.Repeats = p.Repeats
 	d.Payloads = p.Payloads
+	if p.Replicates > 1 {
+		d.Replicates = p.Replicates
+	}
 	for _, spec := range p.Probes {
 		d.Probes = append(d.Probes, probeSpecDTO{Kind: string(spec.Kind), Parameter: spec.Parameter})
 	}
@@ -174,6 +189,10 @@ func (d matrixParametersDTO) toModel() models.MatrixParameters {
 	}
 	p.Repeats = d.Repeats
 	p.Payloads = d.Payloads
+	p.Replicates = d.Replicates
+	if p.Replicates < 1 {
+		p.Replicates = models.DefaultReplicates()
+	}
 	for _, spec := range d.Probes {
 		p.Probes = append(p.Probes, models.ProbeSpec{Kind: models.ProbeKind(spec.Kind), Parameter: spec.Parameter})
 	}

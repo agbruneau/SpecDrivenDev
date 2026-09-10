@@ -212,6 +212,13 @@ func TippingPoints(comparisons []models.Comparison) map[models.TippingKey]int {
 	}
 	out := make(map[models.TippingKey]int, len(bySeries))
 	for key, series := range bySeries {
+		// C-009 : une série répliquée porte plusieurs Comparison par taille. Le balayage descendant
+		// s'arrête au premier élément défavorable et sort.Slice n'est pas stable : le point de
+		// bascule d'une telle série dépendrait de l'ordre du fichier. Il n'est donc pas publié.
+		// Aucun critère gelé ne le lit, H-012 groupant ses réplicats par ses propres attributs.
+		if hasDuplicateSizes(series) {
+			continue
+		}
 		sort.Slice(series, func(i, j int) bool { return series[i].SizeBytes < series[j].SizeBytes })
 		tipping := models.TippingNotObserved
 		// Parcours descendant : la bascule est le début du plus long suffixe entièrement favorable
@@ -226,6 +233,19 @@ func TippingPoints(comparisons []models.Comparison) map[models.TippingKey]int {
 		out[key] = tipping
 	}
 	return out
+}
+
+// hasDuplicateSizes indique qu'une même taille apparaît plus d'une fois dans la série, ce qui est
+// la signature d'une série répliquée (C-009).
+func hasDuplicateSizes(series []models.Comparison) bool {
+	seen := make(map[int]bool, len(series))
+	for _, comparison := range series {
+		if seen[comparison.SizeBytes] {
+			return true
+		}
+		seen[comparison.SizeBytes] = true
+	}
+	return false
 }
 
 // sortedKeys rend les clés de points de bascule dans un ordre stable.

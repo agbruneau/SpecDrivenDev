@@ -114,6 +114,20 @@ func (s *CampaignService) start(ctx context.Context, opts CampaignOptions) (Camp
 	if err != nil {
 		return CampaignReport{}, err
 	}
+	// C-009 : H-007 indexe ses Comparison par taille et n'en retient qu'une, arbitrairement. Sur
+	// une matrice à réplicats elle jugerait donc un réplicat tiré au hasard de l'ordre du fichier,
+	// sans erreur ni trace. La campagne est refusée plutôt que de laisser sortir ce verdict ; c'est
+	// H-012 qui lit une série répliquée.
+	if matrix.Parameters.Replicates > models.DefaultReplicates() {
+		for _, id := range hypothesisIDs {
+			if id == "H-007" {
+				return CampaignReport{}, fmt.Errorf(
+					"%w : la matrice %s porte %d réplicats et H-007 n'en lit qu'un, arbitrairement ; retirer H-007 de --hypotheses ou employer une matrice sans réplicat (C-009)",
+					ErrPrecondition, matrix.ID, matrix.Parameters.Replicates)
+			}
+		}
+	}
+
 	startedAt := s.clock.Now()
 	campaignID, err := s.store.NextCampaignID(ctx, startedAt)
 	if err != nil {
