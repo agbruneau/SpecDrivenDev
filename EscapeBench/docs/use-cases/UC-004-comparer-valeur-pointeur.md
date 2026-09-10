@@ -6,7 +6,7 @@
 **Use Case Name:** Comparer valeur et pointeur
 **Primary Actor:** Chercheur
 **Goal:** Obtenir, pour chaque paire de cellules (`VALUE`, `POINTER`) d'une campagne complétée, la différence de temps par opération avec son intervalle de confiance, et le point de bascule par profil de durée de vie
-**Status:** Reviewed
+**Status:** Implemented
 
 **Linked Requirements:** FR-004, NFR-003, NFR-004, C-002
 **Linked Hypotheses:** H-001, H-002

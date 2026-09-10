@@ -6,7 +6,7 @@
 **Use Case Name:** Exécuter une campagne de mesure
 **Primary Actor:** Chercheur (ou Pipeline CI)
 **Goal:** Obtenir, pour chaque cellule d'une matrice, des mesures répétées de temps, d'octets et d'allocations par opération, rejouables et accompagnées de leur provenance
-**Status:** Reviewed
+**Status:** Implemented
 
 **Linked Requirements:** FR-003, FR-006, NFR-001, NFR-003, NFR-004, NFR-005, C-001, C-002, C-003, C-005, C-006
 **Révision :** 2026-09-10 — ajout de l'empreinte des critères (étape 3, BR-003-5) à la demande de UC-005 ; spécification modifiée avant tout code. Même jour : les Probe (FR-006) sont mesurées comme les Cell (étapes 4, 5, 8, A3, A4, BR-003-4) ; `Measurement.subjectId` remplace `cellId`. Revue pré-lancement du 2026-09-10 : BR-003-3 admet la transition de `status` dans `campaign.json` ; la précondition UC-002 ne vaut que si la Matrix contient une Cell.

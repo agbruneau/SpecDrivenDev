@@ -6,7 +6,7 @@
 **Use Case Name:** Classer l'échappement
 **Primary Actor:** Chercheur
 **Goal:** Obtenir, pour chaque cellule d'une matrice, un verdict d'échappement reproductible accompagné de la raison rapportée par le compilateur et de sa catégorie
-**Status:** Reviewed
+**Status:** Implemented
 
 **Linked Requirements:** FR-002, NFR-001, NFR-002, C-001, C-003, C-005
 **Linked Hypotheses:** H-006

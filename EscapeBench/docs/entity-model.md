@@ -2,6 +2,8 @@
 
 Le modèle sert de glossaire : les noms ci-dessous sont repris tels quels dans les exigences, les cas d'utilisation, le code (`internal/models`) et les tests.
 
+Révision du 2026-09-10, synchronisée avec l'implémentation de UC-001 à UC-005 : `Matrix` porte ses paramètres normalisés et l'empreinte du harnais ; `EscapeVerdict` porte le message du compilateur en cas d'échec de compilation ; `Campaign` porte les identifiants d'hypothèses couverts et les horodatages de son cycle de vie ; `Comparison` recopie la taille, la présence d'un champ pointeur et le profil de sa paire ; `ComparisonSet` porte la matrice et la méthode d'estimation ; `Hypothesis` porte son énoncé et ses cas d'utilisation. Aucun de ces ajouts ne touche un critère de réfutation.
+
 ```mermaid
 erDiagram
     Matrix ||--o{ Cell : contains
@@ -83,8 +85,9 @@ Résultat de la classification d'une cellule par le compilateur.
 | cellId | String | Requis, référence une Cell |
 | escapes | Boolean | Requis |
 | compilerReason | String | Ligne brute rapportée par `-gcflags=-m` ; vide si `escapes` est faux |
-| category | Enum | Requis ; valeurs : `RETURN_POINTER`, `CLOSURE_CAPTURE`, `CHANNEL_SEND`, `CONTAINER_STORE`, `OTHER`, `NONE` |
+| category | Enum | Requis ; valeurs : `RETURN_POINTER`, `CLOSURE_CAPTURE`, `CHANNEL_SEND`, `CONTAINER_STORE`, `OTHER`, `NONE` ; `NONE` si et seulement si `escapes` est faux |
 | status | Enum | Requis ; valeurs : `OK`, `COMPILE_ERROR` ; `escapes` et `category` sont ignorés si `COMPILE_ERROR` |
+| compilerError | String | Requis si `COMPILE_ERROR`, vide sinon ; message du compilateur (UC-002, A2) |
 
 ## Provenance
 
@@ -104,9 +107,13 @@ Résultat de la classification d'une cellule par le compilateur.
 | matrixId | String | Requis, référence une Matrix |
 | harnessDigest | String | Requis ; empreinte SHA-256 de `internal/harness/` au démarrage |
 | hypothesesDigest | String | Requis ; empreinte SHA-256 des énoncés et critères des Hypothesis liées, lus dans `docs/requirements.md` au démarrage |
+| hypothesisIds | Liste de String | Requis ; identifiants couverts par la campagne, base de `hypothesesDigest` (BR-003-5) |
 | count | Integer | Requis, ≥ 20 (NFR-003) |
 | status | Enum | Requis ; valeurs : `RUNNING`, `COMPLETED`, `ABORTED` |
 | provenance | Provenance | Requis |
+| startedAt | DateTime (UTC) | Requis |
+| finishedAt | DateTime (UTC) | Requis si `COMPLETED` ou `ABORTED` |
+| abortReason | String | Requis si `ABORTED` (UC-003, A2) |
 
 ## Measurement
 
@@ -127,7 +134,9 @@ Résultat de la classification d'une cellule par le compilateur.
 | campaignId | String | Requis |
 | valueCellId | String | Requis ; `passingMode = VALUE` |
 | pointerCellId | String | Requis ; même `TypeSpec` et même `LifetimeProfile` que `valueCellId`, `passingMode = POINTER` |
+| sizeBytes, hasPointerField, lifetimeProfile | Integer, Boolean, Enum | Requis ; attributs de la paire recopiés depuis son TypeSpec et son LifetimeProfile, pour que le fichier de comparaison suffise à évaluer H-001 et H-002 sans relire la Matrix (BR-005-2) |
 | deltaNsPerOp | Decimal | Médiane pointeur − médiane valeur |
+| medianValueNsPerOp, medianPointerNsPerOp | Decimal | Médianes des deux côtés, citées dans les rationales |
 | ciLow, ciHigh | Decimal | Bornes de l'intervalle de confiance à 95 % de `deltaNsPerOp` |
 | significant | Boolean | Vrai si l'intervalle exclut zéro |
 
@@ -138,7 +147,9 @@ Fichier de comparaison d'une Campaign (UC-004).
 | Attribut | Type | Règles de validation |
 |---|---|---|
 | campaignId | String | Requis |
+| matrixId | String | Requis |
 | computedAt | DateTime (UTC) | Requis |
+| method | String | Requis ; méthode d'estimation de l'intervalle et ses paramètres |
 | comparisons | Liste de Comparison | Au moins une |
 | tippingPoints | Map (LifetimeProfile, hasPointerField) → Integer ou « non observé » | Une entrée par couple présent dans les Comparison |
 | excludedPairs | Liste de { valueCellId, pointerCellId, reason } | Peut être vide ; jamais omise |
@@ -149,7 +160,9 @@ Fichier de comparaison d'une Campaign (UC-004).
 |---|---|---|
 | id | String | Requis ; forme `H-###` ; défini dans `requirements.md` |
 | sourcePages | String | Requis |
+| statement | String | Requis ; énoncé réfutable, participe à l'empreinte gelée (BR-003-5) |
 | refutationCriterion | String | Requis, gelé au statut `Approved` du UC lié |
+| useCases | Liste de String | Cas d'utilisation porteurs ; déterminent le moment du gel |
 
 ## Verdict
 

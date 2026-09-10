@@ -21,14 +21,26 @@ Le projet est conduit selon l'*AI Unified Process* (Martinelli, *Spec-Driven Dev
 | `internal/{models,service,ports,adapters,harness}` | Layout hexagonal (BEPG ch. 14) |
 | `results/`, `matrices/` | Sorties du binaire, en écriture seule |
 | `LANCEMENT.md` | Procédure de lancement du développement, session par session |
+| `../DECISION.md` | Décisions de construction : écarts assumés, conception du harnais, statistiques, limites |
 
 ## Démarrage
 
+UC-001 à UC-005 sont implémentés et couverts par les tests. Le banc est prêt à mesurer ; aucune campagne de référence n'a encore été exécutée.
+
+```bash
+go vet ./... && go test -race -shuffle=on -count=1 ./...
 ```
-make vet test                    # squelette : compile, aucun test encore
-bash .claude/hooks/selftest.sh   # contrôle des quatre hooks
-claude                           # dans ce répertoire ; puis /hooks, /agents, /context
-/spec-review UC-001
+
+Première campagne, du plus court au plus long :
+
+```bash
+go run ./cmd/escapebench matrix --reference
+go run ./cmd/escapebench escape --matrix <matrixId>
+go run ./cmd/escapebench campaign --matrix <matrixId> --count 20
+go run ./cmd/escapebench compare --campaign <campaignId>
+go run ./cmd/escapebench verdict --campaign <campaignId>
 ```
+
+`escapebench dashboard` régénère `docs/dashboard.md` sans produire de verdict. `bash .claude/hooks/selftest.sh` contrôle les quatre hooks. Voir `LANCEMENT.md` pour la procédure complète et `../DECISION.md` pour les décisions de construction.
 
 Voir `LANCEMENT.md`.

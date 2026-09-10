@@ -6,7 +6,7 @@
 **Use Case Name:** Produire les verdicts
 **Primary Actor:** Chercheur
 **Goal:** Obtenir, pour chaque hypothèse liée aux résultats fournis, un verdict fondé uniquement sur le critère de réfutation gelé, avec son rationale, et un tableau de bord à jour
-**Status:** Reviewed
+**Status:** Implemented
 
 **Linked Requirements:** FR-005, FR-007, NFR-001, NFR-004
 **Linked Hypotheses:** H-001, H-002, H-003, H-004, H-005, H-006
