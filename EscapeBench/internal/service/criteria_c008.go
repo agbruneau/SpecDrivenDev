@@ -278,14 +278,17 @@ func returnedFamily(profile models.LifetimeProfile) bool {
 	return strings.HasPrefix(string(profile), string(models.ProfileReturned))
 }
 
+// pairAllocs porte une paire éligible de H-010 : son étiquette, ses deux médianes d'allocations et
+// les fichiers de mesure dont elles viennent.
+type pairAllocs struct {
+	label   string
+	value   float64
+	pointer float64
+	files   []string
+}
+
 // evaluateH010 — le doublement des allocations sur une base non nulle qui varie.
 func evaluateH010(e Evidence) evaluation {
-	type pairAllocs struct {
-		label   string
-		value   float64
-		pointer float64
-		files   []string
-	}
 	var eligible []pairAllocs
 	for _, pair := range e.Matrix.ValuePointerPairs() {
 		value, pointer := pair[0], pair[1]
@@ -301,7 +304,7 @@ func evaluateH010(e Evidence) evaluation {
 			continue
 		}
 		eligible = append(eligible, pairAllocs{
-			label:   fmt.Sprintf("%d o ×%d", value.TypeSpec.SizeBytes, value.Repetitions()),
+			label:   fmt.Sprintf("%d o ×%d charge %d", value.TypeSpec.SizeBytes, value.Repetitions(), value.Payloads()),
 			value:   valueM.MedianAllocs(),
 			pointer: pointerM.MedianAllocs(),
 			files:   []string{e.MeasurementPaths[value.ID()], e.MeasurementPaths[pointer.ID()]},
@@ -331,28 +334,68 @@ func evaluateH010(e Evidence) evaluation {
 		return inconclusive("bases d'allocation de %.0f à %.0f : l'étalement est inférieur au facteur quatre exigé", low, high)
 	}
 
-	var details, files []string
-	var offending []string
+	var files []string
+	var offending, conforming []pairAllocs
 	sort.Slice(eligible, func(i, j int) bool { return eligible[i].value < eligible[j].value })
 	for _, p := range eligible {
-		details = append(details, fmt.Sprintf("%s : %.0f → %.0f allocs/op", p.label, p.value, p.pointer))
 		files = append(files, p.files...)
 		if p.pointer != 2*p.value {
-			offending = append(offending, p.label)
+			offending = append(offending, p)
+		} else {
+			conforming = append(conforming, p)
 		}
 	}
 	if len(offending) > 0 {
 		return evaluation{
-			Outcome:   models.OutcomeRefuted,
-			Rationale: fmt.Sprintf("le surcoût du pointeur n'est pas un doublement sur %s : %s", join(offending), join(details)),
-			Files:     dedupe(files),
+			Outcome: models.OutcomeRefuted,
+			Rationale: fmt.Sprintf("%d des %d paires éligibles ne doublent pas : %s ; les %d autres doublent : %s",
+				len(offending), len(eligible), summarizeAllocPairs(offending),
+				len(conforming), summarizeAllocPairs(conforming)),
+			Files: dedupe(files),
 		}
 	}
 	return evaluation{
-		Outcome:   models.OutcomeConfirmed,
-		Rationale: fmt.Sprintf("les %d paires éligibles doublent exactement, sur %d bases distinctes : %s", len(eligible), len(bases), join(details)),
-		Files:     dedupe(files),
+		Outcome: models.OutcomeConfirmed,
+		Rationale: fmt.Sprintf("les %d paires éligibles doublent exactement, sur %d bases distinctes : %s",
+			len(eligible), len(bases), summarizeAllocPairs(eligible)),
+		Files: dedupe(files),
 	}
+}
+
+// summarizeAllocPairs regroupe les paires par couple de bases d'allocation. Énumérer les quatre-
+// vingts paires d'une campagne à plusieurs répétitions et plusieurs charges rendait la rationale
+// illisible au tableau de bord, et surtout muette sur ce qui compte : le rapport ne dépend que du
+// couple, pas de la taille de la structure. Chaque groupe cite une paire, ce qui suffit à remonter
+// aux mesures, le champ resultFiles portant de toute façon tous les fichiers.
+func summarizeAllocPairs(pairs []pairAllocs) string {
+	type bases struct{ value, pointer float64 }
+	var order []bases
+	labels := map[bases][]string{}
+	for _, p := range pairs {
+		key := bases{p.value, p.pointer}
+		if _, seen := labels[key]; !seen {
+			order = append(order, key)
+		}
+		labels[key] = append(labels[key], p.label)
+	}
+	sort.Slice(order, func(i, j int) bool {
+		if order[i].value != order[j].value {
+			return order[i].value < order[j].value
+		}
+		return order[i].pointer < order[j].pointer
+	})
+	out := make([]string, 0, len(order))
+	for _, key := range order {
+		group := labels[key]
+		sort.Strings(group)
+		cite := group[0]
+		if len(group) > 1 {
+			cite = fmt.Sprintf("%s et %d autres", group[0], len(group)-1)
+		}
+		out = append(out, fmt.Sprintf("%.0f → %.0f allocs/op sur %d paire(s) dont %s",
+			key.value, key.pointer, len(group), cite))
+	}
+	return join(out)
 }
 
 // constantAllocs indique que le compte d'allocations n'a pas varié d'une répétition à l'autre :
