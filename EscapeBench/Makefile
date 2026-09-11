@@ -3,6 +3,7 @@ COUNT ?= 20
 PARAMS ?=
 MATRIX ?=
 CAMPAIGN ?=
+HYPOTHESES ?=
 
 .PHONY: fmt vet test integration_test matrix escape campaign compare verdict dashboard tidy build clean
 
@@ -24,13 +25,13 @@ build:
 
 ## Sous-commandes du banc — chacune correspond à un cas d'utilisation (docs/use-cases).
 matrix: build            ## UC-001 : matrice de référence si PARAMS est vide
-	./bin/escapebench matrix $(if $(PARAMS),--params $(PARAMS),--reference)
+	./bin/escapebench matrix $(if $(PARAMS),--params "$(PARAMS)",--reference)
 
 escape: build            ## UC-002
 	./bin/escapebench escape --matrix $(MATRIX)
 
-campaign: build          ## UC-003 (C-003 : count ≥ 20)
-	./bin/escapebench campaign --matrix $(MATRIX) --count $(COUNT)
+campaign: build          ## UC-003 (C-003 : count ≥ 20) ; HYPOTHESES=H-001,H-002 restreint le gel (exigé pour H-012, C-009)
+	./bin/escapebench campaign --matrix $(MATRIX) --count $(COUNT) $(if $(HYPOTHESES),--hypotheses $(HYPOTHESES))
 
 compare: build           ## UC-004
 	./bin/escapebench compare --campaign $(CAMPAIGN)
