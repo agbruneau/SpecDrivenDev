@@ -25,8 +25,9 @@ type Index struct {
 // NewIndex construit un index enraciné sur le répertoire du projet.
 func NewIndex(root string) *Index { return &Index{root: root} }
 
-// scan parcourt cmd/ et internal/ une seule fois.
-func (i *Index) scan() {
+// scan parcourt cmd/ et internal/ une seule fois. Le contexte est honoré à chaque fichier : le
+// parcours lit tout le code du module, et une annulation ne doit pas attendre sa fin (A-130).
+func (i *Index) scan(ctx context.Context) {
 	i.code = map[string]bool{}
 	i.itg = map[string]bool{}
 	for _, dir := range []string{"cmd", "internal"} {
@@ -36,6 +37,9 @@ func (i *Index) scan() {
 		}
 		err := filepath.WalkDir(base, func(path string, entry fs.DirEntry, err error) error {
 			if err != nil {
+				return err
+			}
+			if err := ctx.Err(); err != nil {
 				return err
 			}
 			if entry.IsDir() || !strings.HasSuffix(entry.Name(), ".go") {
@@ -113,8 +117,8 @@ func useCaseIDs(text string) []string {
 }
 
 // References indique si du code et un test d'intégration référencent le cas d'utilisation.
-func (i *Index) References(_ context.Context, useCaseID string) (bool, bool, error) {
-	i.once.Do(i.scan)
+func (i *Index) References(ctx context.Context, useCaseID string) (bool, bool, error) {
+	i.once.Do(func() { i.scan(ctx) })
 	if i.err != nil {
 		return false, false, i.err
 	}

@@ -4,6 +4,7 @@
 package cli
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -217,14 +218,35 @@ func ValidateBenchTime(value string) error {
 }
 
 // FindRoot remonte depuis start jusqu'au répertoire du projet, reconnu à son docs/requirements.md.
-func FindRoot(start string) (string, error) {
+// Elle prend un contexte : la remontée touche le système de fichiers à chaque niveau, et une
+// arborescence profonde sur un montage réseau lent ne doit pas ignorer une annulation (A-130).
+func FindRoot(ctx context.Context, start string) (string, error) {
+	return findRoot(ctx, start, true)
+}
+
+// ProjectRoot vérifie qu'un chemin désigne directement la racine du projet, sans remontée.
+//
+// Révision du 2026-09-12 (A-093) : un `--root` fautif se résolvait en silence au projet englobant.
+// Le chercheur croyait travailler sur un dépôt, le banc en lisait un autre — et y écrivait.
+func ProjectRoot(ctx context.Context, dir string) (string, error) {
+	return findRoot(ctx, dir, false)
+}
+
+// findRoot reconnaît la racine du projet à son docs/requirements.md, en remontant ou non.
+func findRoot(ctx context.Context, start string, climb bool) (string, error) {
 	dir, err := filepath.Abs(start)
 	if err != nil {
 		return "", err
 	}
 	for {
+		if err := ctx.Err(); err != nil {
+			return "", fmt.Errorf("recherche de la racine du projet depuis %s : %w", start, err)
+		}
 		if _, err := os.Stat(filepath.Join(dir, "docs", "requirements.md")); err == nil {
 			return dir, nil
+		}
+		if !climb {
+			return "", fmt.Errorf("%s n'est pas la racine du projet : aucun docs/requirements.md", start)
 		}
 		parent := filepath.Dir(dir)
 		if parent == dir {

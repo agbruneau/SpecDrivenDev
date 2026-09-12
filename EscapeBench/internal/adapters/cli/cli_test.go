@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"context"
 	"errors"
 	"os"
 	"path/filepath"
@@ -119,14 +120,14 @@ func TestFindRoot(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(root, "docs", "requirements.md"), []byte("# x"), 0o644); err != nil {
 		t.Fatalf("écriture : %v", err)
 	}
-	found, err := FindRoot(nested)
+	found, err := FindRoot(context.Background(), nested)
 	if err != nil {
 		t.Fatalf("FindRoot : %v", err)
 	}
 	if filepath.Clean(found) != filepath.Clean(root) {
 		t.Fatalf("FindRoot = %q, attendu %q", found, root)
 	}
-	if _, err := FindRoot(t.TempDir()); err == nil {
+	if _, err := FindRoot(context.Background(), t.TempDir()); err == nil {
 		t.Fatal("FindRoot doit échouer hors d'un projet EscapeBench")
 	}
 }

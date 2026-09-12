@@ -76,7 +76,7 @@ func TestC010_SansTempsDArbreLAttestationEstAbsente(t *testing.T) {
 	run := func(_ context.Context, _ string, _ string, _ ...string) (Result, error) {
 		return Result{Stdout: "BenchmarkSubject\t1000000\t1.00 ns/op\t0 B/op\t0 allocs/op\n"}, nil
 	}
-	tc := New(run, "").WithQuietude(func() (time.Duration, bool) { return time.Second, true }, 8)
+	tc := New(run, "").WithQuietude(func(context.Context) (time.Duration, bool) { return time.Second, true }, 8)
 	m, err := tc.Run(context.Background(), ".", "S/LOCAL/VALUE", ports.RunOptions{Count: 1, BenchTime: "1x"})
 	if err != nil {
 		t.Fatalf("Run : %v", err)
@@ -101,7 +101,7 @@ func TestC010_AttestationPortee(t *testing.T) {
 			TreeCPUMeasured: true,
 		}, nil
 	}
-	tc := New(run, "").WithQuietude(func() (time.Duration, bool) { return busy, true }, 8)
+	tc := New(run, "").WithQuietude(func(context.Context) (time.Duration, bool) { return busy, true }, 8)
 	m, err := tc.Run(context.Background(), ".", "S/LOCAL/VALUE", ports.RunOptions{Count: 1, BenchTime: "1x"})
 	if err != nil {
 		t.Fatalf("Run : %v", err)

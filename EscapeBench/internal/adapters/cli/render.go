@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/agbruneau/escapebench/internal/models"
 	"github.com/agbruneau/escapebench/internal/service"
@@ -98,7 +99,7 @@ func RenderCampaign(report service.CampaignReport) string {
 	if report.Resumed {
 		b.WriteString("Reprise d'une campagne interrompue (UC-003 A4)\n")
 	}
-	fmt.Fprintf(&b, "Durée : %s\n", report.Duration.Round(1e9))
+	fmt.Fprintf(&b, "Durée : %s\n", report.Duration.Round(time.Second))
 	if report.AbortReason != "" {
 		fmt.Fprintf(&b, "Abandon : %s\n", report.AbortReason)
 	}
@@ -172,6 +173,15 @@ func excludedSeriesReason(set models.ComparisonSet, key models.TippingKey) strin
 	return "raison non consignée"
 }
 
+// tableCell rend un texte insérable dans une cellule de table Markdown.
+//
+// Révision du 2026-09-12 (A-095) : un rationale contenant une barre verticale — les rationales de
+// H-009 et H-012 en produisent, séparant profils et cellules — cassait la colonne, et un retour de
+// ligne coupait la table en deux.
+func tableCell(text string) string {
+	return strings.NewReplacer("|", `\|`, "\n", " ", "\r", "").Replace(text)
+}
+
 // RenderVerdicts met en forme l'étape 8 de UC-005.
 func RenderVerdicts(summary service.VerdictReportSummary) string {
 	var b strings.Builder
@@ -181,7 +191,7 @@ func RenderVerdicts(summary service.VerdictReportSummary) string {
 	b.WriteString("| Hypothèse | Verdict | Rationale |\n")
 	b.WriteString("|---|---|---|\n")
 	for _, verdict := range summary.Report.Verdicts {
-		fmt.Fprintf(&b, "| %s | %s | %s |\n", verdict.HypothesisID, verdict.Outcome, verdict.Rationale)
+		fmt.Fprintf(&b, "| %s | %s | %s |\n", verdict.HypothesisID, verdict.Outcome, tableCell(verdict.Rationale))
 	}
 	if len(summary.Inconclusive) > 0 {
 		b.WriteString("\nHypothèses INCONCLUSIVE et cause :\n")
@@ -205,9 +215,9 @@ func firstLine(message string) string {
 }
 
 // truncateList borne une énumération affichée.
-func truncateList(values []string, max int) []string {
-	if len(values) <= max {
+func truncateList(values []string, limit int) []string {
+	if len(values) <= limit {
 		return values
 	}
-	return append(append([]string(nil), values[:max]...), "…")
+	return append(append([]string(nil), values[:limit]...), "…")
 }

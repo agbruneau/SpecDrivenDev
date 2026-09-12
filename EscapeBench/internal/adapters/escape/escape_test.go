@@ -46,6 +46,8 @@ func TestIsEscape(t *testing.T) {
 		"func literal escapes to heap":       true,
 		"make([]elem, 1024) escapes to heap": true,
 		"t does not escape":                  false,
+		"leaking param: f":                   false,
+		"leaking param content: t":           false,
 		"func literal does not escape":       false,
 		"make(map[int]T, 1) does not escape": false,
 		"can inline newValue":                false,

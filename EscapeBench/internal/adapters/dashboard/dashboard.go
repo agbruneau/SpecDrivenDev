@@ -16,12 +16,11 @@ import (
 // Writer écrit docs/dashboard.md.
 type Writer struct {
 	path string
-	root string
 }
 
 // NewWriter construit un rédacteur enraciné sur le répertoire du projet.
 func NewWriter(root string) *Writer {
-	return &Writer{path: filepath.Join(root, "docs", "dashboard.md"), root: root}
+	return &Writer{path: filepath.Join(root, "docs", "dashboard.md")}
 }
 
 // Path rend le chemin, relatif à la racine, du tableau de bord.

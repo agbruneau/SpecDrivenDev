@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"runtime"
 	"strings"
 	"testing"
 	"unicode/utf8"
@@ -274,6 +275,19 @@ func TestExecRunner(t *testing.T) {
 	}
 	if result.ExitCode != 0 || strings.TrimSpace(result.Stdout) == "" {
 		t.Fatalf("résultat = %+v", result)
+	}
+	// A-068 : rien n'affirmait que le temps de l'arbre est effectivement relevé. Une régression
+	// dans la préparation du job Windows ou dans la lecture de ProcessState ferait passer toute
+	// attestation de quiétude à « non mesurée », et H-013 deviendrait non concluante partout, sans
+	// qu'aucun test ne rougisse (C-010). Le temps lui-même peut valoir zéro : `go env` est bref.
+	switch runtime.GOOS {
+	case "windows", "linux", "darwin":
+		if !result.TreeCPUMeasured {
+			t.Fatal("le temps processeur de l'arbre doit être relevé sur cette plateforme (C-010)")
+		}
+		if result.TreeCPU < 0 {
+			t.Fatalf("temps de l'arbre négatif : %v", result.TreeCPU)
+		}
 	}
 	failing, err := ExecRunner(context.Background(), "", "go", "cette-sous-commande-nexiste-pas")
 	if err != nil {

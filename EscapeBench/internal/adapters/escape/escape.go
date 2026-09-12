@@ -45,6 +45,11 @@ func New() Classifier { return Classifier{} }
 
 // IsEscape indique si un message du compilateur signale un échappement. « does not escape » est
 // exclu : il contient le mot « escape » mais affirme le contraire.
+//
+// « leaking param: x » est également exclu, et ce n'est pas un oubli (A-075) : il dit qu'un
+// paramètre survit à l'appel, ce qui décrit la fonction appelée, pas une allocation déplacée sur
+// le tas dans la cellule mesurée. Ce que UC-002 classe est l'échappement d'une valeur de la
+// cellule ; l'inclure ferait compter comme échappantes des cellules dont rien n'a quitté la pile.
 func IsEscape(message string) bool {
 	if strings.Contains(message, "does not escape") {
 		return false

@@ -90,8 +90,9 @@ type Toolchain struct {
 }
 
 // QuietudeSampler rend le temps processeur cumulé de la machine passé hors de la boucle
-// d'inactivité, et si la plateforme sait le produire (C-010).
-type QuietudeSampler func() (busy time.Duration, ok bool)
+// d'inactivité, et si la plateforme sait le produire (C-010). Il prend un contexte : le relevé lit
+// /proc/stat ou interroge le noyau (A-130).
+type QuietudeSampler func(ctx context.Context) (busy time.Duration, ok bool)
 
 // WithQuietude branche la sonde de quiétude sur la chaîne d'outils.
 func (t *Toolchain) WithQuietude(sample QuietudeSampler, cpus int) *Toolchain {
@@ -214,11 +215,11 @@ func (t *Toolchain) Run(ctx context.Context, matrixDir, subjectID string, opts p
 	// C-010 : la fenêtre de mesure est encadrée par deux relevés des temps processeur de la
 	// machine. Le travail de la campagne elle-même en est retranché ; ce qui reste est l'occupation
 	// des cœurs par tout ce qui n'est pas le sujet.
-	busyBefore, quietudeOK := t.sampleQuietude()
+	busyBefore, quietudeOK := t.sampleQuietude(ctx)
 	startedAt := time.Now()
 	result, err := t.run(ctx, matrixDir, t.goBin, args...)
 	elapsed := time.Since(startedAt)
-	busyAfter, afterOK := t.sampleQuietude()
+	busyAfter, afterOK := t.sampleQuietude(ctx)
 	// A-261 : une interruption n'est pas un résultat de mesure. Sans cette garde, le processus tué
 	// par le signal rendait une Measurement FAILED avec une erreur Go nulle : la boucle de mesure
 	// ne voyait pas l'annulation, écrivait le sujet en échec, puis échouait en chaîne sur tous les
@@ -253,11 +254,11 @@ func (t *Toolchain) Run(ctx context.Context, matrixDir, subjectID string, opts p
 }
 
 // sampleQuietude relève les temps processeur de la machine, si la sonde est branchée.
-func (t *Toolchain) sampleQuietude() (time.Duration, bool) {
+func (t *Toolchain) sampleQuietude(ctx context.Context) (time.Duration, bool) {
 	if t.quietude == nil || t.cpus <= 0 {
 		return 0, false
 	}
-	return t.quietude()
+	return t.quietude(ctx)
 }
 
 // occupancyOf rend la fraction d'occupation des cœurs non mesurés (C-010). Elle est bornée à

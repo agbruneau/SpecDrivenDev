@@ -1,6 +1,7 @@
 package system
 
 import (
+	"context"
 	"testing"
 	"time"
 )
@@ -81,7 +82,7 @@ func TestC010_Occupancy(t *testing.T) {
 func TestC010_SondeReelle(t *testing.T) {
 	t.Parallel()
 	p := NewQuietudeProbe()
-	before := p.Sample()
+	before := p.Sample(context.Background())
 	if !before.Measured {
 		t.Skip("plateforme sans relevé des temps processeur : H-013 y est non concluante par construction")
 	}
@@ -95,7 +96,7 @@ func TestC010_SondeReelle(t *testing.T) {
 		x += i
 	}
 	_ = x
-	after := p.Sample()
+	after := p.Sample(context.Background())
 	if after.Busy < before.Busy {
 		t.Fatalf("les compteurs doivent croître : %v puis %v", before.Busy, after.Busy)
 	}

@@ -25,6 +25,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/agbruneau/escapebench/internal/adapters/specs"
 	"github.com/agbruneau/escapebench/internal/adapters/store"
 	"github.com/agbruneau/escapebench/internal/models"
 )
@@ -261,4 +262,51 @@ func archivedEvidence(ctx context.Context, disk *store.Store, campaign models.Ca
 		}
 	}
 	return evidence, nil
+}
+
+// TestUC005_BR5_EmpreintesGeleesInchangees exige que l'empreinte des critères de chaque campagne
+// archivée soit encore celle que `docs/requirements.md` produit aujourd'hui.
+//
+// C'est la garde qui protège les verdicts publiés d'une retouche du catalogue : BR-003-5 fige
+// l'empreinte à la création de la campagne, et UC-005 refuse tout verdict dès qu'elle diverge. Une
+// révision de texte faite à côté d'un critère — la révision d'une contrainte C-###, une note de
+// revue — ne doit pas déplacer l'empreinte ; si elle le fait, ce test le dit avant que le chercheur
+// ne découvre que ses dix campagnes sont devenues inexploitables.
+func TestUC005_BR5_EmpreintesGeleesInchangees(t *testing.T) {
+	ctx := context.Background()
+	root := projectRoot(t)
+	catalogue, err := specs.NewReader(root).Load(ctx)
+	if err != nil {
+		t.Fatalf("lecture de docs/requirements.md : %v", err)
+	}
+	disk := store.New(root)
+	reports, err := disk.VerdictReports(ctx)
+	if err != nil {
+		t.Fatalf("lecture de results/verdicts : %v", err)
+	}
+	seen := map[string]bool{}
+	for _, report := range reports {
+		if seen[report.CampaignID] {
+			continue
+		}
+		seen[report.CampaignID] = true
+		campaign, err := disk.LoadCampaign(ctx, report.CampaignID)
+		if err != nil {
+			t.Fatalf("campagne %s : %v", report.CampaignID, err)
+		}
+		t.Run(campaign.ID, func(t *testing.T) {
+			digest, err := specs.Digest(catalogue, campaign.HypothesisIDs)
+			if err != nil {
+				t.Fatalf("empreinte des critères : %v", err)
+			}
+			if digest != campaign.HypothesesDigest {
+				t.Fatalf("empreinte des critères de %s : %s aujourd'hui, %s à la création ; "+
+					"un critère gelé a été retouché — créer une nouvelle H-### (BR-003-5, UC-005 A1)",
+					campaign.ID, digest, campaign.HypothesesDigest)
+			}
+		})
+	}
+	if len(seen) == 0 {
+		t.Fatal("aucune campagne archivée : la garde ne prouve rien")
+	}
 }

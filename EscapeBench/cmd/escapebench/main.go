@@ -149,16 +149,21 @@ type deps struct {
 func (d *deps) HarnessDigest(context.Context) (string, error) { return d.renderer.Digest(), nil }
 
 // newDeps construit les adapters à partir de la racine du projet.
-func newDeps(rootFlag string) (*deps, error) {
-	start := rootFlag
-	if start == "" {
-		cwd, err := os.Getwd()
-		if err != nil {
-			return nil, err
+func newDeps(ctx context.Context, rootFlag string) (*deps, error) {
+	// A-093 : un --root explicite désigne la racine, il ne sert pas de point de départ à une
+	// remontée. Sans cette distinction, un chemin fautif se résolvait au projet englobant et le
+	// banc lisait — puis écrivait — dans un autre dépôt que celui demandé.
+	var root string
+	var err error
+	if rootFlag != "" {
+		root, err = cli.ProjectRoot(ctx, rootFlag)
+	} else {
+		cwd, wdErr := os.Getwd()
+		if wdErr != nil {
+			return nil, wdErr
 		}
-		start = cwd
+		root, err = cli.FindRoot(ctx, cwd)
 	}
-	root, err := cli.FindRoot(start)
 	if err != nil {
 		return nil, err
 	}
@@ -174,8 +179,8 @@ func newDeps(rootFlag string) (*deps, error) {
 		// C-010 : la sonde de quiétude est branchée ici, à la racine de composition. Un adaptateur
 		// n'en importe pas un autre ; sur une plateforme qui ne sait pas la produire, la mesure se
 		// déclare non faite et H-013 rend non concluant.
-		toolchain: gotool.New(nil, root).WithQuietude(func() (time.Duration, bool) {
-			sample := system.NewQuietudeProbe().Sample()
+		toolchain: gotool.New(nil, root).WithQuietude(func(ctx context.Context) (time.Duration, bool) {
+			sample := system.NewQuietudeProbe().Sample(ctx)
 			return sample.Busy, sample.Measured
 		}, system.CPUCount()),
 		classifier: escape.New(),
@@ -242,7 +247,7 @@ func runMatrix(ctx context.Context, args []string) error {
 		}
 		parameters = parsed
 	}
-	d, err := newDeps(*root)
+	d, err := newDeps(ctx, *root)
 	if err != nil {
 		return err
 	}
@@ -267,7 +272,7 @@ func runEscape(ctx context.Context, args []string) error {
 	if *matrixID == "" {
 		return fmt.Errorf("%w : --matrix est obligatoire", cli.ErrUsage)
 	}
-	d, err := newDeps(*root)
+	d, err := newDeps(ctx, *root)
 	if err != nil {
 		return err
 	}
@@ -297,7 +302,7 @@ func runCampaign(ctx context.Context, args []string) error {
 	if *matrixID == "" && *resume == "" {
 		return fmt.Errorf("%w : --matrix ou --resume est obligatoire", cli.ErrUsage)
 	}
-	d, err := newDeps(*root)
+	d, err := newDeps(ctx, *root)
 	if err != nil {
 		return err
 	}
@@ -347,7 +352,7 @@ func runCompare(ctx context.Context, args []string) error {
 	if *campaignID == "" {
 		return fmt.Errorf("%w : --campaign est obligatoire", cli.ErrUsage)
 	}
-	d, err := newDeps(*root)
+	d, err := newDeps(ctx, *root)
 	if err != nil {
 		return err
 	}
@@ -372,7 +377,7 @@ func runVerdict(ctx context.Context, args []string) error {
 	if *campaignID == "" {
 		return fmt.Errorf("%w : --campaign est obligatoire", cli.ErrUsage)
 	}
-	d, err := newDeps(*root)
+	d, err := newDeps(ctx, *root)
 	if err != nil {
 		return err
 	}
@@ -392,7 +397,7 @@ func runDashboard(ctx context.Context, args []string) error {
 	if err := parse(fs, args); err != nil {
 		return err
 	}
-	d, err := newDeps(*root)
+	d, err := newDeps(ctx, *root)
 	if err != nil {
 		return err
 	}

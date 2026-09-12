@@ -1,6 +1,7 @@
 package system
 
 import (
+	"context"
 	"runtime"
 	"time"
 )
@@ -35,8 +36,15 @@ type QuietudeProbe struct{}
 func NewQuietudeProbe() QuietudeProbe { return QuietudeProbe{} }
 
 // Sample relève les temps processeur courants. Un relevé non mesuré n'est pas une erreur : la
-// plateforme peut simplement ne pas l'exposer.
-func (QuietudeProbe) Sample() CPUTimes { return sampleCPUTimes() }
+// plateforme peut simplement ne pas l'exposer. Le contexte est honoré avant la lecture, qui touche
+// /proc/stat ou le noyau (A-130) ; une annulation rend un relevé non mesuré plutôt qu'une valeur
+// prise trop tard, et H-013 se déclare alors non concluante.
+func (QuietudeProbe) Sample(ctx context.Context) CPUTimes {
+	if ctx.Err() != nil {
+		return CPUTimes{}
+	}
+	return sampleCPUTimes()
+}
 
 // Occupancy rend la fraction d'occupation des cœurs non mesurés entre deux relevés, une fois
 // retranché le temps processeur propre du sujet mesuré.

@@ -53,4 +53,4 @@ Projection : <élément du UC → fichier:fonction → test>
 Non couvert (à revoir dans la spécification) : <liste ou « aucun »>
 Commande de revue suggérée : demander au sous-agent code-reviewer une revue de $ARGUMENTS
 ```
-Interdits : modifier `docs/` (sauf `docs/dashboard.md`, jamais), écrire dans `results/` ou `matrices/`, ajouter une dépendance hors bibliothèque standard, implémenter un comportement absent du UC.
+Interdits : modifier `docs/` ; éditer `docs/dashboard.md`, toujours régénéré par le binaire (BR-005-3) ; écrire dans `results/` ou `matrices/` ; ajouter une dépendance hors bibliothèque standard ; implémenter un comportement absent du UC.
