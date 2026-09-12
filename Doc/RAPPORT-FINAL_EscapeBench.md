@@ -1,5 +1,7 @@
 # EscapeBench — verdicts consolidés des treize hypothèses
 
+**Révision du 2026-09-12 :** un erratum retire le verdict de H-006, voir la section *Errata*. Les douze autres verdicts sont inchangés, et un harnais de non-régression les rejoue désormais sur les campagnes archivées.
+
 Clôture du 2026-09-10. Le banc a éprouvé treize affirmations de *Building Enterprise Projects with Go* (Shahsavan, Apress 2026). Chaque critère de réfutation a été gelé avant les mesures qui le jugent, et chaque verdict est produit par un évaluateur qui applique ce texte à la lettre.
 
 ## Les treize verdicts
@@ -11,7 +13,7 @@ Clôture du 2026-09-10. Le banc a éprouvé treize affirmations de *Building Ent
 | H-003 | 256 | Passer de la valeur au pointeur double les allocations | confirmée |
 | H-004 | 254 | Un accès dispersé coûte dix à deux cents fois un accès séquentiel | **infirmée** |
 | H-005 | 114 | La préallocation est six fois plus rapide et prend un cinquième de la mémoire | confirmée |
-| H-006 | 238-242 | Les quatre causes d'échappement énumérées couvrent les cas | **infirmée** |
+| H-006 | 238-242 | Les quatre causes d'échappement énumérées couvrent les cas | **infirmée — verdict frappé d'erratum, voir plus bas** |
 | H-007 | 253 | Même affirmation que H-002, sur une disposition assignable aux registres | confirmée |
 | H-008 | 254 | Même affirmation que H-004, sur une chaîne de pointeurs dépendante | confirmée |
 | H-009 | 241 | La règle des conteneurs se généralise de la map à la tranche et à la structure | confirmée |
@@ -32,7 +34,15 @@ Deux hypothèses ne peuvent pas cohabiter dans une même campagne, et c'est voul
 
 **H-006 tombe sur un cas que le livre ne prévoyait pas.** Sur 380 cellules qui échappent, 120 le font pour une raison étrangère aux quatre causes énumérées: la charge allouée par le profil de retour s'échappe alors que la structure mesurée, elle, reste sur la pile. Le catalogue notait déjà que le livre ne revendique pas l'exhaustivité, parlant d'un des cas les plus courants. Cette infirmation le confirme par la mesure.
 
+> **Erratum du 2026-09-12 — ce paragraphe est faux.** L'audit du code a démontré que les 120 cellules comptées « hors des quatre causes » n'ont jamais été classées : le classificateur d'échappement rendait `OTHER` dès que le compilateur nomme l'expression d'allocation plutôt qu'une variable. La sortie réelle du compilateur pour ces cellules est « `new(payload) escapes to heap` », que `escapedIdentifier` ne savait pas lire ; `classifyDiagnostic` rendait alors `OTHER` sans consulter l'arbre syntaxique. Or le corps de `produceValueAlloc` affecte cette allocation à `p` puis exécute `return t, p` : la charge échappe **par retour de pointeur**, la première des quatre causes du livre, et non par une cause étrangère. Le verdict `REFUTED` publié pour H-006 est un artefact du classificateur, pas une observation. Le défaut est corrigé et vérifié de bout en bout contre le compilateur réel ; le verdict corrigé exige de rejouer UC-002 puis UC-005 sur les matrices concernées, ce que ce rapport ne peut pas faire à lui seul. Voir `audit.md` (constat A-072) et `Doc/DECISION.md` (D-39). Tant que la réexécution n'a pas eu lieu, H-006 doit être lue comme **sans verdict**, et non comme infirmée.
+
 **H-011 tombe de peu, et pas là où on l'attendrait.** La préallocation tient deux des trois chiffres de la page 114: la mémoire vaut un cinquième et le compte d'allocations tombe de 27 à exactement un. C'est le gain en temps qui manque, à 4,45 fois pour un plancher de 4,8. H-005, qui accorde une tolérance deux fois plus large sur la même mesure, reste confirmée. La différence entre les deux verdicts est la largeur de la marge, pas la mesure.
+
+## Errata
+
+**2026-09-12 — H-006, verdict retiré.** Le verdict `REFUTED` publié le 2026-09-10 pour H-006 est un artefact du classificateur d'échappement et non une observation. Le détail est ci-dessus, au paragraphe qui lui était consacré. Ce que l'erratum ne dit pas, faute de mesure : si la reclassification fait passer H-006 de `REFUTED` à `CONFIRMED`. Les 120 cellules concernées échappent par la première des quatre causes du livre ; si aucune autre cellule ne reste hors des quatre causes, le critère gelé de H-006 confirme. C'est le résultat le plus important de l'audit, et il ne doit pas se perdre dans un tableau régénéré : il tient à ce qu'une affirmation du livre a été déclarée fausse sur la foi d'un défaut du banc qui la mesure.
+
+**Ce qu'il reste à faire, et dans cet ordre.** Rejouer `escapebench escape` sur `M-b44a93baae51` et `M-8f03757ac206`, les deux matrices des campagnes qui portent H-006 ; le flux A3 de UC-002 signalera un écart de NFR-002, deux exécutions sur la même toolchain donnant des verdicts différents — c'est attendu, c'est la signature du correctif, et ce n'est pas une instabilité de mesure. Produire ensuite un nouveau verdict pour ces campagnes et laisser le binaire régénérer le tableau de bord. Aucun agent n'écrit sous `results/` : ces trois pas reviennent au chercheur.
 
 ## Ce que les confirmations valent, et ce qu'elles ne valent pas
 

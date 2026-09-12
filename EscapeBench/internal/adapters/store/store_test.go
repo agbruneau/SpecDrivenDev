@@ -371,8 +371,10 @@ func TestVerdictReportRoundTrip(t *testing.T) {
 	t.Parallel()
 	ctx := context.Background()
 	s := newStore(t)
-	if _, _, err := s.LatestVerdictReport(ctx); !errors.Is(err, ErrNotFound) {
-		t.Fatalf("erreur = %v, ErrNotFound attendue", err)
+	// A-195 : c'est VerdictReports que le tableau de bord lit (C-009), et il n'était pas éprouvé
+	// ici ; LatestVerdictReport, qui l'était, n'avait aucun appelant en production (A-057).
+	if reports, err := s.VerdictReports(ctx); err != nil || len(reports) != 0 {
+		t.Fatalf("VerdictReports sur un dépôt vide = %v, %v", reports, err)
 	}
 	report := models.VerdictReport{
 		CampaignID: "C-1", ProducedAt: provenance().CapturedAt,
@@ -392,15 +394,23 @@ func TestVerdictReportRoundTrip(t *testing.T) {
 	if _, err := s.WriteVerdictReport(ctx, plusRecent); err != nil {
 		t.Fatalf("WriteVerdictReport : %v", err)
 	}
-	latest, latestPath, err := s.LatestVerdictReport(ctx)
+	// VerdictReports rend tous les rapports, du plus ancien au plus récent : le tableau de bord
+	// retient le dernier verdict rendu sur chaque hypothèse.
+	reports, err := s.VerdictReports(ctx)
 	if err != nil {
-		t.Fatalf("LatestVerdictReport : %v", err)
+		t.Fatalf("VerdictReports : %v", err)
 	}
-	if latestPath == path {
-		t.Fatal("le fichier le plus récent doit être retenu")
+	if len(reports) != 2 {
+		t.Fatalf("%d rapports lus, 2 attendus", len(reports))
 	}
-	if latest.Verdicts[0].Outcome != models.OutcomeConfirmed {
-		t.Fatalf("verdict = %+v", latest.Verdicts[0])
+	if reports[0].Verdicts[0].Outcome != models.OutcomeRefuted {
+		t.Fatalf("premier rapport = %+v", reports[0].Verdicts[0])
+	}
+	if reports[1].Verdicts[0].Outcome != models.OutcomeConfirmed {
+		t.Fatalf("dernier rapport = %+v", reports[1].Verdicts[0])
+	}
+	if path == "" {
+		t.Fatal("WriteVerdictReport doit rendre le chemin écrit (BR-005-2)")
 	}
 }
 

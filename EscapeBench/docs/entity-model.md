@@ -85,7 +85,7 @@ Les deux parcours mesurent un débit : leurs chargements sont indépendants et s
 |---|---|---|
 | id | String | Requis, unique ; forme `M-<sha256 court des paramètres>` |
 | parameters | Objet | Requis ; paramètres normalisés de la demande (tailles, champ pointeur, profils, modes, Probe), base de `id` (BR-001-1) |
-| harnessDigest | String | Requis ; empreinte SHA-256 de `internal/harness/` à la génération (UC-001 étape 6, C-005) |
+| harnessDigest | String | Requis ; empreinte SHA-256 des **gabarits embarqués** `internal/harness/templates/*.tmpl` à la génération (UC-001 étape 6, C-005). Elle ne couvre pas `internal/harness/harness.go`, qui façonne pourtant la source rendue : voir la limite consignée à C-005 |
 | cells | Liste de Cell | Au moins une cellule |
 | probes | Liste de Probe | Peut être vide ; jamais omise |
 | generatedAt | DateTime (UTC) | Requis |
@@ -125,7 +125,7 @@ Les quatre champs ajoutés par C-008 ne sont pas exigés par NFR-001 : un fichie
 |---|---|---|
 | id | String | Requis, unique, immuable ; forme `C-<date>-<n>` |
 | matrixId | String | Requis, référence une Matrix |
-| harnessDigest | String | Requis ; empreinte SHA-256 de `internal/harness/` au démarrage |
+| harnessDigest | String | Requis ; empreinte SHA-256 des gabarits embarqués `internal/harness/templates/*.tmpl` au démarrage (même portée qu'à `Matrix.harnessDigest`) |
 | hypothesesDigest | String | Requis ; empreinte SHA-256 des énoncés et critères des Hypothesis liées, lus dans `docs/requirements.md` au démarrage |
 | hypothesisIds | Liste de String | Requis ; identifiants couverts par la campagne, base de `hypothesesDigest` (BR-003-5) |
 | count | Integer | Requis, ≥ 20 (NFR-003) |

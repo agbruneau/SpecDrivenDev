@@ -532,9 +532,6 @@ func TestConstantAllocsEtAbs(t *testing.T) {
 	if constantAllocs(models.Measurement{}) {
 		t.Fatal("une mesure vide n'a pas de compte constant")
 	}
-	if abs(-2.5) != 2.5 || abs(2.5) != 2.5 {
-		t.Fatal("abs")
-	}
 	if suffixList(nil) != "" || suffixList([]string{"a", "b"}) != " (a, b)" {
 		t.Fatalf("suffixList = %q", suffixList([]string{"a", "b"}))
 	}

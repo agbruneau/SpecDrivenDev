@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"maps"
+	"slices"
 	"sort"
 	"strings"
 
@@ -448,10 +450,5 @@ func join(values []string) string { return strings.Join(values, ", ") }
 
 // sortedSubjectIDs rend les identifiants d'une table de mesures, triés.
 func sortedSubjectIDs(m map[string]models.Measurement) []string {
-	ids := make([]string, 0, len(m))
-	for id := range m {
-		ids = append(ids, id)
-	}
-	sort.Strings(ids)
-	return ids
+	return slices.Sorted(maps.Keys(m))
 }

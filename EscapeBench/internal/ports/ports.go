@@ -134,7 +134,6 @@ type CampaignStore interface {
 // VerdictStore conserve les fichiers de verdicts par hypothèse (UC-005).
 type VerdictStore interface {
 	WriteVerdictReport(ctx context.Context, report models.VerdictReport) (string, error)
-	LatestVerdictReport(ctx context.Context) (models.VerdictReport, string, error)
 	// VerdictReports rend tous les rapports, du plus ancien au plus récent. Le tableau de bord en
 	// a besoin : une campagne ne couvre que les hypothèses qu'elle a gelées, et deux hypothèses du
 	// catalogue ne peuvent pas cohabiter dans une même campagne (C-009). Ne lire que le dernier

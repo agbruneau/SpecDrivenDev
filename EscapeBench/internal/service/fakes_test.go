@@ -356,14 +356,6 @@ func (s *memoryStore) WriteVerdictReport(_ context.Context, report models.Verdic
 	return "results/verdicts/" + report.CampaignID + "-" + s.nextStamp() + ".json", nil
 }
 
-func (s *memoryStore) LatestVerdictReport(context.Context) (models.VerdictReport, string, error) {
-	if len(s.verdicts) == 0 {
-		return models.VerdictReport{}, "", fmt.Errorf("%w : aucun verdict", errNotFound)
-	}
-	latest := s.verdicts[len(s.verdicts)-1]
-	return latest, "results/verdicts/latest.json", nil
-}
-
 // VerdictReports rend tous les rapports, du plus ancien au plus récent (C-009 : le tableau de bord
 // agrège les campagnes, deux hypothèses ne pouvant pas cohabiter dans l'une d'elles).
 func (s *memoryStore) VerdictReports(context.Context) ([]models.VerdictReport, error) {

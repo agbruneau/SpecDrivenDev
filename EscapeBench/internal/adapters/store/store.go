@@ -561,42 +561,6 @@ func (s *Store) VerdictReports(_ context.Context) ([]models.VerdictReport, error
 	return out, nil
 }
 
-// LatestVerdictReport rend le fichier de verdicts le plus récent, toutes campagnes confondues.
-func (s *Store) LatestVerdictReport(_ context.Context) (models.VerdictReport, string, error) {
-	dir := filepath.Join(s.resultsDir(), "verdicts")
-	entries, err := os.ReadDir(dir)
-	if errors.Is(err, os.ErrNotExist) {
-		return models.VerdictReport{}, "", fmt.Errorf("%w : aucun verdict", ErrNotFound)
-	}
-	if err != nil {
-		return models.VerdictReport{}, "", fmt.Errorf("lecture de results/verdicts : %w", err)
-	}
-	var names []string
-	for _, entry := range entries {
-		if !entry.IsDir() && strings.HasSuffix(entry.Name(), ".json") {
-			names = append(names, entry.Name())
-		}
-	}
-	if len(names) == 0 {
-		return models.VerdictReport{}, "", fmt.Errorf("%w : aucun verdict", ErrNotFound)
-	}
-	// A-048 : trier sur le seul horodatage laissait l'ordre de deux rapports de la même seconde
-	// à sort.Slice, qui n'est pas stable. Le tableau de bord retient le dernier verdict rendu sur
-	// une hypothèse : deux rapports de même seconde pouvaient donner deux tableaux différents.
-	sort.Slice(names, func(i, j int) bool {
-		if a, b := stampOf(names[i]), stampOf(names[j]); a != b {
-			return a < b
-		}
-		return names[i] < names[j]
-	})
-	path := filepath.Join(dir, names[len(names)-1])
-	var dto verdictReportDTO
-	if err := readJSON(path, &dto); err != nil {
-		return models.VerdictReport{}, "", fmt.Errorf("lecture de %s : %w", path, err)
-	}
-	return dto.toModel(), s.rel(path), nil
-}
-
 // stampOf extrait l'horodatage d'un nom de fichier de verdicts `<campaignId>-<stamp>.json`.
 func stampOf(name string) string {
 	base := strings.TrimSuffix(name, ".json")

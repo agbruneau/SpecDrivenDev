@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -126,14 +127,10 @@ func (s *CampaignService) start(ctx context.Context, opts CampaignOptions) (Camp
 	// une matrice à réplicats elle jugerait donc un réplicat tiré au hasard de l'ordre du fichier,
 	// sans erreur ni trace. La campagne est refusée plutôt que de laisser sortir ce verdict ; c'est
 	// H-012 qui lit une série répliquée.
-	if matrix.Parameters.Replicates > models.DefaultReplicates() {
-		for _, id := range hypothesisIDs {
-			if id == "H-007" {
-				return CampaignReport{}, fmt.Errorf(
-					"%w : la matrice %s porte %d réplicats et H-007 n'en lit qu'un, arbitrairement ; retirer H-007 de --hypotheses ou employer une matrice sans réplicat (C-009)",
-					ErrPrecondition, matrix.ID, matrix.Parameters.Replicates)
-			}
-		}
+	if matrix.Parameters.Replicates > models.DefaultReplicates() && slices.Contains(hypothesisIDs, "H-007") {
+		return CampaignReport{}, fmt.Errorf(
+			"%w : la matrice %s porte %d réplicats et H-007 n'en lit qu'un, arbitrairement ; retirer H-007 de --hypotheses ou employer une matrice sans réplicat (C-009)",
+			ErrPrecondition, matrix.ID, matrix.Parameters.Replicates)
 	}
 
 	// Le verrou est posé avant la dérivation de l'identifiant, et non à l'entrée de la boucle de
