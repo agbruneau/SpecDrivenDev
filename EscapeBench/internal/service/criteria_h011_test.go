@@ -60,6 +60,20 @@ func TestUC005_H011_ChiffresDuLivre(t *testing.T) {
 			rationaleContains: "gain en temps",
 		},
 		{
+			// A-041 : les bornes [4, 6] du rapport de mémoire sont éprouvées au point exact. Le
+			// critère infirme si le rapport « sort de l'intervalle [4, 6] » : 4 et 6 confirment.
+			name:     "gain en mémoire exactement à la borne basse",
+			prealloc: appendMeasurement(100, 800, 1),
+			grow:     appendMeasurement(600, 3200, 28),
+			want:     models.OutcomeConfirmed,
+		},
+		{
+			name:     "gain en mémoire exactement à la borne haute",
+			prealloc: appendMeasurement(100, 800, 1),
+			grow:     appendMeasurement(600, 4800, 28),
+			want:     models.OutcomeConfirmed,
+		},
+		{
 			name:              "gain en mémoire trop faible",
 			prealloc:          appendMeasurement(100, 800, 1),
 			grow:              appendMeasurement(600, 3000, 28),

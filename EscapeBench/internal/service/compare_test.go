@@ -348,14 +348,15 @@ func TestTippingPoints(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
-			got := TippingPoints(tc.comparisons)[models.TippingKey{Profile: local, Layout: models.LayoutArrayFill}]
+			points, _ := TippingPoints(tc.comparisons)
+			got := points[models.TippingKey{Profile: local, Layout: models.LayoutArrayFill}]
 			if got != tc.want {
 				t.Fatalf("point de bascule = %d, attendu %d", got, tc.want)
 			}
 		})
 	}
 	// Les deux séries d'un même profil sont indépendantes.
-	mixed := TippingPoints([]models.Comparison{
+	mixed, _ := TippingPoints([]models.Comparison{
 		{SizeBytes: 8, Profile: local, DeltaNsPerOp: -1, Significant: true},
 		{SizeBytes: 8, Profile: local, HasPointerField: true, DeltaNsPerOp: 1, Significant: true},
 	})
@@ -365,4 +366,92 @@ func TestTippingPoints(t *testing.T) {
 	if mixed[models.TippingKey{Profile: local, Layout: models.LayoutArrayFill, HasPointerField: true}] != models.TippingNotObserved {
 		t.Fatalf("série avec champ pointeur = %d", mixed[models.TippingKey{Profile: local, Layout: models.LayoutArrayFill, HasPointerField: true}])
 	}
+}
+
+// TestUC004_BR2_SignificatifSiEtSeulementSiLIntervalleExclutZero verrouille A-187 : BR-004-2 dit
+// « significant est vrai si et seulement si l'intervalle exclut zéro ». Le sens direct n'était
+// vérifié nulle part, de sorte qu'une mutation introduisant un seuil — `low > epsilon`, ou une
+// largeur minimale d'intervalle — survivait à toute la suite. Le drapeau gouverne H-001, H-002,
+// H-007 et H-012 : un seuil clandestin déplacerait quatre verdicts sans laisser de trace.
+func TestUC004_BR2_SignificatifSiEtSeulementSiLIntervalleExclutZero(t *testing.T) {
+	t.Parallel()
+	cases := []struct {
+		name             string
+		value, pointer   []float64
+		wantSignificant  bool
+		intervalleExclut bool
+	}{
+		{
+			name:  "écart net, intervalle entièrement négatif",
+			value: repeat(100, 20), pointer: repeat(10, 20),
+			wantSignificant: true, intervalleExclut: true,
+		},
+		{
+			name:  "écart net, intervalle entièrement positif",
+			value: repeat(10, 20), pointer: repeat(100, 20),
+			wantSignificant: true, intervalleExclut: true,
+		},
+		{
+			name:  "échantillons identiques, intervalle réduit à zéro",
+			value: repeat(42, 20), pointer: repeat(42, 20),
+			wantSignificant: false, intervalleExclut: false,
+		},
+		{
+			name:  "écart minuscule mais intervalle excluant zéro",
+			value: repeat(100, 20), pointer: repeat(100.000001, 20),
+			wantSignificant: true, intervalleExclut: true,
+		},
+		{
+			name:  "chevauchement : l'intervalle contient zéro",
+			value: alternating(10, 200, 20), pointer: alternating(200, 10, 20),
+			wantSignificant: false, intervalleExclut: false,
+		},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			comparison := compare(
+				models.Cell{TypeSpec: models.TypeSpec{Name: "T", SizeBytes: 24}, Profile: models.ProfileLocal, PassingMode: models.PassingValue},
+				models.Cell{TypeSpec: models.TypeSpec{Name: "T", SizeBytes: 24}, Profile: models.ProfileLocal, PassingMode: models.PassingPointer},
+				models.Measurement{SubjectID: "v", NsPerOp: tc.value},
+				models.Measurement{SubjectID: "p", NsPerOp: tc.pointer},
+			)
+			exclutZero := comparison.CILow > 0 || comparison.CIHigh < 0
+			if exclutZero != tc.intervalleExclut {
+				t.Fatalf("intervalle [%g, %g] : exclut zéro = %v, %v attendu",
+					comparison.CILow, comparison.CIHigh, exclutZero, tc.intervalleExclut)
+			}
+			// Les deux sens de l'équivalence, sur la même comparaison.
+			if comparison.Significant != exclutZero {
+				t.Fatalf("significant = %v alors que l'intervalle [%g, %g] exclut zéro = %v (BR-004-2)",
+					comparison.Significant, comparison.CILow, comparison.CIHigh, exclutZero)
+			}
+			if comparison.Significant != tc.wantSignificant {
+				t.Fatalf("significant = %v, %v attendu", comparison.Significant, tc.wantSignificant)
+			}
+		})
+	}
+}
+
+// repeat rend n copies d'une même valeur.
+func repeat(value float64, n int) []float64 {
+	out := make([]float64, n)
+	for i := range out {
+		out[i] = value
+	}
+	return out
+}
+
+// alternating rend n valeurs alternant entre deux extrêmes : la médiane rééchantillonnée varie
+// assez pour que l'intervalle contienne zéro.
+func alternating(a, b float64, n int) []float64 {
+	out := make([]float64, n)
+	for i := range out {
+		if i%2 == 0 {
+			out[i] = a
+		} else {
+			out[i] = b
+		}
+	}
+	return out
 }

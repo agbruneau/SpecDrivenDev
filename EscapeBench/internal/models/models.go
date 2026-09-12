@@ -521,7 +521,11 @@ type Campaign struct {
 	HarnessDigest    string
 	HypothesesDigest string
 	HypothesisIDs    []string
-	Count            int
+	// CriteriaDigests est l'empreinte du critère de chaque hypothèse gelée, prise à la création
+	// (BR-003-5). L'empreinte d'ensemble dit qu'un critère a changé ; celles-ci disent lequel,
+	// ce qu'exige le flux A1 de UC-005. Absente des campagnes antérieures à cette révision.
+	CriteriaDigests map[string]string
+	Count           int
 	// BenchTime et CPU sont les paramètres de mesure de C-003 sous lesquels les Measurement de
 	// cette Campaign ont été prises. Ils y sont consignés pour qu'une reprise (UC-003, A4) les
 	// restitue au lieu de reprendre les drapeaux de la ligne de commande du moment.
@@ -755,6 +759,13 @@ type ExcludedPair struct {
 	Reason        string
 }
 
+// ExcludedSeries consigne une série dont le point de bascule n'est pas calculé, et pourquoi
+// (UC-004, A4).
+type ExcludedSeries struct {
+	Key    TippingKey
+	Reason string
+}
+
 // ComparisonSet est le contenu d'un fichier de comparaison d'une Campaign (UC-004).
 type ComparisonSet struct {
 	CampaignID    string
@@ -764,6 +775,10 @@ type ComparisonSet struct {
 	Comparisons   []Comparison
 	TippingPoints map[TippingKey]int
 	ExcludedPairs []ExcludedPair
+	// ExcludedSeries dit quelles séries n'ont pas de point de bascule et pourquoi. Sans elle, une
+	// série à plusieurs paires par taille disparaissait du fichier sans qu'aucune ligne n'indique
+	// ni sa valeur, ni « non observé », ni la raison (A-032).
+	ExcludedSeries []ExcludedSeries
 }
 
 // Hypothesis est une hypothèse à éprouver, lue dans docs/requirements.md.

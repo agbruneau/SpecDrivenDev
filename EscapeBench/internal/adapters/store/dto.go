@@ -280,25 +280,27 @@ func (d escapeReportDTO) toModel() models.EscapeReport {
 }
 
 type campaignDTO struct {
-	ID               string        `json:"id"`
-	MatrixID         string        `json:"matrixId"`
-	HarnessDigest    string        `json:"harnessDigest"`
-	HypothesesDigest string        `json:"hypothesesDigest"`
-	HypothesisIDs    []string      `json:"hypothesisIds"`
-	Count            int           `json:"count"`
-	BenchTime        string        `json:"benchTime,omitempty"`
-	CPU              int           `json:"cpu,omitempty"`
-	Status           string        `json:"status"`
-	Provenance       provenanceDTO `json:"provenance"`
-	StartedAt        time.Time     `json:"startedAt"`
-	FinishedAt       *time.Time    `json:"finishedAt,omitempty"`
-	AbortReason      string        `json:"abortReason,omitempty"`
+	ID               string            `json:"id"`
+	MatrixID         string            `json:"matrixId"`
+	HarnessDigest    string            `json:"harnessDigest"`
+	HypothesesDigest string            `json:"hypothesesDigest"`
+	HypothesisIDs    []string          `json:"hypothesisIds"`
+	CriteriaDigests  map[string]string `json:"criteriaDigests,omitempty"`
+	Count            int               `json:"count"`
+	BenchTime        string            `json:"benchTime,omitempty"`
+	CPU              int               `json:"cpu,omitempty"`
+	Status           string            `json:"status"`
+	Provenance       provenanceDTO     `json:"provenance"`
+	StartedAt        time.Time         `json:"startedAt"`
+	FinishedAt       *time.Time        `json:"finishedAt,omitempty"`
+	AbortReason      string            `json:"abortReason,omitempty"`
 }
 
 func toCampaignDTO(c models.Campaign) campaignDTO {
 	d := campaignDTO{
 		ID: c.ID, MatrixID: c.MatrixID, HarnessDigest: c.HarnessDigest,
-		HypothesesDigest: c.HypothesesDigest, HypothesisIDs: c.HypothesisIDs, Count: c.Count,
+		HypothesesDigest: c.HypothesesDigest, HypothesisIDs: c.HypothesisIDs,
+		CriteriaDigests: c.CriteriaDigests, Count: c.Count,
 		BenchTime: c.BenchTime, CPU: c.CPU,
 		Status: string(c.Status), Provenance: toProvenanceDTO(c.Provenance),
 		StartedAt: c.StartedAt.UTC(), AbortReason: c.AbortReason,
@@ -313,7 +315,8 @@ func toCampaignDTO(c models.Campaign) campaignDTO {
 func (d campaignDTO) toModel() models.Campaign {
 	c := models.Campaign{
 		ID: d.ID, MatrixID: d.MatrixID, HarnessDigest: d.HarnessDigest,
-		HypothesesDigest: d.HypothesesDigest, HypothesisIDs: d.HypothesisIDs, Count: d.Count,
+		HypothesesDigest: d.HypothesesDigest, HypothesisIDs: d.HypothesisIDs,
+		CriteriaDigests: d.CriteriaDigests, Count: d.Count,
 		BenchTime: d.BenchTime, CPU: d.CPU,
 		Status: models.CampaignStatus(d.Status), Provenance: d.Provenance.toModel(),
 		StartedAt: d.StartedAt, AbortReason: d.AbortReason,
@@ -392,14 +395,25 @@ type excludedPairDTO struct {
 	Reason        string `json:"reason"`
 }
 
+// excludedSeriesDTO consigne une série sans point de bascule et sa raison (UC-004, A4). Le champ
+// est omis quand la liste est vide : un fichier de comparaison antérieur à A-032 reste lisible et
+// un fichier neuf sans exclusion garde la même forme qu'avant.
+type excludedSeriesDTO struct {
+	Profile         string `json:"lifetimeProfile"`
+	Layout          string `json:"layout,omitempty"`
+	HasPointerField bool   `json:"hasPointerField"`
+	Reason          string `json:"reason"`
+}
+
 type comparisonSetDTO struct {
-	CampaignID    string            `json:"campaignId"`
-	MatrixID      string            `json:"matrixId"`
-	ComputedAt    time.Time         `json:"computedAt"`
-	Method        string            `json:"method"`
-	Comparisons   []comparisonDTO   `json:"comparisons"`
-	TippingPoints []tippingPointDTO `json:"tippingPoints"`
-	ExcludedPairs []excludedPairDTO `json:"excludedPairs"`
+	CampaignID     string              `json:"campaignId"`
+	MatrixID       string              `json:"matrixId"`
+	ComputedAt     time.Time           `json:"computedAt"`
+	Method         string              `json:"method"`
+	Comparisons    []comparisonDTO     `json:"comparisons"`
+	TippingPoints  []tippingPointDTO   `json:"tippingPoints"`
+	ExcludedPairs  []excludedPairDTO   `json:"excludedPairs"`
+	ExcludedSeries []excludedSeriesDTO `json:"excludedSeries,omitempty"`
 }
 
 func toComparisonSetDTO(s models.ComparisonSet) comparisonSetDTO {
@@ -430,6 +444,16 @@ func toComparisonSetDTO(s models.ComparisonSet) comparisonSetDTO {
 	}
 	for _, e := range s.ExcludedPairs {
 		d.ExcludedPairs = append(d.ExcludedPairs, excludedPairDTO{ValueCellID: e.ValueCellID, PointerCellID: e.PointerCellID, Reason: e.Reason})
+	}
+	for _, e := range s.ExcludedSeries {
+		layout := ""
+		if e.Key.Layout != "" && e.Key.Layout != models.LayoutArrayFill {
+			layout = string(e.Key.Layout)
+		}
+		d.ExcludedSeries = append(d.ExcludedSeries, excludedSeriesDTO{
+			Profile: string(e.Key.Profile), Layout: layout,
+			HasPointerField: e.Key.HasPointerField, Reason: e.Reason,
+		})
 	}
 	return d
 }
@@ -465,6 +489,16 @@ func (d comparisonSetDTO) toModel() models.ComparisonSet {
 	}
 	for _, e := range d.ExcludedPairs {
 		s.ExcludedPairs = append(s.ExcludedPairs, models.ExcludedPair{ValueCellID: e.ValueCellID, PointerCellID: e.PointerCellID, Reason: e.Reason})
+	}
+	for _, e := range d.ExcludedSeries {
+		layout := models.Layout(e.Layout)
+		if layout == "" {
+			layout = models.LayoutArrayFill
+		}
+		s.ExcludedSeries = append(s.ExcludedSeries, models.ExcludedSeries{
+			Key:    models.TippingKey{Profile: models.LifetimeProfile(e.Profile), Layout: layout, HasPointerField: e.HasPointerField},
+			Reason: e.Reason,
+		})
 	}
 	return s
 }

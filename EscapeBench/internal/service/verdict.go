@@ -24,8 +24,11 @@ type Evidence struct {
 	ComparisonPath   string
 	Measurements     map[string]models.Measurement
 	MeasurementPaths map[string]string
-	EscapeReport     *models.EscapeReport
-	EscapePath       string
+	// CampaignFile est le chemin du campaign.json, rendu par le port. A-040 : Evidence le
+	// recomposait à la main, dupliquant la disposition de results/ dans le service.
+	CampaignFile string
+	EscapeReport *models.EscapeReport
+	EscapePath   string
 }
 
 // evaluation est le résultat de l'évaluation d'un critère.
@@ -94,8 +97,9 @@ func (s *VerdictService) Produce(ctx context.Context, campaignID, escapePath str
 		return VerdictReportSummary{}, err
 	}
 	if digest != campaign.HypothesesDigest {
-		return VerdictReportSummary{}, fmt.Errorf("%w : campagne %s figée sur %s, critères courants %s ; créer une nouvelle H-### plutôt que de modifier un critère",
-			ErrCriteriaChanged, campaignID, campaign.HypothesesDigest, digest)
+		return VerdictReportSummary{}, fmt.Errorf("%w : campagne %s figée sur %s, critères courants %s%s ; créer une nouvelle H-### plutôt que de modifier un critère",
+			ErrCriteriaChanged, campaignID, campaign.HypothesesDigest, digest,
+			s.describeChangedCriteria(campaign, catalogue))
 	}
 
 	evidence, err := s.gather(ctx, campaign, escapePath)
@@ -117,19 +121,80 @@ func (s *VerdictService) Produce(ctx context.Context, campaignID, escapePath str
 		}
 	}
 
+	// A-034 : les collectes faillibles de l'étape 7 — tests, index de code, statuts des cas
+	// d'utilisation — sont faites avant l'écriture de l'étape 6. Un échec de l'une d'elles laissait
+	// sinon un fichier de verdicts écrit derrière une erreur, contre la postcondition d'échec de
+	// UC-005 (« results/ et docs/dashboard.md sont inchangés »), et le chercheur qui relançait
+	// obtenait un second fichier de verdicts pour la même campagne.
+	collected, err := s.collectDashboard(ctx)
+	if err != nil {
+		return VerdictReportSummary{}, err
+	}
+
 	// Étape 6 : écriture du fichier de verdicts.
 	path, err := s.verdicts.WriteVerdictReport(ctx, report)
 	if err != nil {
 		return VerdictReportSummary{}, err
 	}
 
-	// Étape 7 : régénération du tableau de bord (FR-007, BR-005-3).
-	dashboardPath, err := s.Dashboard(ctx)
+	// Étape 7 : régénération du tableau de bord (FR-007, BR-005-3). Il reste ici une fenêtre
+	// irréductible : le tableau lit le rapport tout juste écrit, donc après l'étape 6. Le fichier
+	// de verdicts n'est pas supprimé si elle échoue — il est immuable (NFR-004) —, mais son chemin
+	// est rendu avec l'erreur pour que le chercheur sache ce qui existe déjà.
+	dashboardPath, err := s.writeDashboard(ctx, collected)
 	if err != nil {
-		return VerdictReportSummary{}, err
+		return VerdictReportSummary{CampaignID: campaignID, Path: path, Report: report,
+			Inconclusive: inconclusive}, err
 	}
 	return VerdictReportSummary{CampaignID: campaignID, Path: path, DashboardPath: dashboardPath,
 		Report: report, Inconclusive: inconclusive}, nil
+}
+
+// describeChangedCriteria nomme les hypothèses dont le critère a changé depuis la campagne. La
+// campagne conserve l'empreinte de chaque critère gelé ; celles qui ne concordent plus sont
+// exactement celles à rouvrir sous une nouvelle H-### (UC-005, A1).
+//
+// Les campagnes antérieures à cette révision ne portent pas ces empreintes : le message reste
+// alors celui de l'empreinte d'ensemble, sans nommer personne.
+func (s *VerdictService) describeChangedCriteria(campaign models.Campaign, catalogue []models.Hypothesis) string {
+	if len(campaign.CriteriaDigests) == 0 {
+		return ""
+	}
+	var changed, missing []string
+	for _, id := range campaign.HypothesisIDs {
+		recorded, ok := campaign.CriteriaDigests[id]
+		if !ok {
+			continue
+		}
+		current, err := s.digestOf(catalogue, []string{id})
+		if err != nil {
+			missing = append(missing, id)
+			continue
+		}
+		if current != recorded {
+			changed = append(changed, id)
+		}
+	}
+	sort.Strings(changed)
+	sort.Strings(missing)
+	switch {
+	case len(changed) > 0 && len(missing) > 0:
+		return fmt.Sprintf(" ; critères modifiés : %s ; hypothèses absentes du catalogue : %s",
+			join(changed), join(missing))
+	case len(changed) > 0:
+		return " ; critères modifiés : " + join(changed)
+	case len(missing) > 0:
+		return " ; hypothèses absentes du catalogue : " + join(missing)
+	}
+	return ""
+}
+
+// dashboardCollection porte ce que l'étape 7 lit avant d'écrire quoi que ce soit.
+type dashboardCollection struct {
+	useCases   []ports.UseCaseStatus
+	catalogue  []models.Hypothesis
+	regression ports.TestOutcome
+	rows       []ports.DashboardUseCase
 }
 
 // evaluate applique le critère gelé d'une hypothèse (étapes 4 et 5).
@@ -154,14 +219,14 @@ func (s *VerdictService) evaluate(id string, evidence Evidence) models.Verdict {
 }
 
 // CampaignPath rend le chemin du campaign.json, cité par défaut dans un rationale (BR-005-2).
-func (e Evidence) CampaignPath() string {
-	return "results/campaigns/" + e.Campaign.ID + "/campaign.json"
-}
+// C'est le port qui le donne : la disposition de results/ appartient à l'adaptateur.
+func (e Evidence) CampaignPath() string { return e.CampaignFile }
 
 // gather rassemble comparaisons, mesures et verdicts d'échappement disponibles.
 func (s *VerdictService) gather(ctx context.Context, campaign models.Campaign, escapePath string) (Evidence, error) {
 	evidence := Evidence{
 		Campaign:         campaign,
+		CampaignFile:     s.store.CampaignPath(campaign.ID),
 		Measurements:     map[string]models.Measurement{},
 		MeasurementPaths: map[string]string{},
 	}
@@ -180,10 +245,19 @@ func (s *VerdictService) gather(ctx context.Context, campaign models.Campaign, e
 		evidence.MeasurementPaths[m.SubjectID] = s.store.MeasurementPath(campaign.ID, m.SubjectID)
 	}
 
+	// A-123 : l'erreur n'était ni inspectée ni propagée. Un fichier de comparaison tronqué ou
+	// illisible devenait « aucun fichier de comparaison ; exécuter compare », donc un verdict non
+	// concluant écrit dans results/ et repris au tableau de bord, là où le fichier existe. Seule
+	// l'absence est une absence.
 	set, path, err := s.store.LatestComparisonSet(ctx, campaign.ID)
-	if err == nil {
+	switch {
+	case err == nil:
 		evidence.ComparisonSet = &set
 		evidence.ComparisonPath = path
+	case errors.Is(err, ports.ErrNotFound):
+		// Absence légitime : les évaluateurs rendront non concluant en le disant.
+	default:
+		return Evidence{}, err
 	}
 
 	if escapePath == "" {
@@ -207,6 +281,15 @@ func (s *VerdictService) gather(ctx context.Context, campaign models.Campaign, e
 		if err != nil {
 			return Evidence{}, err
 		}
+		// A-035 : un fichier désigné par --escape n'était rattaché à rien. H-006 et H-009 rendaient
+		// leur verdict sur les cellules d'une autre matrice sans erreur ni trace. La toolchain,
+		// elle, n'est pas contrôlée : désigner un fichier produit sous une autre est justement ce
+		// que --escape permet, et le rapport de verdicts cite le fichier employé.
+		if report.MatrixID != campaign.MatrixID {
+			return Evidence{}, fmt.Errorf(
+				"%w : %s porte les verdicts d'échappement de la matrice %s, la campagne %s mesure %s",
+				ErrPrecondition, escapePath, report.MatrixID, campaign.ID, campaign.MatrixID)
+		}
 		evidence.EscapeReport = &report
 		evidence.EscapePath = escapePath
 	}
@@ -215,28 +298,45 @@ func (s *VerdictService) gather(ctx context.Context, campaign models.Campaign, e
 
 // Dashboard régénère docs/dashboard.md sans produire de nouveau verdict (UC-005, étape 7).
 func (s *VerdictService) Dashboard(ctx context.Context) (string, error) {
-	useCases, err := s.useCases.LoadUseCases(ctx)
+	collected, err := s.collectDashboard(ctx)
 	if err != nil {
 		return "", err
+	}
+	return s.writeDashboard(ctx, collected)
+}
+
+// collectDashboard lit tout ce dont l'étape 7 a besoin, sans rien écrire.
+func (s *VerdictService) collectDashboard(ctx context.Context) (dashboardCollection, error) {
+	useCases, err := s.useCases.LoadUseCases(ctx)
+	if err != nil {
+		return dashboardCollection{}, err
+	}
+	// A-090 : un statut hors de la liste admise dégelait silencieusement les hypothèses portées
+	// par le cas d'utilisation, frozenHypotheses ne reconnaissant que les statuts nommés.
+	for _, useCase := range useCases {
+		if !validUseCaseStatus(useCase.Status) {
+			return dashboardCollection{}, fmt.Errorf(
+				"%w : statut %q de %s inconnu ; valeurs admises : %s",
+				ErrPrecondition, useCase.Status, useCase.ID, join(useCaseStatuses()))
+		}
 	}
 	catalogue, err := s.hypotheses.Load(ctx)
 	if err != nil {
-		return "", err
+		return dashboardCollection{}, err
 	}
 	regression, err := s.tests.RunAll(ctx)
 	if err != nil {
-		return "", err
+		return dashboardCollection{}, err
 	}
-
-	data := ports.DashboardData{GeneratedAt: s.clock.Now()}
+	collected := dashboardCollection{useCases: useCases, catalogue: catalogue, regression: regression}
 	for _, useCase := range useCases {
 		hasCode, hasIntegration, err := s.code.References(ctx, useCase.ID)
 		if err != nil {
-			return "", err
+			return dashboardCollection{}, err
 		}
 		outcome, err := s.tests.RunUseCaseTests(ctx, useCase.ID)
 		if err != nil {
-			return "", err
+			return dashboardCollection{}, err
 		}
 		row := ports.DashboardUseCase{
 			ID: useCase.ID, Title: useCase.Title, LinkedFR: useCase.LinkedFR, Status: useCase.Status,
@@ -249,8 +349,15 @@ func (s *VerdictService) Dashboard(ctx context.Context) (string, error) {
 			row.Integration = "✔"
 		}
 		row.Integrity = integrity(row)
-		data.UseCases = append(data.UseCases, row)
+		collected.rows = append(collected.rows, row)
 	}
+	return collected, nil
+}
+
+// writeDashboard compose et écrit le tableau de bord à partir de ce qui a été collecté.
+func (s *VerdictService) writeDashboard(ctx context.Context, collected dashboardCollection) (string, error) {
+	useCases, catalogue := collected.useCases, collected.catalogue
+	data := ports.DashboardData{GeneratedAt: s.clock.Now(), UseCases: collected.rows}
 
 	frozen := frozenHypotheses(useCases, catalogue)
 	// Tous les rapports sont lus, du plus ancien au plus récent, et le dernier verdict rendu sur
@@ -291,6 +398,27 @@ func integrity(row ports.DashboardUseCase) string {
 	default:
 		return "Partial"
 	}
+}
+
+// useCaseStatuses énumère les statuts qu'un cas d'utilisation peut porter, dans l'ordre de la
+// chaîne de maturité du guide (§4).
+func useCaseStatuses() []string {
+	return []string{"Draft", "Reviewed", "Approved", "Implemented", "Verified", "Deployed"}
+}
+
+// validUseCaseStatus indique si un statut est de la liste admise.
+//
+// Révision du 2026-09-12 (A-090) : rien ne le contrôlait. Une faute de frappe dans l'en-tête d'un
+// cas d'utilisation — « Aproved » — dégelait silencieusement les hypothèses qu'il porte, puisque
+// frozenHypotheses ne reconnaît que les statuts nommés. Le tableau de bord les affichait alors
+// comme non gelées, et rien ne signalait l'erreur.
+func validUseCaseStatus(status string) bool {
+	for _, admitted := range useCaseStatuses() {
+		if status == admitted {
+			return true
+		}
+	}
+	return false
 }
 
 // frozenHypotheses rend les hypothèses dont le critère est gelé : celles dont au moins un cas

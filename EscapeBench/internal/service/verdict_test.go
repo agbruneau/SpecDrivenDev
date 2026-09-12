@@ -604,6 +604,11 @@ func TestUC005_ErreursDesPorts(t *testing.T) {
 		"tests injoignables":           func(f *verdictFixture) { f.tests.err = boom },
 		"tableau de bord en panne":     func(f *verdictFixture) { f.dashboard.err = boom },
 	}
+	// A-034 : la postcondition d'échec de UC-005 dit « results/ et docs/dashboard.md sont
+	// inchangés ». Les collectes faillibles de l'étape 7 sont donc faites avant l'écriture de
+	// l'étape 6 : aucune de ces pannes ne doit laisser un fichier de verdicts derrière elle.
+	// Seule la panne d'écriture du tableau de bord échappe à la règle, la composition lisant le
+	// rapport tout juste écrit.
 	for name, breakIt := range cases {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
@@ -612,7 +617,123 @@ func TestUC005_ErreursDesPorts(t *testing.T) {
 			if _, err := f.service.Produce(context.Background(), f.campaign.ID, ""); err == nil {
 				t.Fatal("Produce aurait dû échouer")
 			}
+			if name != "tableau de bord en panne" && len(f.store.verdicts) != 0 {
+				t.Fatalf("%d fichier(s) de verdicts écrits derrière une erreur : %v",
+					len(f.store.verdicts), f.store.verdicts)
+			}
 		})
+	}
+}
+
+// TestUC005_A1_NommeLesCriteresModifies verrouille A-185 : le message d'erreur ne nommait pas les
+// hypothèses altérées. Le chercheur savait qu'un critère avait changé, jamais lequel rouvrir sous
+// une nouvelle H-###.
+func TestUC005_A1_NommeLesCriteresModifies(t *testing.T) {
+	t.Parallel()
+	f := newVerdictFixture(t)
+	ctx := context.Background()
+	// La campagne conserve l'empreinte de chaque critère gelé.
+	campaign := f.campaign
+	campaign.CriteriaDigests = map[string]string{}
+	for _, h := range catalogue() {
+		digest, err := digestOf(catalogue(), []string{h.ID})
+		if err != nil {
+			t.Fatalf("digestOf : %v", err)
+		}
+		campaign.CriteriaDigests[h.ID] = digest
+	}
+	f.store.campaigns[campaign.ID] = campaign
+
+	// Un seul critère est réécrit : c'est lui, et lui seul, que le message doit nommer.
+	altered := catalogue()
+	for i := range altered {
+		if altered[i].ID == "H-002" {
+			altered[i].RefutationCriterion += " (réécrit)"
+		}
+	}
+	f.hypotheses.hypotheses = altered
+
+	_, err := f.service.Produce(ctx, campaign.ID, "")
+	if !errors.Is(err, ErrCriteriaChanged) {
+		t.Fatalf("erreur = %v, ErrCriteriaChanged attendue", err)
+	}
+	// Le fake digestOf conserve le texte des critères plutôt que de le hacher : l'assertion porte
+	// sur la clause du message, pas sur la présence d'un identifiant n'importe où.
+	_, clause, found := strings.Cut(err.Error(), "critères modifiés : ")
+	if !found {
+		t.Fatalf("le message doit nommer les hypothèses altérées : %v", err)
+	}
+	clause, _, _ = strings.Cut(clause, " ; ")
+	if clause != "H-002" {
+		t.Fatalf("critères modifiés = %q, « H-002 » seul attendu", clause)
+	}
+	if len(f.store.verdicts) != 0 {
+		t.Fatal("A1 n'écrit rien")
+	}
+}
+
+// TestUC005_LectureDeComparaisonEnErreur verrouille A-123 : toute erreur de lecture du fichier de
+// comparaison était avalée. Un fichier corrompu devenait « aucun fichier de comparaison ; exécuter
+// compare », donc quatre verdicts non concluants écrits dans results/ et repris au tableau de
+// bord, là où le fichier existe.
+func TestUC005_LectureDeComparaisonEnErreur(t *testing.T) {
+	t.Parallel()
+	f := newVerdictFixture(t)
+	f.store.comparisonErr = errors.New("JSON tronqué")
+
+	_, err := f.service.Produce(context.Background(), f.campaign.ID, "")
+	if err == nil {
+		t.Fatal("une erreur de lecture doit faire échouer Produce")
+	}
+	if len(f.store.verdicts) != 0 {
+		t.Fatal("aucun fichier de verdicts ne doit être écrit")
+	}
+	// Une absence légitime, elle, reste une absence : les évaluateurs rendent non concluant.
+	f.store.comparisonErr = nil
+	delete(f.store.comparisons, f.campaign.ID)
+	if _, err := f.service.Produce(context.Background(), f.campaign.ID, ""); err != nil {
+		t.Fatalf("l'absence de comparaison n'est pas une erreur : %v", err)
+	}
+}
+
+// TestUC005_FichierDEchappementDUneAutreMatrice verrouille A-035 : un fichier désigné par
+// --escape n'était rattaché à rien, et H-006 rendait son verdict sur les cellules d'une autre
+// matrice sans erreur ni trace.
+func TestUC005_FichierDEchappementDUneAutreMatrice(t *testing.T) {
+	t.Parallel()
+	f := newVerdictFixture(t)
+	ctx := context.Background()
+	report := models.EscapeReport{MatrixID: "M-autre", Provenance: f.campaign.Provenance,
+		Verdicts: []models.EscapeVerdict{{CellID: "a", Escapes: true, Category: models.CategoryOther,
+			CompilerReason: "x", Status: models.EscapeStatusOK}}}
+	path, err := f.store.WriteEscapeReport(ctx, report, f.clock.Now())
+	if err != nil {
+		t.Fatalf("WriteEscapeReport : %v", err)
+	}
+	_, err = f.service.Produce(ctx, f.campaign.ID, path)
+	if !errors.Is(err, ErrPrecondition) {
+		t.Fatalf("erreur = %v, ErrPrecondition attendue", err)
+	}
+	if !strings.Contains(err.Error(), "M-autre") {
+		t.Fatalf("le message doit nommer la matrice du fichier : %v", err)
+	}
+}
+
+// TestUC005_StatutDeCasDUtilisationInconnu verrouille A-090 : un statut hors de la liste admise
+// dégelait silencieusement les hypothèses portées par le cas d'utilisation, frozenHypotheses ne
+// reconnaissant que les statuts nommés.
+func TestUC005_StatutDeCasDUtilisationInconnu(t *testing.T) {
+	t.Parallel()
+	f := newVerdictFixture(t)
+	for i := range f.useCases.useCases {
+		f.useCases.useCases[i].Status = "Aproved"
+	}
+	_, err := f.service.Dashboard(context.Background())
+	if !errors.Is(err, ErrPrecondition) {
+		t.Fatalf("erreur = %v, ErrPrecondition attendue", err)
+	}
+	if !strings.Contains(err.Error(), "Aproved") {
+		t.Fatalf("le message doit nommer le statut fautif : %v", err)
 	}
 }
 

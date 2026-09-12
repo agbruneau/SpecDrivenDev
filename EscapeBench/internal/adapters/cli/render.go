@@ -143,10 +143,15 @@ func RenderComparison(report service.ComparisonReport) string {
 			fmt.Fprintf(&b, "  %-8d %12.3f %12.3f %12.3f %v\n",
 				comparison.SizeBytes, comparison.DeltaNsPerOp, comparison.CILow, comparison.CIHigh, comparison.Significant)
 		}
-		tipping := report.Set.TippingPoints[key]
-		if tipping == models.TippingNotObserved {
+		tipping, ranked := report.Set.TippingPoints[key]
+		switch {
+		case !ranked:
+			// A-032 : la série n'a pas de point de bascule et le fichier dit pourquoi ; l'étape 7
+			// le dit aussi, au lieu de laisser la ligne disparaître sans trace (UC-004, A4).
+			fmt.Fprintf(&b, "  Point de bascule : non calculé — %s\n\n", excludedSeriesReason(report.Set, key))
+		case tipping == models.TippingNotObserved:
 			b.WriteString("  Point de bascule : non observé\n\n")
-		} else {
+		default:
 			fmt.Fprintf(&b, "  Point de bascule : %d octets\n\n", tipping)
 		}
 	}
@@ -155,6 +160,16 @@ func RenderComparison(report service.ComparisonReport) string {
 		fmt.Fprintf(&b, "  %s / %s : %s\n", excluded.ValueCellID, excluded.PointerCellID, excluded.Reason)
 	}
 	return b.String()
+}
+
+// excludedSeriesReason rend la raison consignée pour une série sans point de bascule (UC-004, A4).
+func excludedSeriesReason(set models.ComparisonSet, key models.TippingKey) string {
+	for _, excluded := range set.ExcludedSeries {
+		if excluded.Key == key {
+			return excluded.Reason
+		}
+	}
+	return "raison non consignée"
 }
 
 // RenderVerdicts met en forme l'étape 8 de UC-005.

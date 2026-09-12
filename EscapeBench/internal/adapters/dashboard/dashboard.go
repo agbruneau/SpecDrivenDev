@@ -33,10 +33,42 @@ func (w *Writer) Write(_ context.Context, data ports.DashboardData) (string, err
 	if err := os.MkdirAll(filepath.Dir(w.path), 0o755); err != nil {
 		return "", fmt.Errorf("création de docs/ : %w", err)
 	}
-	if err := os.WriteFile(w.path, []byte(content), 0o644); err != nil {
-		return "", fmt.Errorf("écriture de docs/dashboard.md : %w", err)
+	// A-091 : os.WriteFile tronque le fichier avant d'écrire. Une interruption — ou un disque
+	// plein — laissait `docs/dashboard.md`, qui est versionné, vide ou à moitié écrit. L'écriture
+	// passe par un temporaire voisin puis un renommage, qui remplace en une opération.
+	if err := writeAtomic(w.path, []byte(content)); err != nil {
+		return "", err
 	}
 	return w.Path(), nil
+}
+
+// writeAtomic écrit par fichier temporaire puis renommage. Le renommage est ici légitime : le
+// tableau de bord est régénéré à chaque verdict (BR-005-3), il n'est pas immuable.
+func writeAtomic(path string, content []byte) error {
+	tmp, err := os.CreateTemp(filepath.Dir(path), ".tmp-dashboard-*")
+	if err != nil {
+		return fmt.Errorf("création du fichier temporaire de docs/dashboard.md : %w", err)
+	}
+	name := tmp.Name()
+	if _, err := tmp.Write(content); err != nil {
+		tmp.Close()
+		os.Remove(name)
+		return fmt.Errorf("écriture de docs/dashboard.md : %w", err)
+	}
+	if err := tmp.Sync(); err != nil {
+		tmp.Close()
+		os.Remove(name)
+		return fmt.Errorf("synchronisation de docs/dashboard.md : %w", err)
+	}
+	if err := tmp.Close(); err != nil {
+		os.Remove(name)
+		return fmt.Errorf("fermeture de docs/dashboard.md : %w", err)
+	}
+	if err := os.Rename(name, path); err != nil {
+		os.Remove(name)
+		return fmt.Errorf("renommage vers docs/dashboard.md : %w", err)
+	}
+	return nil
 }
 
 // mark rend la marque de colonne d'un booléen.

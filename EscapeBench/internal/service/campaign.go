@@ -118,7 +118,7 @@ func (s *CampaignService) start(ctx context.Context, opts CampaignOptions) (Camp
 	}
 
 	// Étape 3 : création de la Campaign avec l'empreinte des critères (BR-003-5).
-	hypothesisIDs, hypothesesDigest, err := s.freezeCriteria(ctx, opts.HypothesisIDs)
+	hypothesisIDs, hypothesesDigest, criteriaDigests, err := s.freezeCriteria(ctx, opts.HypothesisIDs)
 	if err != nil {
 		return CampaignReport{}, err
 	}
@@ -152,7 +152,8 @@ func (s *CampaignService) start(ctx context.Context, opts CampaignOptions) (Camp
 	}
 	campaign := models.Campaign{
 		ID: campaignID, MatrixID: matrix.ID, HarnessDigest: digest,
-		HypothesesDigest: hypothesesDigest, HypothesisIDs: hypothesisIDs, Count: opts.Count,
+		HypothesesDigest: hypothesesDigest, HypothesisIDs: hypothesisIDs,
+		CriteriaDigests: criteriaDigests, Count: opts.Count,
 		BenchTime: opts.BenchTime, CPU: opts.CPU,
 		Status: models.CampaignRunning, Provenance: provenance, StartedAt: startedAt,
 	}
@@ -372,10 +373,10 @@ func (s *CampaignService) requireEscapeVerdicts(ctx context.Context, matrixID st
 
 // freezeCriteria rend les hypothèses retenues et l'empreinte de leurs critères (BR-003-5).
 // Sans sélection explicite, toutes les hypothèses du catalogue sont retenues.
-func (s *CampaignService) freezeCriteria(ctx context.Context, requested []string) ([]string, string, error) {
+func (s *CampaignService) freezeCriteria(ctx context.Context, requested []string) ([]string, string, map[string]string, error) {
 	catalogue, err := s.hypotheses.Load(ctx)
 	if err != nil {
-		return nil, "", err
+		return nil, "", nil, err
 	}
 	ids := requested
 	if len(ids) == 0 {
@@ -387,7 +388,18 @@ func (s *CampaignService) freezeCriteria(ctx context.Context, requested []string
 	sort.Strings(ids)
 	digest, err := s.digestOf(catalogue, ids)
 	if err != nil {
-		return nil, "", err
+		return nil, "", nil, err
 	}
-	return ids, digest, nil
+	// A-185 : l'empreinte d'ensemble dit qu'un critère a changé, jamais lequel. Celles-ci le
+	// disent, ce qu'exige le flux A1 de UC-005 — le chercheur doit savoir quelle hypothèse
+	// rouvrir, et le catalogue au moment de la campagne n'est conservé nulle part.
+	perHypothesis := make(map[string]string, len(ids))
+	for _, id := range ids {
+		single, err := s.digestOf(catalogue, []string{id})
+		if err != nil {
+			return nil, "", nil, err
+		}
+		perHypothesis[id] = single
+	}
+	return ids, digest, perHypothesis, nil
 }

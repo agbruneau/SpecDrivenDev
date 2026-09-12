@@ -143,7 +143,10 @@ type memoryStore struct {
 	locked       bool
 	lockedBy     string
 	writeErr     error
-	stamp        int
+	// comparisonErr simule une lecture en erreur du fichier de comparaison, distincte de son
+	// absence : le service doit les traiter différemment (A-123).
+	comparisonErr error
+	stamp         int
 }
 
 func newStore() *memoryStore {
@@ -297,6 +300,9 @@ func (s *memoryStore) WriteComparisonSet(_ context.Context, set models.Compariso
 }
 
 func (s *memoryStore) LatestComparisonSet(_ context.Context, campaignID string) (models.ComparisonSet, string, error) {
+	if s.comparisonErr != nil {
+		return models.ComparisonSet{}, "", s.comparisonErr
+	}
 	sets := s.comparisons[campaignID]
 	if len(sets) == 0 {
 		return models.ComparisonSet{}, "", fmt.Errorf("%w : comparaison de %s", errNotFound, campaignID)

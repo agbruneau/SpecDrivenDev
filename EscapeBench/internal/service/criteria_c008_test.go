@@ -200,6 +200,16 @@ func TestUC005_H008(t *testing.T) {
 	}{
 		{"rapport dans l'intervalle", 0.78, 131.5, models.OutcomeConfirmed, ""},
 		{"borne basse atteinte", 12.0, 120.0, models.OutcomeConfirmed, ""},
+		// A-041 : les bornes du critère gelé sont éprouvées au point exact, de part et d'autre.
+		// Le critère infirme si la latence non résidente est « inférieure ou égale à 100 », si le
+		// rapport est « inférieur à 10 » ou « supérieur à 200 » : 100 infirme, 100,000001 non ;
+		// 10 confirme, 9,999999 non ; 200 confirme, 200,000001 non.
+		{"latence non résidente exactement à la borne", 1.0, 100.0, models.OutcomeRefuted, "au plus 100"},
+		{"latence non résidente juste au-dessus de la borne", 1.0, 100.000001, models.OutcomeConfirmed, ""},
+		{"rapport exactement à 10", 10.0, 100.000001, models.OutcomeConfirmed, ""},
+		{"rapport juste sous 10", 10.0000002, 100.000001, models.OutcomeRefuted, "sous 10"},
+		{"rapport exactement à 200", 1.0, 200.0, models.OutcomeConfirmed, ""},
+		{"rapport juste au-dessus de 200", 1.0, 200.0000001, models.OutcomeRefuted, "au-dessus de 200"},
 		{"latence non résidente trop faible", 0.78, 90.0, models.OutcomeRefuted, "au plus 100"},
 		{"rapport trop faible", 20.0, 150.0, models.OutcomeRefuted, "sous 10"},
 		{"rapport trop élevé", 0.5, 150.0, models.OutcomeRefuted, "au-dessus de 200"},
