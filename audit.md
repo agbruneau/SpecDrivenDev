@@ -48,6 +48,21 @@ Quatre niveaux. **Bloquant** : le banc produit un résultat faux ou perd un rés
 
 Deux marqueurs accompagnent les constats dont le correctif a un coût de processus. `Campaign.harnessDigest` signale un correctif qui touche un gabarit embarqué : il invalide toute matrice et toute campagne antérieures (C-005, BR-003-1). *Critère gelé* signale un correctif qui exigerait de réécrire le texte d'une hypothèse, ce que le processus interdit : il faut alors ouvrir une nouvelle `H-###`.
 
+## État d'implantation au 2026-09-12
+
+Les lots 0 à 8 et 10 sont implantés sur la branche `claude/audit-md-implementation-cctjkk`. Ce qui suit reste ouvert, et rien d'autre.
+
+| Ce qui reste | Pourquoi | Qui décide |
+|---|---|---|
+| Rejouer UC-002 puis UC-005 pour H-006 | Le correctif A-072 change la classification ; produire le nouveau verdict exige d'exécuter le binaire, et aucun agent n'écrit sous `results/` | Chercheur |
+| Lot 9, volet code (A-073, A-081, et A-246 si l'on étend l'empreinte) | Change `Campaign.harnessDigest` : toute matrice et toute campagne antérieures deviennent incomparables | Chercheur |
+| A-036 (verdicts de H-003 et H-004 sur corpus partiel) | Changerait des verdicts publiés ; exige une révision du texte de UC-005 A2 avant tout code | Chercheur |
+| A-038 (indicateur de dégénérescence d'un IC à variance nulle) | Ajoute un champ au fichier de comparaison pour un cas qu'aucun critère ne lit | Dette assumée |
+
+Le volet documentaire de A-246 est fait : `C-005` et le modèle d'entités consignent désormais que l'empreinte ne couvre que les gabarits embarqués, et non `harness.go`. Il ne change aucune empreinte.
+
+**Vérifié après implantation.** Les treize verdicts archivés sont inchangés — sauf H-006, dont le retrait est précisément le but du lot 1 et fait l'objet d'un erratum daté au rapport final. Un harnais de non-régression rejoue 43 des 49 verdicts publiés sur les dix campagnes archivées, motif compris, et un second test vérifie que l'empreinte des critères gelés de chacune est encore celle que `docs/requirements.md` produit — les révisions de `docs/` faites ici n'ont déplacé aucune empreinte.
+
 ## Planification d'exécution des correctifs
 
 Destinataire : Claude Opus 5 en mode Ultracode. Chaque lot est une session, un workflow, un commit. Les lots sont ordonnés par dépendance ; à l'intérieur d'un lot, l'ordre est libre.
