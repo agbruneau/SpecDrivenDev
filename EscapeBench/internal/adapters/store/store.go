@@ -53,7 +53,39 @@ func (s *Store) matricesDir() string { return filepath.Join(s.root, "matrices") 
 func (s *Store) resultsDir() string { return filepath.Join(s.root, "results") }
 
 // Dir rend le répertoire d'une Matrix.
-func (s *Store) Dir(matrixID string) string { return filepath.Join(s.matricesDir(), matrixID) }
+func (s *Store) Dir(matrixID string) string { return filepath.Join(s.matricesDir(), safeID(matrixID)) }
+
+// safeID neutralise un identifiant avant de le joindre à un chemin.
+//
+// Révision du 2026-09-12 (A-159) : les identifiants de matrice et de campagne viennent des
+// drapeaux `--matrix`, `--campaign` et `--resume`, et étaient joints tels quels. Un `..` ou un
+// séparateur sortait de `matrices/` et de `results/`, c'est-à-dire du périmètre que NFR-004 et
+// BR-001-2 protègent. Un identifiant qui contient autre chose que des lettres, des chiffres, un
+// tiret, un point ou un souligné n'en est pas un : il est remplacé par une forme inerte, qui ne
+// désignera aucune matrice ni aucune campagne existante et donnera une erreur « introuvable ».
+func safeID(id string) string {
+	if id == "" {
+		return "_vide_"
+	}
+	clean := make([]rune, 0, len(id))
+	suspect := false
+	for _, r := range id {
+		switch {
+		case r == '-' || r == '_' || r == '.' ||
+			(r >= '0' && r <= '9') || (r >= 'a' && r <= 'z') || (r >= 'A' && r <= 'Z'):
+			clean = append(clean, r)
+		default:
+			suspect = true
+			clean = append(clean, '_')
+		}
+	}
+	out := string(clean)
+	// « . » et « .. » désignent un répertoire, pas un identifiant.
+	if suspect || out == "." || out == ".." || strings.HasPrefix(out, "..") {
+		return "_invalide_" + out
+	}
+	return out
+}
 
 // Exists indique si une Matrix complète (avec son matrix.json) existe déjà (UC-001, A2).
 func (s *Store) Exists(_ context.Context, matrixID string) (bool, error) {
@@ -216,7 +248,7 @@ func (s *Store) ReadEscapeReport(_ context.Context, path string) (models.EscapeR
 
 // campaignDir rend le répertoire d'une campagne.
 func (s *Store) campaignDir(campaignID string) string {
-	return filepath.Join(s.resultsDir(), "campaigns", campaignID)
+	return filepath.Join(s.resultsDir(), "campaigns", safeID(campaignID))
 }
 
 // CampaignPath rend le chemin, relatif à la racine, du campaign.json d'une campagne.
@@ -497,7 +529,7 @@ func (s *Store) WriteVerdictReport(_ context.Context, report models.VerdictRepor
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return "", fmt.Errorf("création de results/verdicts : %w", err)
 	}
-	path := filepath.Join(dir, report.CampaignID+"-"+Stamp(report.ProducedAt)+".json")
+	path := filepath.Join(dir, safeID(report.CampaignID)+"-"+Stamp(report.ProducedAt)+".json")
 	if present, err := exists(path); err != nil {
 		return "", err
 	} else if present {
@@ -754,6 +786,13 @@ func writeTemp(path string, content []byte) (string, error) {
 	if err := tmp.Close(); err != nil {
 		os.Remove(tmpName)
 		return "", fmt.Errorf("fermeture de %s : %w", path, err)
+	}
+	// A-164 : os.CreateTemp crée en 0600. Les fichiers de résultats sont versionnés et relus par
+	// d'autres outils que le banc ; ils naissaient inaccessibles à tout autre compte que celui qui
+	// a mené la campagne, à la différence des répertoires qui les portent, créés en 0755.
+	if err := os.Chmod(tmpName, 0o644); err != nil {
+		os.Remove(tmpName)
+		return "", fmt.Errorf("droits de %s : %w", path, err)
 	}
 	return tmpName, nil
 }

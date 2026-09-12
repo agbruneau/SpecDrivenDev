@@ -118,11 +118,18 @@ func (g *MatrixGenerator) Generate(ctx context.Context, params models.MatrixPara
 		return MatrixReport{}, err
 	}
 	if err := g.repo.WriteSources(ctx, matrix.ID, files); err != nil {
-		return MatrixReport{}, err
+		// A-250 : sans ce nettoyage, un répertoire partiel subsistait. La génération suivante de la
+		// même matrice y écrivait par-dessus des sources dont on ne sait pas si elles sont
+		// complètes, et l'identifiant étant déterministe, c'est le cas normal d'une reprise.
+		return MatrixReport{}, errors.Join(err, g.removePartial(ctx, matrix.ID))
 	}
 
 	// Étape 5 : compilation de l'ensemble des cellules et des sondes. A3 supprime le répertoire.
-	if failures := g.compileAll(ctx, matrix); len(failures) > 0 {
+	failures, err := g.compileAll(ctx, matrix)
+	if err != nil {
+		return MatrixReport{}, errors.Join(err, g.removePartial(ctx, matrix.ID))
+	}
+	if len(failures) > 0 {
 		report := MatrixReport{MatrixID: matrix.ID, CompileErrors: failures}
 		cause := fmt.Errorf("%w : %d sujet(s) de matrices/%s ne compilent pas",
 			ErrSubjectsNotCompilable, len(failures), matrix.ID)
@@ -138,7 +145,7 @@ func (g *MatrixGenerator) Generate(ctx context.Context, params models.MatrixPara
 
 	// Étape 6 : écriture de matrix.json avec l'empreinte du harnais.
 	if err := g.repo.Finalize(ctx, matrix); err != nil {
-		return MatrixReport{}, err
+		return MatrixReport{}, errors.Join(err, g.removePartial(ctx, matrix.ID))
 	}
 
 	// Étape 7.
@@ -175,16 +182,33 @@ func (g *MatrixGenerator) renderAll(matrix models.Matrix) (map[string]string, er
 }
 
 // compileAll compile chaque sujet et rend les échecs, triés par identifiant.
-func (g *MatrixGenerator) compileAll(ctx context.Context, matrix models.Matrix) []SubjectFailure {
+func (g *MatrixGenerator) compileAll(ctx context.Context, matrix models.Matrix) ([]SubjectFailure, error) {
 	dir := g.repo.Dir(matrix.ID)
 	var failures []SubjectFailure
 	for _, subjectID := range matrix.SubjectIDs() {
-		if err := g.compiler.Build(ctx, dir, subjectID); err != nil {
-			failures = append(failures, SubjectFailure{SubjectID: subjectID, Message: err.Error()})
+		err := g.compiler.Build(ctx, dir, subjectID)
+		if err == nil {
+			continue
 		}
+		// A-249 : seul un refus du compilateur est un sujet non compilable (A3). Une toolchain
+		// absente, un disque plein ou une annulation étaient consignés comme si le code généré
+		// était fautif, et la matrice était supprimée pour une panne qui ne la concerne pas.
+		var compileErr *ports.CompileError
+		if !errors.As(err, &compileErr) {
+			return nil, err
+		}
+		failures = append(failures, SubjectFailure{SubjectID: subjectID, Message: err.Error()})
 	}
 	sort.Slice(failures, func(i, j int) bool { return failures[i].SubjectID < failures[j].SubjectID })
-	return failures
+	return failures, nil
+}
+
+// removePartial retire un répertoire de matrice laissé incomplet par un échec.
+func (g *MatrixGenerator) removePartial(ctx context.Context, matrixID string) error {
+	if err := g.repo.Remove(ctx, matrixID); err != nil {
+		return fmt.Errorf("matrices/%s subsiste incomplète : %w", matrixID, err)
+	}
+	return nil
 }
 
 // merge recopie src dans dst.

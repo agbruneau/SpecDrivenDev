@@ -76,7 +76,7 @@ func (s *CampaignService) Run(ctx context.Context, opts CampaignOptions) (Campai
 }
 
 // start couvre le scénario principal et A1.
-func (s *CampaignService) start(ctx context.Context, opts CampaignOptions) (CampaignReport, error) {
+func (s *CampaignService) start(ctx context.Context, opts CampaignOptions) (report CampaignReport, err error) {
 	// A1 : nombre de répétitions insuffisant — aucune Campaign n'est créée.
 	if opts.Count < models.MinCount {
 		return CampaignReport{}, fmt.Errorf("%w : %d répétitions demandées, minimum %d (NFR-003)",
@@ -140,7 +140,7 @@ func (s *CampaignService) start(ctx context.Context, opts CampaignOptions) (Camp
 	if err := s.store.AcquireLock(ctx, ""); err != nil {
 		return CampaignReport{}, err
 	}
-	defer func() { _ = s.store.ReleaseLock(ctx) }()
+	defer s.releaseLock(ctx, &err)
 
 	startedAt := s.clock.Now()
 	campaignID, err := s.store.NextCampaignID(ctx, startedAt)
@@ -165,7 +165,7 @@ func (s *CampaignService) start(ctx context.Context, opts CampaignOptions) (Camp
 }
 
 // resume couvre A4 : reprise après interruption.
-func (s *CampaignService) resume(ctx context.Context, opts CampaignOptions) (CampaignReport, error) {
+func (s *CampaignService) resume(ctx context.Context, opts CampaignOptions) (report CampaignReport, err error) {
 	// A4, étape 5 : la reprise porte sur la Campaign désignée, avec ses paramètres gelés. Accepter
 	// en silence une autre matrice, un autre nombre de répétitions ou d'autres hypothèses ferait
 	// croire au chercheur qu'il étend ou redirige la campagne (A-030).
@@ -233,7 +233,7 @@ func (s *CampaignService) resume(ctx context.Context, opts CampaignOptions) (Cam
 	if err := s.store.AcquireLock(ctx, campaign.ID); err != nil {
 		return CampaignReport{}, err
 	}
-	defer func() { _ = s.store.ReleaseLock(ctx) }()
+	defer s.releaseLock(ctx, &err)
 
 	return s.measure(ctx, campaign, matrix, opts, done)
 }
@@ -312,6 +312,17 @@ func (s *CampaignService) measure(ctx context.Context, campaign models.Campaign,
 	}
 	report.Status = models.CampaignCompleted
 	return report, nil
+}
+
+// releaseLock retire le verrou et joint son échec à l'erreur rendue.
+//
+// Révision du 2026-09-12 (A-145) : l'échec était avalé. Un verrou orphelin bloque ensuite UC-001
+// comme UC-003, et le chercheur n'avait aucune trace de l'instant où il est apparu — le hook
+// guard-paths interdisant par ailleurs à un agent de le retirer.
+func (s *CampaignService) releaseLock(ctx context.Context, err *error) {
+	if releaseErr := s.store.ReleaseLock(ctx); releaseErr != nil {
+		*err = errors.Join(*err, fmt.Errorf("libération du verrou de campagne : %w", releaseErr))
+	}
 }
 
 // abort consigne l'abandon d'une campagne et rend l'erreur qui l'a motivé. Quand la consignation

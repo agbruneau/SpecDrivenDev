@@ -145,8 +145,9 @@ type memoryStore struct {
 	writeErr     error
 	// comparisonErr simule une lecture en erreur du fichier de comparaison, distincte de son
 	// absence : le service doit les traiter différemment (A-123).
-	comparisonErr error
-	stamp         int
+	comparisonErr   error
+	partialWriteErr error
+	stamp           int
 }
 
 func newStore() *memoryStore {
@@ -184,6 +185,11 @@ func (s *memoryStore) WriteSources(_ context.Context, matrixID string, files map
 		return s.writeErr
 	}
 	s.sources[matrixID] = files
+	// partialWriteErr simule une écriture interrompue à mi-parcours : les fichiers déjà écrits
+	// subsistent, ce que A-250 laissait en place sans nettoyage.
+	if s.partialWriteErr != nil {
+		return s.partialWriteErr
+	}
 	return nil
 }
 

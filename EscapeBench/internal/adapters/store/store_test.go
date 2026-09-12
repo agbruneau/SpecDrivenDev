@@ -5,6 +5,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 	"time"
@@ -684,5 +685,70 @@ func TestUC004_ErreurDeLectureNestPasUneAbsence(t *testing.T) {
 	}
 	if errors.Is(err, ErrNotFound) {
 		t.Fatalf("erreur = %v : une erreur de lecture n'est pas une absence", err)
+	}
+}
+
+// TestNFR4_IdentifiantNeSortPasDuPerimetre verrouille A-159 : les identifiants de matrice et de
+// campagne viennent des drapeaux --matrix, --campaign et --resume et étaient joints aux chemins
+// tels quels. Un `..` sortait de matrices/ et de results/, c'est-à-dire du périmètre que NFR-004
+// et BR-001-2 protègent.
+func TestNFR4_IdentifiantNeSortPasDuPerimetre(t *testing.T) {
+	t.Parallel()
+	ctx := context.Background()
+	root := t.TempDir()
+	s := New(root)
+	horsPerimetre := []string{
+		"../evade",
+		"..",
+		".",
+		"a/../../b",
+		`..\evade`,
+		"M-1/../../../etc",
+	}
+	for _, id := range horsPerimetre {
+		t.Run(id, func(t *testing.T) {
+			t.Parallel()
+			for _, path := range []string{s.Dir(id), s.abs(s.CampaignPath(id)), s.abs(s.MeasurementPath(id, "s"))} {
+				rel, err := filepath.Rel(root, path)
+				if err != nil {
+					t.Fatalf("filepath.Rel(%q) : %v", path, err)
+				}
+				if strings.HasPrefix(rel, "..") {
+					t.Fatalf("l'identifiant %q sort du dépôt : %s", id, rel)
+				}
+			}
+		})
+	}
+	// Un identifiant légitime n'est pas altéré.
+	if got := s.Dir("M-823d8b5af441"); got != filepath.Join(root, "matrices", "M-823d8b5af441") {
+		t.Fatalf("Dir = %q", got)
+	}
+	if got := s.CampaignPath("C-2026-09-10-1"); got != "results/campaigns/C-2026-09-10-1/campaign.json" {
+		t.Fatalf("CampaignPath = %q", got)
+	}
+	// Et un identifiant neutralisé ne désigne rien : la lecture échoue proprement.
+	if _, err := s.LoadCampaign(ctx, "../evade"); err == nil {
+		t.Fatal("un identifiant hors périmètre ne doit désigner aucune campagne")
+	}
+}
+
+// TestNFR4_DroitsDesFichiersDeResultats verrouille A-164 : os.CreateTemp crée en 0600, si bien que
+// les fichiers de results/ — versionnés et relus par d'autres outils — naissaient inaccessibles à
+// tout autre compte que celui qui a mené la campagne.
+func TestNFR4_DroitsDesFichiersDeResultats(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("les droits POSIX ne s'appliquent pas ici")
+	}
+	t.Parallel()
+	path := filepath.Join(t.TempDir(), "resultat.json")
+	if err := writeFileExclusive(path, []byte("{}\n")); err != nil {
+		t.Fatalf("writeFileExclusive : %v", err)
+	}
+	info, err := os.Stat(path)
+	if err != nil {
+		t.Fatalf("Stat : %v", err)
+	}
+	if perm := info.Mode().Perm(); perm != 0o644 {
+		t.Fatalf("droits = %04o, 0644 attendus", perm)
 	}
 }

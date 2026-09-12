@@ -79,9 +79,16 @@ func RenderEscape(summary service.EscapeReportSummary) string {
 	fmt.Fprintf(&b, "Cellules classées OTHER : %d\n", summary.OtherCount)
 	fmt.Fprintf(&b, "Cellules en COMPILE_ERROR : %d\n", summary.CompileErrors)
 	if check := summary.Reproducibility; check != nil {
-		fmt.Fprintf(&b, "Reproductibilité (NFR-002) : comparé à %s, %d cellule(s) divergentes\n", check.ComparedTo, len(check.Differing))
+		if check.ComparedTo != "" {
+			fmt.Fprintf(&b, "Reproductibilité (NFR-002) : comparé à %s, %d cellule(s) divergentes\n", check.ComparedTo, len(check.Differing))
+		}
 		if check.Violation {
 			fmt.Fprintf(&b, "  VIOLATION de NFR-002 : %s\n", strings.Join(truncateList(check.Differing, 10), ", "))
+		}
+		// A-256 : un rapport antérieur illisible ne bloque plus UC-002, mais il ne disparaît pas
+		// en silence : la comparaison qu'il aurait permise n'a pas eu lieu.
+		for _, unreadable := range check.Unreadable {
+			fmt.Fprintf(&b, "  rapport antérieur illisible, non comparé : %s\n", unreadable)
 		}
 	}
 	return b.String()
