@@ -200,7 +200,21 @@ func TestUC005_NonRegressionVerdictsArchives(t *testing.T) {
 				continue
 			}
 			t.Run(campaign.ID+"/"+archived.HypothesisID, func(t *testing.T) {
-				result := evaluate(evidence)
+				// Un verdict cite les fichiers dont il est tiré (BR-005-2). Quand il nomme un
+				// rapport d'échappement, c'est celui-là qu'il faut rejouer : `escapebench verdict
+				// --escape <fichier>` permet d'en désigner un autre que celui que la règle de
+				// provenance choisirait, et les verdicts de H-006 rejoués après la correction du
+				// classificateur (A-072) en portent la trace.
+				replayed := evidence
+				if designated := designatedEscapeReport(archived); designated != "" {
+					report, err := disk.ReadEscapeReport(ctx, designated)
+					if err != nil {
+						t.Fatalf("lecture du rapport d'échappement cité %s : %v", designated, err)
+					}
+					replayed.EscapeReport = &report
+					replayed.EscapePath = designated
+				}
+				result := evaluate(replayed)
 				if result.Outcome != archived.Outcome {
 					t.Fatalf("verdict rejoué %s, archivé %s\nrationale rejoué : %s\nrationale archivé : %s",
 						result.Outcome, archived.Outcome, result.Rationale, archived.Rationale)
@@ -221,6 +235,18 @@ func TestUC005_NonRegressionVerdictsArchives(t *testing.T) {
 	}
 	t.Logf("%d verdicts rejoués sur %d campagnes, %d sautés faute de matrice reconstructible, "+
 		"%d rendus avant l'existence de leur évaluateur", replayed, len(reports), skipped, historical)
+}
+
+// designatedEscapeReport rend le rapport d'échappement qu'un verdict archivé cite, ou la chaîne
+// vide s'il n'en cite aucun. Les évaluateurs qui lisent l'échappement inscrivent ce chemin dans
+// resultFiles ; le rejouer sur un autre rapport que celui-là ne reproduirait pas le verdict publié.
+func designatedEscapeReport(verdict models.Verdict) string {
+	for _, file := range verdict.ResultFiles {
+		if strings.HasPrefix(file, "results/escape/") {
+			return file
+		}
+	}
+	return ""
 }
 
 // archivedEvidence rassemble, en lecture seule, les preuves d'une campagne archivée. Elle suit la

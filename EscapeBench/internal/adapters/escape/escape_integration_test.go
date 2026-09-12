@@ -21,7 +21,11 @@ import (
 )
 
 // renderMatrix écrit dans un répertoire temporaire le module et les sources des cellules données,
-// exactement comme UC-001 le ferait sous matrices/.
+// exactement comme la génération de matrice le fait sous matrices/.
+//
+// Le cas d'utilisation de la génération n'est volontairement pas cité par son identifiant : la
+// colonne Integration du tableau de bord compte tout identifiant apparaissant dans un fichier
+// taggé, et une mention de passage y annoncerait un test d'intégration qui n'existe pas.
 func renderMatrix(t *testing.T, cells []models.Cell) string {
 	t.Helper()
 	renderer, err := harness.NewRenderer()

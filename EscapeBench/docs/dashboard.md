@@ -1,15 +1,15 @@
 # Tableau de bord — EscapeBench
 
-Généré par `escapebench dashboard` et `escapebench verdict` (UC-005, FR-007) ; ne pas éditer à la main (BR-005-3). Régénéré le 2026-09-10 23:31 UTC.
+Généré par `escapebench dashboard` et `escapebench verdict` (UC-005, FR-007) ; ne pas éditer à la main (BR-005-3). Régénéré le 2026-09-12 20:19 UTC.
 
 ## Cas d'utilisation
 
 | Use case | Linked FR | UC status | Code | Unit | Integration | Regression | Integrity |
 |---|---|---|---|---|---|---|---|
-| UC-001 Générer la matrice de cellules | FR-001 | Deployed | ✔ | ✔ | ✔ | ✔ | Strong |
+| UC-001 Générer la matrice de cellules | FR-001 | Deployed | ✔ | ✔ | — | ✔ | Strong |
 | UC-002 Classer l'échappement | FR-002 | Deployed | ✔ | ✔ | ✔ | ✔ | Strong |
-| UC-003 Exécuter une campagne de mesure | FR-003, FR-006 | Deployed | ✔ | ✔ | ✔ | ✔ | Strong |
-| UC-004 Comparer valeur et pointeur | FR-004 | Deployed | ✔ | ✔ | ✔ | ✔ | Strong |
+| UC-003 Exécuter une campagne de mesure | FR-003, FR-006 | Deployed | ✔ | ✔ | — | ✔ | Strong |
+| UC-004 Comparer valeur et pointeur | FR-004 | Deployed | ✔ | ✔ | — | ✔ | Strong |
 | UC-005 Produire les verdicts | FR-005, FR-007 | Deployed | ✔ | ✔ | ✔ | ✔ | Strong |
 
 Statuts (SDD, p. 140, colonne `Review` écrite `Reviewed` dans les fichiers de UC) : Draft → Reviewed → Approved → Implemented → Verified → Deployed (= campagne exécutée et rapport publié). Le passage `Reviewed` → `Approved` est une décision humaine consignée dans le fichier du UC.
@@ -23,7 +23,7 @@ Statuts (SDD, p. 140, colonne `Review` écrite `Reviewed` dans les fichiers de U
 | H-003 | p. 256 — un changement valeur/pointeur « doubles the number of allocations » | UC-003, UC-005 | Oui | C-2026-09-10-11 | CONFIRMED |
 | H-004 | p. 254 — accès mémoire « roughly 10× to 200× » entre cache hit et miss | UC-003, UC-005 | Oui | C-2026-09-10-11 | REFUTED |
 | H-005 | p. 114 — préallocation : « about 6× » plus rapide, « one-fifth the memory » | UC-003, UC-005 | Oui | C-2026-09-10-11 | CONFIRMED |
-| H-006 | p. 238–242 — quatre causes d'échappement listées | UC-002, UC-005 | Oui | C-2026-09-10-11 | REFUTED |
+| H-006 | p. 238–242 — quatre causes d'échappement listées | UC-002, UC-005 | Oui | C-2026-09-10-11 | CONFIRMED |
 | H-007 | p. 253 — valeur « when the data type is small (typically one to three machine words) », éprouvée sur une disposition assignable aux registres | UC-001, UC-003, UC-004, UC-005 | Oui | C-2026-09-10-11 | CONFIRMED |
 | H-008 | p. 254 — « roughly 10× to 200× » entre un succès de cache annoncé sous 10 ns et un défaut servi par la mémoire principale annoncé au-delà de 100 ns | UC-001, UC-003, UC-005 | Oui | C-2026-09-10-11 | CONFIRMED |
 | H-009 | p. 241 — la quatrième cause est illustrée par une map, puis généralisée : « This rule also applies to slices, structs, or any container that is already heap-allocated » | UC-001, UC-002, UC-005 | Oui | C-2026-09-10-11 | CONFIRMED |
