@@ -12,6 +12,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"github.com/agbruneau/escapebench/internal/models"
 	"github.com/agbruneau/escapebench/internal/ports"
@@ -52,10 +53,14 @@ func ExecRunner(ctx context.Context, dir string, name string, args ...string) (R
 	var stdout, stderr strings.Builder
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
-	var tracker *treeCPUTracker
+	// A-062 : les sorties sont collectées dans des tampons, donc par des tubes. Un descendant qui
+	// survit à l'annulation les garde ouverts et Wait attend leur fermeture, c'est-à-dire la fin
+	// du benchmark orphelin. WaitDelay borne cette attente ; prepareTree termine l'arbre.
+	cmd.WaitDelay = 2 * time.Second
+	tracker := prepareTree(cmd)
 	err := cmd.Start()
 	if err == nil {
-		tracker = startTreeCPU(cmd)
+		tracker.attach(cmd)
 		err = cmd.Wait()
 	}
 	result := Result{Stdout: stdout.String(), Stderr: stderr.String()}
@@ -115,6 +120,12 @@ func (t *Toolchain) EscapeAnalysis(ctx context.Context, matrixDir, subjectID str
 	if err != nil {
 		return nil, err
 	}
+	// A-141 : un `go build` tué par l'annulation sort avec un code non nul. Sans cette garde il
+	// devenait un ports.CompileError, la cellule était classée COMPILE_ERROR et consignée comme
+	// telle dans le fichier d'échappement, alors que le compilateur n'a rien dit de ce sujet.
+	if err := ctx.Err(); err != nil {
+		return nil, fmt.Errorf("analyse d'échappement de %s interrompue : %w", subjectID, err)
+	}
 	if result.ExitCode != 0 {
 		return nil, &ports.CompileError{SubjectID: subjectID, Output: strings.TrimSpace(result.Combined())}
 	}
@@ -126,6 +137,9 @@ func (t *Toolchain) Build(ctx context.Context, matrixDir, subjectID string) erro
 	result, err := t.run(ctx, matrixDir, t.goBin, "build", packagePath(subjectID))
 	if err != nil {
 		return err
+	}
+	if err := ctx.Err(); err != nil {
+		return fmt.Errorf("compilation de %s interrompue : %w", subjectID, err)
 	}
 	if result.ExitCode != 0 {
 		return &ports.CompileError{SubjectID: subjectID, Output: strings.TrimSpace(result.Combined())}
@@ -205,6 +219,13 @@ func (t *Toolchain) Run(ctx context.Context, matrixDir, subjectID string, opts p
 	result, err := t.run(ctx, matrixDir, t.goBin, args...)
 	elapsed := time.Since(startedAt)
 	busyAfter, afterOK := t.sampleQuietude()
+	// A-261 : une interruption n'est pas un résultat de mesure. Sans cette garde, le processus tué
+	// par le signal rendait une Measurement FAILED avec une erreur Go nulle : la boucle de mesure
+	// ne voyait pas l'annulation, écrivait le sujet en échec, puis échouait en chaîne sur tous les
+	// suivants et clôturait la campagne COMPLETED. Le flux A4 devenait inatteignable.
+	if ctxErr := ctx.Err(); ctxErr != nil {
+		return models.Measurement{}, fmt.Errorf("mesure de %s interrompue : %w", subjectID, ctxErr)
+	}
 	if err != nil {
 		return failed(subjectID, err.Error()), nil
 	}
@@ -270,11 +291,18 @@ func failed(subjectID, reason string) models.Measurement {
 }
 
 // truncate borne la longueur d'un message consigné dans un fichier de résultats.
+// A-063 : couper à l'octet laissait une séquence UTF-8 incomplète dans FailureReason, donc un
+// octet invalide dans un fichier de résultats JSON. La coupe recule jusqu'à la dernière frontière
+// de rune.
 func truncate(s string, max int) string {
 	if len(s) <= max {
 		return s
 	}
-	return s[:max] + "… (tronqué)"
+	cut := max
+	for cut > 0 && !utf8.RuneStart(s[cut]) {
+		cut--
+	}
+	return s[:cut] + "… (tronqué)"
 }
 
 // runLineRe capture les tests de premier niveau exécutés.

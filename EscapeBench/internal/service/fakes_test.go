@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"sort"
 	"strings"
@@ -15,7 +14,9 @@ import (
 // Doublures en mémoire : le service ne parle qu'aux ports, aucun test n'a besoin du disque ni de
 // la chaîne d'outils (BEPG p. 373-375).
 
-var errNotFound = errors.New("introuvable")
+// errNotFound est la sentinelle du port : gather doit pouvoir distinguer une absence légitime
+// d'une lecture en erreur, et un fake qui inventerait la sienne masquerait ce contrôle (A-123).
+var errNotFound = ports.ErrNotFound
 
 type fakeClock struct{ instant time.Time }
 
@@ -311,17 +312,31 @@ func (s *memoryStore) CampaignPath(campaignID string) string {
 	return "results/campaigns/" + campaignID + "/campaign.json"
 }
 
+// AcquireLock reproduit la reprise du verrou du store réel : un verrou qui porte l'identifiant
+// demandé est repris, comme l'exige A4 (A-044).
 func (s *memoryStore) AcquireLock(_ context.Context, campaignID string) error {
 	if s.locked {
-		return fmt.Errorf("une campagne est déjà en cours (%s)", s.lockedBy)
+		if campaignID != "" && s.lockedBy == campaignID {
+			return nil
+		}
+		return fmt.Errorf("%w : tenu par %s", ports.ErrLockHeld, s.lockedBy)
 	}
 	s.locked = true
 	s.lockedBy = campaignID
 	return nil
 }
 
+func (s *memoryStore) AdoptLock(_ context.Context, campaignID string) error {
+	if !s.locked {
+		return fmt.Errorf("nommage d'un verrou non tenu")
+	}
+	s.lockedBy = campaignID
+	return nil
+}
+
 func (s *memoryStore) ReleaseLock(context.Context) error {
 	s.locked = false
+	s.lockedBy = ""
 	return nil
 }
 

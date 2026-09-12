@@ -18,6 +18,14 @@ var ErrPrecondition = errors.New("précondition non satisfaite")
 // ErrHarnessChanged signale que l'empreinte du harnais diffère de celle enregistrée (C-005).
 var ErrHarnessChanged = errors.New("le harnais a changé")
 
+// ErrNoSubjectMeasured signale une campagne abandonnée faute d'un seul sujet mesuré (UC-003,
+// étape 8). Elle existe pour que les bords puissent la distinguer par errors.Is plutôt que par
+// comparaison de texte.
+var ErrNoSubjectMeasured = errors.New("aucun sujet mesuré")
+
+// ErrSubjectsNotCompilable signale qu'au moins un sujet de la matrice ne compile pas (UC-001, A3).
+var ErrSubjectsNotCompilable = errors.New("sujets non compilables")
+
 // SubjectFailure associe un sujet au message qui le concerne.
 type SubjectFailure struct {
 	SubjectID string
@@ -115,11 +123,17 @@ func (g *MatrixGenerator) Generate(ctx context.Context, params models.MatrixPara
 
 	// Étape 5 : compilation de l'ensemble des cellules et des sondes. A3 supprime le répertoire.
 	if failures := g.compileAll(ctx, matrix); len(failures) > 0 {
+		report := MatrixReport{MatrixID: matrix.ID, CompileErrors: failures}
+		cause := fmt.Errorf("%w : %d sujet(s) de matrices/%s ne compilent pas",
+			ErrSubjectsNotCompilable, len(failures), matrix.ID)
 		if err := g.repo.Remove(ctx, matrix.ID); err != nil {
-			return MatrixReport{}, err
+			// L'échec du nettoyage ne doit pas effacer la cause : sans elle le chercheur ne sait
+			// pas quels sujets ne compilent pas, et il ignore qu'un répertoire partiel subsiste,
+			// que la garde d'immutabilité opposera à la prochaine génération (A-026).
+			return report, errors.Join(cause, fmt.Errorf(
+				"matrices/%s n'a pas pu être supprimée et subsiste incomplète : %w", matrix.ID, err))
 		}
-		return MatrixReport{MatrixID: matrix.ID, CompileErrors: failures},
-			fmt.Errorf("%d sujet(s) ne compilent pas ; matrices/%s supprimée", len(failures), matrix.ID)
+		return report, fmt.Errorf("%w ; matrices/%s supprimée", cause, matrix.ID)
 	}
 
 	// Étape 6 : écriture de matrix.json avec l'empreinte du harnais.

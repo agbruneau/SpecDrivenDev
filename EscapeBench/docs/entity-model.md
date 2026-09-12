@@ -6,6 +6,8 @@ Révision du 2026-09-10, satisfaction de C-010 : `Measurement` porte une attesta
 
 Révision du 2026-09-10, satisfaction de C-009 : `Cell` porte un rang de réplicat. Il n'entre ni dans `Comparison`, ni dans `ComparisonSet.tippingPoints` : H-012 groupe ses réplicats par la taille, la disposition, la présence d'un champ pointeur et le profil, tous déjà présents dans `Comparison`, et les distingue par `valueCellId`. Faire entrer un champ de plus dans la clé des points de bascule rendrait H-002 non concluante sur toute campagne future, sans erreur ni trace. Ce qu'aucun critère ne lit, le modèle ne le porte pas. Corollaire assumé : le point de bascule d'une série répliquée n'est pas défini, le balayage descendant dépendant alors de l'ordre du fichier, et UC-004 ne le publie pas.
 
+Révision du 2026-09-12, audit du code : `Campaign` porte les paramètres de mesure `benchTime` et `cpu`, sans lesquels une reprise (UC-003, A4) réutilisait les drapeaux de la ligne de commande du moment et non ceux sous lesquels les mesures déjà écrites ont été prises. Aucun critère de réfutation n'est touché.
+
 Révision du 2026-09-10, synchronisée avec l'implémentation de UC-001 à UC-005 : `Matrix` porte ses paramètres normalisés et l'empreinte du harnais ; `EscapeVerdict` porte le message du compilateur en cas d'échec de compilation ; `Campaign` porte les identifiants d'hypothèses couverts et les horodatages de son cycle de vie ; `Comparison` recopie la taille, la présence d'un champ pointeur et le profil de sa paire ; `ComparisonSet` porte la matrice et la méthode d'estimation ; `Hypothesis` porte son énoncé et ses cas d'utilisation. Aucun de ces ajouts ne touche un critère de réfutation.
 
 ```mermaid
@@ -127,6 +129,8 @@ Les quatre champs ajoutés par C-008 ne sont pas exigés par NFR-001 : un fichie
 | hypothesesDigest | String | Requis ; empreinte SHA-256 des énoncés et critères des Hypothesis liées, lus dans `docs/requirements.md` au démarrage |
 | hypothesisIds | Liste de String | Requis ; identifiants couverts par la campagne, base de `hypothesesDigest` (BR-003-5) |
 | count | Integer | Requis, ≥ 20 (NFR-003) |
+| benchTime | String | Durée `-benchtime` sous laquelle les Measurement ont été prises (C-003) ; absent si la valeur par défaut de la chaîne d'outils a été employée. Restituée à la reprise (UC-003, A4) |
+| cpu | Integer | Valeur `-cpu` sous laquelle les Measurement ont été prises (C-003) ; absent si non imposée. Restituée à la reprise (UC-003, A4) |
 | status | Enum | Requis ; valeurs : `RUNNING`, `COMPLETED`, `ABORTED` |
 | provenance | Provenance | Requis |
 | startedAt | DateTime (UTC) | Requis |

@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sort"
 	"time"
@@ -128,6 +129,15 @@ func (s *CampaignService) start(ctx context.Context, opts CampaignOptions) (Camp
 		}
 	}
 
+	// Le verrou est posé avant la dérivation de l'identifiant, et non à l'entrée de la boucle de
+	// mesure : sinon deux lancements simultanés obtiennent le même identifiant de NextCampaignID,
+	// écrivent tous deux campaign.json, et le perdant laisse une campagne RUNNING orpheline
+	// derrière lui après l'échec du verrou (A-263).
+	if err := s.store.AcquireLock(ctx, ""); err != nil {
+		return CampaignReport{}, err
+	}
+	defer func() { _ = s.store.ReleaseLock(ctx) }()
+
 	startedAt := s.clock.Now()
 	campaignID, err := s.store.NextCampaignID(ctx, startedAt)
 	if err != nil {
@@ -136,9 +146,14 @@ func (s *CampaignService) start(ctx context.Context, opts CampaignOptions) (Camp
 	campaign := models.Campaign{
 		ID: campaignID, MatrixID: matrix.ID, HarnessDigest: digest,
 		HypothesesDigest: hypothesesDigest, HypothesisIDs: hypothesisIDs, Count: opts.Count,
+		BenchTime: opts.BenchTime, CPU: opts.CPU,
 		Status: models.CampaignRunning, Provenance: provenance, StartedAt: startedAt,
 	}
 	if err := s.store.CreateCampaign(ctx, campaign); err != nil {
+		return CampaignReport{}, err
+	}
+	// Le verrou porte maintenant un identifiant : c'est lui que la reprise (A4) reconnaîtra.
+	if err := s.store.AdoptLock(ctx, campaign.ID); err != nil {
 		return CampaignReport{}, err
 	}
 	return s.measure(ctx, campaign, matrix, opts, nil)
@@ -146,6 +161,14 @@ func (s *CampaignService) start(ctx context.Context, opts CampaignOptions) (Camp
 
 // resume couvre A4 : reprise après interruption.
 func (s *CampaignService) resume(ctx context.Context, opts CampaignOptions) (CampaignReport, error) {
+	// A4, étape 5 : la reprise porte sur la Campaign désignée, avec ses paramètres gelés. Accepter
+	// en silence une autre matrice, un autre nombre de répétitions ou d'autres hypothèses ferait
+	// croire au chercheur qu'il étend ou redirige la campagne (A-030).
+	if opts.MatrixID != "" || opts.Count != 0 || len(opts.HypothesisIDs) > 0 {
+		return CampaignReport{}, fmt.Errorf(
+			"%w : --resume reprend la campagne %s avec la matrice, le nombre de répétitions et les hypothèses gelés à sa création ; retirer --matrix, --count et --hypotheses",
+			ErrPrecondition, opts.Resume)
+	}
 	campaign, err := s.store.LoadCampaign(ctx, opts.Resume)
 	if err != nil {
 		return CampaignReport{}, err
@@ -167,37 +190,75 @@ func (s *CampaignService) resume(ctx context.Context, opts CampaignOptions) (Cam
 		return CampaignReport{}, fmt.Errorf("%w : campagne %s démarrée avec %s, harnais courant %s (BR-003-1)",
 			ErrHarnessChanged, campaign.ID, campaign.HarnessDigest, digest)
 	}
+	// A4, étape 2 : la toolchain de la reprise est celle de la Campaign. Measurement ne porte pas
+	// de provenance propre — c'est Campaign.provenance qui atteste NFR-001 pour toutes ses
+	// mesures —, donc une reprise sur une autre toolchain rendrait cette attestation fausse sans
+	// erreur ni trace (A-021).
+	current, err := s.provenance.Capture(ctx)
+	if err != nil {
+		return CampaignReport{}, err
+	}
+	if !campaign.Provenance.SameToolchain(current) || campaign.Provenance.CPUModel != current.CPUModel {
+		return CampaignReport{}, fmt.Errorf(
+			"%w : campagne %s mesurée sous %s %s/%s sur %q, reprise demandée sous %s %s/%s sur %q ; une reprise ne mélange pas deux toolchains (NFR-001, BR-003-2)",
+			ErrPrecondition, campaign.ID,
+			campaign.Provenance.GoVersion, campaign.Provenance.GOOS, campaign.Provenance.GOARCH, campaign.Provenance.CPUModel,
+			current.GoVersion, current.GOOS, current.GOARCH, current.CPUModel)
+	}
 	existing, err := s.store.LoadMeasurements(ctx, campaign.ID)
 	if err != nil {
 		return CampaignReport{}, err
 	}
-	done := make(map[string]bool, len(existing))
+	// A4, étape 4 : toute Measurement écrite est faite, quel que soit son statut. Ne retenir que
+	// les COMPLETE faisait remesurer un sujet consigné FAILED par A3, dont l'écriture est ensuite
+	// refusée par l'immutabilité de BR-003-3 : la reprise butait indéfiniment sur ce sujet (A-020).
+	done := make(map[string]models.MeasurementStatus, len(existing))
 	for _, m := range existing {
-		if m.Status == models.MeasurementComplete {
-			done[m.SubjectID] = true
-		}
+		done[m.SubjectID] = m.Status
 	}
+	// A4, étape 5 : les paramètres de mesure sont ceux de la Campaign, pas ceux de la ligne de
+	// commande du moment (A-265).
 	opts.Count = campaign.Count
+	opts.BenchTime = campaign.BenchTime
+	opts.CPU = campaign.CPU
+
+	// A4, étape 3 : la reprise reprend le verrou qui porte son propre identifiant. C'est le cas
+	// normal, le déclencheur d'A4 étant précisément un processus mort dont le defer de libération
+	// n'a pas tourné (A-044).
+	if err := s.store.AcquireLock(ctx, campaign.ID); err != nil {
+		return CampaignReport{}, err
+	}
+	defer func() { _ = s.store.ReleaseLock(ctx) }()
+
 	return s.measure(ctx, campaign, matrix, opts, done)
 }
 
 // measure couvre les étapes 5 à 8, A2 et A3.
 func (s *CampaignService) measure(ctx context.Context, campaign models.Campaign, matrix models.Matrix,
-	opts CampaignOptions, alreadyDone map[string]bool) (CampaignReport, error) {
+	opts CampaignOptions, alreadyDone map[string]models.MeasurementStatus) (CampaignReport, error) {
 	report := CampaignReport{
-		CampaignID: campaign.ID, Provenance: campaign.Provenance, HarnessDigest: campaign.HarnessDigest,
-		HypothesesDigest: campaign.HypothesesDigest, HypothesisIDs: campaign.HypothesisIDs,
-		CellCount: len(matrix.Cells), ProbeCount: len(matrix.Probes), Resumed: alreadyDone != nil,
+		CampaignID: campaign.ID, Status: campaign.Status, Provenance: campaign.Provenance,
+		HarnessDigest: campaign.HarnessDigest, HypothesesDigest: campaign.HypothesesDigest,
+		HypothesisIDs: campaign.HypothesisIDs, CellCount: len(matrix.Cells),
+		ProbeCount: len(matrix.Probes), Resumed: alreadyDone != nil,
 	}
-	if err := s.store.AcquireLock(ctx, campaign.ID); err != nil {
-		return report, err
-	}
-	defer func() { _ = s.store.ReleaseLock(ctx) }()
 
 	runOpts := ports.RunOptions{Count: opts.Count, BenchTime: opts.BenchTime, CPU: opts.CPU}
 	for _, subjectID := range matrix.SubjectIDs() {
-		if alreadyDone[subjectID] {
-			report.Measured++
+		// A5 : une interruption arrête la boucle. Sans cette garde, le sujet courant était
+		// consigné FAILED, tous les suivants échouaient en chaîne en quelques millisecondes, et la
+		// campagne se clôturait COMPLETED : A4 devenait inatteignable, puisque la reprise exige
+		// RUNNING (A-261). La Campaign reste RUNNING, donc reprenable.
+		if err := ctx.Err(); err != nil {
+			return report, fmt.Errorf("campagne %s interrompue, reprenable par --resume %s : %w",
+				campaign.ID, campaign.ID, err)
+		}
+		if status, ok := alreadyDone[subjectID]; ok {
+			if status == models.MeasurementComplete {
+				report.Measured++
+			} else {
+				report.Failed++
+			}
 			continue
 		}
 		measurement, err := s.runner.Run(ctx, s.repo.Dir(matrix.ID), subjectID, runOpts)
@@ -231,29 +292,34 @@ func (s *CampaignService) measure(ctx context.Context, campaign models.Campaign,
 	}
 	if digest != campaign.HarnessDigest {
 		reason := fmt.Sprintf("harnais %s au démarrage, %s à la fin (BR-003-1, C-005)", campaign.HarnessDigest, digest)
-		if err := s.store.SetCampaignStatus(ctx, campaign.ID, models.CampaignAborted, finishedAt, reason); err != nil {
-			return report, err
-		}
-		report.Status = models.CampaignAborted
-		report.AbortReason = reason
-		return report, fmt.Errorf("%w : campagne %s invalide pour tout verdict", ErrHarnessChanged, campaign.ID)
+		cause := fmt.Errorf("%w : campagne %s invalide pour tout verdict", ErrHarnessChanged, campaign.ID)
+		return s.abort(ctx, report, campaign.ID, finishedAt, reason, cause)
 	}
 
 	// Étape 8 : la campagne est COMPLETED si au moins un sujet a été mesuré.
 	if report.Measured == 0 {
 		reason := "aucun sujet mesuré"
-		if err := s.store.SetCampaignStatus(ctx, campaign.ID, models.CampaignAborted, finishedAt, reason); err != nil {
-			return report, err
-		}
-		report.Status = models.CampaignAborted
-		report.AbortReason = reason
-		return report, fmt.Errorf("campagne %s : %s", campaign.ID, reason)
+		cause := fmt.Errorf("%w : campagne %s, %s", ErrNoSubjectMeasured, campaign.ID, reason)
+		return s.abort(ctx, report, campaign.ID, finishedAt, reason, cause)
 	}
 	if err := s.store.SetCampaignStatus(ctx, campaign.ID, models.CampaignCompleted, finishedAt, ""); err != nil {
 		return report, err
 	}
 	report.Status = models.CampaignCompleted
 	return report, nil
+}
+
+// abort consigne l'abandon d'une campagne et rend l'erreur qui l'a motivé. Quand la consignation
+// échoue elle-même, les deux erreurs sont jointes : l'erreur d'origine — la seule qui dise
+// pourquoi la campagne est invalide — était perdue au profit de l'erreur d'écriture (A-024).
+func (s *CampaignService) abort(ctx context.Context, report CampaignReport, campaignID string,
+	finishedAt time.Time, reason string, cause error) (CampaignReport, error) {
+	report.Status = models.CampaignAborted
+	report.AbortReason = reason
+	if err := s.store.SetCampaignStatus(ctx, campaignID, models.CampaignAborted, finishedAt, reason); err != nil {
+		return report, errors.Join(cause, fmt.Errorf("consignation de l'abandon de %s : %w", campaignID, err))
+	}
+	return report, cause
 }
 
 // requireEscapeVerdicts vérifie que UC-002 a été exécuté pour la toolchain courante.

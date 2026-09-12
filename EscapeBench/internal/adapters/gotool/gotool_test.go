@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 	"testing"
+	"unicode/utf8"
 
 	"github.com/agbruneau/escapebench/internal/models"
 	"github.com/agbruneau/escapebench/internal/ports"
@@ -283,5 +284,75 @@ func TestExecRunner(t *testing.T) {
 	}
 	if _, err := ExecRunner(context.Background(), "", "binaire-inexistant-escapebench"); err == nil {
 		t.Fatal("un binaire absent doit rendre une erreur")
+	}
+}
+
+// TestUC003_A5_AnnulationNestPasUnEchecDeMesure verrouille A-261 : le processus tué par le signal
+// rendait une Measurement FAILED avec une erreur Go nulle. La boucle de mesure, qui ne regarde que
+// cette erreur, ne voyait pas l'annulation : elle écrivait le sujet en échec, échouait en chaîne
+// sur tous les suivants et clôturait la campagne COMPLETED.
+func TestUC003_A5_AnnulationNestPasUnEchecDeMesure(t *testing.T) {
+	t.Parallel()
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	// Le processus tué sort en erreur : c'est exactement ce que le recorder rend ici.
+	rec := &recorder{result: Result{ExitCode: 1, Stderr: "signal: interrupt"}}
+	measurement, err := New(rec.run, "").Run(ctx, "dir", "S", ports.RunOptions{Count: 20, BenchTime: "250ms"})
+	if !errors.Is(err, context.Canceled) {
+		t.Fatalf("erreur = %v, context.Canceled attendue", err)
+	}
+	if measurement.Status == models.MeasurementFailed {
+		t.Fatal("une interruption ne se consigne pas comme une mesure en échec")
+	}
+}
+
+// TestUC002_A2_AnnulationNestPasUneErreurDeCompilation verrouille A-141 : un `go build -gcflags=-m`
+// tué par l'annulation sortait en code non nul et devenait un ports.CompileError, marquant la
+// cellule COMPILE_ERROR dans le fichier d'échappement alors que le compilateur n'a rien dit d'elle.
+func TestUC002_A2_AnnulationNestPasUneErreurDeCompilation(t *testing.T) {
+	t.Parallel()
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	rec := &recorder{result: Result{ExitCode: 1, Stderr: "signal: killed"}}
+	toolchain := New(rec.run, "")
+
+	_, err := toolchain.EscapeAnalysis(ctx, "dir", "S")
+	var compileErr *ports.CompileError
+	if errors.As(err, &compileErr) {
+		t.Fatalf("une annulation ne se consigne pas comme une erreur de compilation : %v", err)
+	}
+	if !errors.Is(err, context.Canceled) {
+		t.Fatalf("erreur = %v, context.Canceled attendue", err)
+	}
+	if err := toolchain.Build(ctx, "dir", "S"); !errors.Is(err, context.Canceled) {
+		t.Fatalf("Build : erreur = %v, context.Canceled attendue", err)
+	}
+}
+
+// TestTruncateUTF8 verrouille A-063 : couper à l'octet laissait une séquence UTF-8 incomplète dans
+// FailureReason, donc un octet invalide écrit dans un fichier de résultats.
+func TestTruncateUTF8(t *testing.T) {
+	t.Parallel()
+	// « é » occupe deux octets : couper à 3 tombe au milieu du second.
+	cases := []struct {
+		in  string
+		max int
+	}{
+		{"aaéxxxx", 3},
+		{"aaaé", 4},
+		{"日本語のテキスト", 7},
+		{"court", 100},
+	}
+	for _, tc := range cases {
+		t.Run(fmt.Sprintf("%s/%d", tc.in, tc.max), func(t *testing.T) {
+			t.Parallel()
+			got := truncate(tc.in, tc.max)
+			if !utf8.ValidString(got) {
+				t.Fatalf("truncate(%q, %d) = %q : séquence UTF-8 invalide", tc.in, tc.max, got)
+			}
+			if !strings.HasPrefix(tc.in, strings.TrimSuffix(got, "… (tronqué)")) {
+				t.Fatalf("truncate(%q, %d) = %q : la coupe doit être un préfixe", tc.in, tc.max, got)
+			}
+		})
 	}
 }

@@ -286,6 +286,8 @@ type campaignDTO struct {
 	HypothesesDigest string        `json:"hypothesesDigest"`
 	HypothesisIDs    []string      `json:"hypothesisIds"`
 	Count            int           `json:"count"`
+	BenchTime        string        `json:"benchTime,omitempty"`
+	CPU              int           `json:"cpu,omitempty"`
 	Status           string        `json:"status"`
 	Provenance       provenanceDTO `json:"provenance"`
 	StartedAt        time.Time     `json:"startedAt"`
@@ -297,6 +299,7 @@ func toCampaignDTO(c models.Campaign) campaignDTO {
 	d := campaignDTO{
 		ID: c.ID, MatrixID: c.MatrixID, HarnessDigest: c.HarnessDigest,
 		HypothesesDigest: c.HypothesesDigest, HypothesisIDs: c.HypothesisIDs, Count: c.Count,
+		BenchTime: c.BenchTime, CPU: c.CPU,
 		Status: string(c.Status), Provenance: toProvenanceDTO(c.Provenance),
 		StartedAt: c.StartedAt.UTC(), AbortReason: c.AbortReason,
 	}
@@ -311,6 +314,7 @@ func (d campaignDTO) toModel() models.Campaign {
 	c := models.Campaign{
 		ID: d.ID, MatrixID: d.MatrixID, HarnessDigest: d.HarnessDigest,
 		HypothesesDigest: d.HypothesesDigest, HypothesisIDs: d.HypothesisIDs, Count: d.Count,
+		BenchTime: d.BenchTime, CPU: d.CPU,
 		Status: models.CampaignStatus(d.Status), Provenance: d.Provenance.toModel(),
 		StartedAt: d.StartedAt, AbortReason: d.AbortReason,
 	}

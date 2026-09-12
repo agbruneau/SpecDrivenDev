@@ -17,6 +17,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"io"
 	"os"
 	"os/signal"
 	"syscall"
@@ -64,16 +65,47 @@ func main() {
 		fmt.Fprint(os.Stderr, usage)
 		os.Exit(exitUsage)
 	}
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	ctx, stop := interruptContext()
 	defer stop()
 
 	if err := run(ctx, os.Args[1], os.Args[2:]); err != nil {
+		if errors.Is(err, errHelp) {
+			fmt.Fprint(os.Stdout, usage)
+			return
+		}
 		if errors.Is(err, cli.ErrUsage) {
 			fmt.Fprintf(os.Stderr, "%v\n\n%s", err, usage)
 			os.Exit(exitUsage)
 		}
 		fmt.Fprintf(os.Stderr, "escapebench %s : %v\n", os.Args[1], err)
 		os.Exit(exitFailure)
+	}
+}
+
+// interruptContext rend un contexte annulé au premier signal d'interruption, et rétablit le
+// comportement par défaut ensuite.
+//
+// Révision du 2026-09-12 (A-147) : signal.NotifyContext continue d'intercepter les signaux après
+// le premier, de sorte qu'un second Ctrl+C ne pouvait plus forcer l'arrêt. Une campagne qui
+// n'honore pas son annulation — un sujet dont le benchmark court encore — laissait l'utilisateur
+// sans recours. Le premier signal demande l'arrêt propre et reprenable (UC-003, A5) ; le second
+// retrouve le comportement du système.
+func interruptContext() (context.Context, context.CancelFunc) {
+	ctx, cancel := context.WithCancel(context.Background())
+	signals := make(chan os.Signal, 1)
+	signal.Notify(signals, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		select {
+		case <-signals:
+			fmt.Fprintln(os.Stderr, "\ninterruption demandée : arrêt après le sujet en cours ; un second signal force l'arrêt")
+			cancel()
+			signal.Stop(signals)
+		case <-ctx.Done():
+		}
+	}()
+	return ctx, func() {
+		signal.Stop(signals)
+		cancel()
 	}
 }
 
@@ -159,12 +191,33 @@ func addRoot(fs *flag.FlagSet) *string {
 }
 
 // parse analyse les options d'une sous-commande.
+//
+// Révision du 2026-09-12 (A-085) : flag.FlagSet imprime lui-même l'erreur et l'usage de la
+// sous-commande avant de la rendre ; la réimprimer avec l'usage général la montrait deux fois.
+// La sortie du FlagSet est donc mise au silence, l'appelant restant seul à écrire. `-h` n'est pas
+// une erreur d'usage : c'est la demande d'aide, qui sort avec succès.
 func parse(fs *flag.FlagSet, args []string) error {
-	fs.SetOutput(os.Stderr)
-	if err := fs.Parse(args); err != nil {
+	fs.SetOutput(io.Discard)
+	err := fs.Parse(args)
+	switch {
+	case err == nil:
+		return nil
+	case errors.Is(err, flag.ErrHelp):
+		return errHelp
+	default:
 		return fmt.Errorf("%w : %s", cli.ErrUsage, err)
 	}
-	return nil
+}
+
+// errHelp signale que l'aide a été demandée ; ce n'est pas un échec.
+var errHelp = errors.New("aide demandée")
+
+// providedFlags rend les noms des drapeaux effectivement posés sur la ligne de commande. Une
+// valeur par défaut ne se distingue pas autrement d'une valeur choisie.
+func providedFlags(fs *flag.FlagSet) map[string]bool {
+	provided := map[string]bool{}
+	fs.Visit(func(f *flag.Flag) { provided[f.Name] = true })
+	return provided
 }
 
 // runMatrix exécute UC-001.
@@ -193,7 +246,11 @@ func runMatrix(ctx context.Context, args []string) error {
 	}
 	generator := service.NewMatrixGenerator(d.store, d.renderer, d.toolchain, d, d.store, d.clock)
 	report, err := generator.Generate(ctx, parameters)
-	fmt.Print(cli.RenderMatrix(report))
+	// A-084 : n'imprimer le rapport que s'il porte quelque chose. Un échec en amont de la
+	// génération rendait un rapport vide, affiché comme une matrice sans identifiant ni cellule.
+	if report.MatrixID != "" {
+		fmt.Print(cli.RenderMatrix(report))
+	}
 	return err
 }
 
@@ -234,6 +291,7 @@ func runCampaign(ctx context.Context, args []string) error {
 	if err := parse(fs, args); err != nil {
 		return err
 	}
+	provided := providedFlags(fs)
 	if *matrixID == "" && *resume == "" {
 		return fmt.Errorf("%w : --matrix ou --resume est obligatoire", cli.ErrUsage)
 	}
@@ -241,12 +299,30 @@ func runCampaign(ctx context.Context, args []string) error {
 	if err != nil {
 		return err
 	}
+	opts := service.CampaignOptions{Resume: *resume}
+	if *resume == "" {
+		opts.MatrixID = *matrixID
+		opts.Count = *count
+		opts.HypothesisIDs = cli.ParseHypotheses(*hypotheses)
+		opts.BenchTime = *benchTime
+		opts.CPU = *cpu
+	} else {
+		// A4 : la reprise porte sur les paramètres gelés de la campagne. Les accepter en silence
+		// ferait croire au chercheur qu'il étend ou redirige la campagne (A-030, A-265).
+		for _, name := range []string{"matrix", "count", "hypotheses", "benchtime", "cpu"} {
+			if provided[name] {
+				return fmt.Errorf("%w : --resume reprend la campagne %s avec ses paramètres gelés ; --%s est refusé",
+					cli.ErrUsage, *resume, name)
+			}
+		}
+	}
 	svc := service.NewCampaignService(d.store, d.store, d.store, d.toolchain, d, d.prober, d.specs, specs.Digest, d.clock)
-	report, err := svc.Run(ctx, service.CampaignOptions{
-		MatrixID: *matrixID, Count: *count, HypothesisIDs: cli.ParseHypotheses(*hypotheses),
-		BenchTime: *benchTime, CPU: *cpu, Resume: *resume,
-	})
-	fmt.Print(cli.RenderCampaign(report))
+	report, err := svc.Run(ctx, opts)
+	// A-084 : un rapport vide, imprimé quand le service échoue avant d'avoir rien produit,
+	// affichait « Campagne : — statut : » et des décomptes à zéro sous l'erreur.
+	if report.CampaignID != "" {
+		fmt.Print(cli.RenderCampaign(report))
+	}
 	return err
 }
 

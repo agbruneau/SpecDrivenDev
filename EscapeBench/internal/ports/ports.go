@@ -5,10 +5,19 @@ package ports
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/agbruneau/escapebench/internal/models"
 )
+
+// ErrNotFound signale l'absence d'une matrice, d'une campagne ou d'un fichier attendu. La
+// sentinelle vit au niveau du port pour que le service puisse distinguer une absence légitime
+// d'une lecture en erreur, ce qu'une sentinelle d'adaptateur ne lui permet pas (A-123).
+var ErrNotFound = errors.New("introuvable")
+
+// ErrLockHeld signale qu'une autre campagne tient results/.campaign-lock (BR-003-3).
+var ErrLockHeld = errors.New("une campagne est déjà en cours")
 
 // Clock rend l'heure courante ; injectée pour que les tests n'attendent jamais (BEPG p. 225-227).
 type Clock interface {
@@ -111,7 +120,13 @@ type CampaignStore interface {
 	LatestComparisonSet(ctx context.Context, campaignID string) (models.ComparisonSet, string, error)
 	MeasurementPath(campaignID, subjectID string) string
 	CampaignPath(campaignID string) string
+	// AcquireLock pose results/.campaign-lock. Un verrou orphelin qui porte l'identifiant demandé
+	// est repris : c'est le cas normal d'une reprise (UC-003, A4), dont le déclencheur est un
+	// processus mort dont la libération n'a pas tourné. Un campaignID vide ne reprend rien.
 	AcquireLock(ctx context.Context, campaignID string) error
+	// AdoptLock inscrit un identifiant dans le verrou déjà tenu. Le verrou est posé avant que
+	// l'identifiant de la campagne soit dérivé (UC-003, étape 3) : il est nommé ensuite.
+	AdoptLock(ctx context.Context, campaignID string) error
 	ReleaseLock(ctx context.Context) error
 	LockHeld(ctx context.Context) (bool, error)
 }

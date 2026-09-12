@@ -510,11 +510,16 @@ type Campaign struct {
 	HypothesesDigest string
 	HypothesisIDs    []string
 	Count            int
-	Status           CampaignStatus
-	Provenance       Provenance
-	StartedAt        time.Time
-	FinishedAt       time.Time
-	AbortReason      string
+	// BenchTime et CPU sont les paramètres de mesure de C-003 sous lesquels les Measurement de
+	// cette Campaign ont été prises. Ils y sont consignés pour qu'une reprise (UC-003, A4) les
+	// restitue au lieu de reprendre les drapeaux de la ligne de commande du moment.
+	BenchTime   string
+	CPU         int
+	Status      CampaignStatus
+	Provenance  Provenance
+	StartedAt   time.Time
+	FinishedAt  time.Time
+	AbortReason string
 }
 
 // Validate applique les règles de validation du modèle d'entités.

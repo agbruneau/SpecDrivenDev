@@ -18,13 +18,19 @@ import (
 	"time"
 
 	"github.com/agbruneau/escapebench/internal/models"
+	"github.com/agbruneau/escapebench/internal/ports"
 )
 
 // ErrImmutable signale une tentative de réécriture d'un fichier de résultats.
 var ErrImmutable = errors.New("fichier de résultats immuable")
 
-// ErrNotFound signale l'absence d'une matrice, d'une campagne ou d'un fichier attendu.
-var ErrNotFound = errors.New("introuvable")
+// ErrNotFound signale l'absence d'une matrice, d'une campagne ou d'un fichier attendu. C'est la
+// sentinelle du port : le service doit pouvoir distinguer une absence légitime d'une lecture en
+// erreur, et il n'importe pas cet adaptateur (A-123).
+var ErrNotFound = ports.ErrNotFound
+
+// ErrLockHeld signale qu'une autre campagne tient le verrou (BR-003-3).
+var ErrLockHeld = ports.ErrLockHeld
 
 // LockName est le nom du verrou de campagne, relatif à results/.
 const LockName = ".campaign-lock"
@@ -348,6 +354,12 @@ func (s *Store) LatestComparisonSet(_ context.Context, campaignID string) (model
 }
 
 // AcquireLock pose results/.campaign-lock (BR-003-3, seconde exception).
+//
+// Un verrou déjà présent qui porte exactement l'identifiant demandé est repris plutôt que refusé.
+// C'est le cas normal de la reprise (UC-003, A4), dont le déclencheur est précisément un processus
+// mort : son defer de libération n'a pas tourné, et le verrou orphelin interdisait la reprise de
+// la campagne qu'il protège, sans qu'aucune sous-commande sache le retirer (A-044). Un
+// campaignID vide ne reprend rien : il sert au démarrage, avant que l'identifiant soit dérivé.
 func (s *Store) AcquireLock(_ context.Context, campaignID string) error {
 	if err := os.MkdirAll(s.resultsDir(), 0o755); err != nil {
 		return fmt.Errorf("création de results/ : %w", err)
@@ -355,14 +367,61 @@ func (s *Store) AcquireLock(_ context.Context, campaignID string) error {
 	path := filepath.Join(s.resultsDir(), LockName)
 	file, err := os.OpenFile(path, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0o644)
 	if errors.Is(err, os.ErrExist) {
-		return fmt.Errorf("une campagne est déjà en cours (results/%s)", LockName)
+		holder, readErr := s.lockHolder()
+		switch {
+		case readErr != nil:
+			return fmt.Errorf("%w (results/%s), contenu illisible : %w", ErrLockHeld, LockName, readErr)
+		case campaignID != "" && holder == campaignID:
+			return nil
+		case holder == "":
+			return fmt.Errorf("%w (results/%s), sans identifiant de campagne", ErrLockHeld, LockName)
+		default:
+			return fmt.Errorf("%w : results/%s est tenu par %s", ErrLockHeld, LockName, holder)
+		}
 	}
 	if err != nil {
 		return fmt.Errorf("pose du verrou de campagne : %w", err)
 	}
-	defer file.Close()
-	_, err = file.WriteString(campaignID + "\n")
-	return err
+	if err := writeLock(file, campaignID); err != nil {
+		// Un verrou vide subsisterait et bloquerait UC-001 comme UC-003 sans que rien ne dise
+		// pourquoi (A-126).
+		_ = os.Remove(path)
+		return err
+	}
+	return nil
+}
+
+// AdoptLock inscrit un identifiant dans le verrou déjà tenu par ce processus. Le verrou est posé
+// avant que l'identifiant de la campagne soit dérivé (UC-003, étape 3) ; c'est cette écriture qui
+// le rend reconnaissable par une reprise ultérieure.
+func (s *Store) AdoptLock(_ context.Context, campaignID string) error {
+	path := filepath.Join(s.resultsDir(), LockName)
+	file, err := os.OpenFile(path, os.O_WRONLY|os.O_TRUNC, 0o644)
+	if err != nil {
+		return fmt.Errorf("nommage du verrou de campagne : %w", err)
+	}
+	return writeLock(file, campaignID)
+}
+
+// writeLock écrit l'identifiant dans le verrou et ferme le fichier.
+func writeLock(file *os.File, campaignID string) error {
+	_, err := file.WriteString(campaignID + "\n")
+	if closeErr := file.Close(); err == nil {
+		err = closeErr
+	}
+	if err != nil {
+		return fmt.Errorf("écriture du verrou de campagne : %w", err)
+	}
+	return nil
+}
+
+// lockHolder rend l'identifiant de campagne inscrit dans le verrou, vide s'il n'en porte pas.
+func (s *Store) lockHolder() (string, error) {
+	content, err := os.ReadFile(filepath.Join(s.resultsDir(), LockName))
+	if err != nil {
+		return "", err
+	}
+	return strings.TrimSpace(string(content)), nil
 }
 
 // ReleaseLock retire results/.campaign-lock.

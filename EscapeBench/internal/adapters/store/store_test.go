@@ -5,10 +5,12 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/agbruneau/escapebench/internal/models"
+	"github.com/agbruneau/escapebench/internal/ports"
 )
 
 func newStore(t *testing.T) *Store {
@@ -456,5 +458,58 @@ func TestWriteFileAtomicNeLaissePasDeFichierPartiel(t *testing.T) {
 	}
 	if len(entries) != 0 {
 		t.Fatalf("aucun fichier temporaire ne doit subsister : %v", entries)
+	}
+}
+
+// TestUC003_A4_RepriseDuVerrouOrphelin verrouille A-044 : UC-003 A4 se déclenche précisément
+// quand le processus n'est plus actif, donc quand son defer de libération n'a pas tourné. Le
+// verrou orphelin interdisait la reprise de la campagne qu'il protège, et aucune sous-commande ne
+// sait le retirer — le hook guard-paths l'interdit même à un agent.
+func TestUC003_A4_RepriseDuVerrouOrphelin(t *testing.T) {
+	t.Parallel()
+	ctx := context.Background()
+	s := New(t.TempDir())
+	if err := s.AcquireLock(ctx, "C-2026-09-11-1"); err != nil {
+		t.Fatalf("AcquireLock : %v", err)
+	}
+	// Le processus meurt ici : ReleaseLock n'est jamais appelé.
+
+	if err := s.AcquireLock(ctx, "C-2026-09-11-1"); err != nil {
+		t.Fatalf("la reprise de la même campagne doit reprendre son verrou : %v", err)
+	}
+	err := s.AcquireLock(ctx, "C-2026-09-11-2")
+	if !errors.Is(err, ports.ErrLockHeld) {
+		t.Fatalf("erreur = %v, ports.ErrLockHeld attendue", err)
+	}
+	if !strings.Contains(err.Error(), "C-2026-09-11-1") {
+		t.Fatalf("le refus doit nommer le détenteur : %v", err)
+	}
+	// Le démarrage d'une campagne neuve ne reprend rien : son identifiant n'est pas encore connu.
+	if err := s.AcquireLock(ctx, ""); !errors.Is(err, ports.ErrLockHeld) {
+		t.Fatalf("erreur = %v, ports.ErrLockHeld attendue", err)
+	}
+}
+
+// TestUC003_BR3_NommageDuVerrou : le verrou est posé avant que l'identifiant soit dérivé (A-263),
+// donc il est nommé ensuite. Sans ce nommage, A4 ne saurait plus reconnaître son propre verrou.
+func TestUC003_BR3_NommageDuVerrou(t *testing.T) {
+	t.Parallel()
+	ctx := context.Background()
+	s := New(t.TempDir())
+	if err := s.AcquireLock(ctx, ""); err != nil {
+		t.Fatalf("AcquireLock : %v", err)
+	}
+	if err := s.AdoptLock(ctx, "C-2026-09-11-1"); err != nil {
+		t.Fatalf("AdoptLock : %v", err)
+	}
+	content, err := os.ReadFile(filepath.Join(s.Root(), "results", LockName))
+	if err != nil {
+		t.Fatalf("lecture du verrou : %v", err)
+	}
+	if strings.TrimSpace(string(content)) != "C-2026-09-11-1" {
+		t.Fatalf("contenu du verrou = %q", content)
+	}
+	if err := s.AcquireLock(ctx, "C-2026-09-11-1"); err != nil {
+		t.Fatalf("le verrou nommé doit être reconnu par sa campagne : %v", err)
 	}
 }
