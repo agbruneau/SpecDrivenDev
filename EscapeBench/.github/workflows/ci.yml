@@ -1,23 +1,42 @@
 name: ci
 # Pipeline de spécification (SDD ch. 9, p. 141) : à chaque commit, vet + suite unitaire ;
 # un échec identifie un cas d'utilisation dont le comportement a dérivé.
+#
+# Révision du 2026-09-12 (A-101, A-106, A-107) : la CI invoque le Makefile plutôt que de
+# recopier ses commandes (« le Makefile dit QUOI, le CI dit OÙ »), exerce Windows — le poste
+# de référence des campagnes, dont les tests `//go:build windows` ne tournaient jamais —, et
+# borne son quota (timeout, permissions minimales, pas de double exécution sur PR interne).
 on:
   push:
+    branches: [main]
   pull_request:
+
+permissions:
+  contents: read
 
 jobs:
   verify:
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    defaults:
+      run:
+        shell: bash
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
+          # Aucune dépendance externe (C-002) : pas de go.sum à mettre en cache.
+          cache: false
       - name: gofmt
         run: test -z "$(gofmt -l ./cmd ./internal)"
-      - name: vet
-        run: go vet ./...
-      - name: test
-        run: go test -race -shuffle=on -count=1 ./...
-      - name: hooks (spec-lint, guard-paths, go-test)
+      - name: vet et suite unitaire
+        run: make vet test
+      - name: tests d'intégration (adapters réels)
+        run: make integration_test
+      - name: hooks (spec-lint, guard-paths, guard-bash, go-test)
         run: bash .claude/hooks/selftest.sh

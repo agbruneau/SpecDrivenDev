@@ -206,6 +206,103 @@ func Run(n int) uint64 {
 			want:    models.CategoryContainerStore,
 		},
 		{
+			name: "allocation retournée : le porteur nomme la cause",
+			source: `package subject
+
+type T struct{ Tag uint64 }
+
+type payload struct{ A uint64 }
+
+func produceValueAlloc(i int) (T, *payload) {
+	t := T{Tag: uint64(i)}
+	var p *payload
+	for k := 0; k < 1; k++ {
+		p = new(payload) //ESCAPE
+		p.A = uint64(i + k)
+	}
+	return t, p
+}
+`,
+			message: "new(payload) escapes to heap",
+			want:    models.CategoryReturnPointer,
+		},
+		{
+			name: "allocation envoyée sur un canal",
+			source: `package subject
+
+type payload struct{ A uint64 }
+
+func Run(n int) uint64 {
+	ch := make(chan *payload, 1)
+	var s uint64
+	for i := 0; i < n; i++ {
+		p := new(payload) //ESCAPE
+		ch <- p
+		s += (<-ch).A
+	}
+	return s
+}
+`,
+			message: "new(payload) escapes to heap",
+			want:    models.CategoryChannelSend,
+		},
+		{
+			name: "allocation stockée dans un conteneur",
+			source: `package subject
+
+type payload struct{ A uint64 }
+
+func Run(n int) uint64 {
+	m := make(map[int]*payload, 1)
+	var s uint64
+	for i := 0; i < n; i++ {
+		p := new(payload) //ESCAPE
+		m[0] = p
+		s += m[0].A
+	}
+	return s
+}
+`,
+			message: "new(payload) escapes to heap",
+			want:    models.CategoryContainerStore,
+		},
+		{
+			name: "allocation capturée par une closure",
+			source: `package subject
+
+type payload struct{ A uint64 }
+
+var kept func() uint64
+
+func keepClosure(f func() uint64) uint64 { kept = f; return f() }
+
+func Run(n int) uint64 {
+	var s uint64
+	for i := 0; i < n; i++ {
+		p := new(payload) //ESCAPE
+		s += keepClosure(func() uint64 { return p.A })
+	}
+	return s
+}
+`,
+			message: "new(payload) escapes to heap",
+			want:    models.CategoryClosureCapture,
+		},
+		{
+			name: "littéral composite adressé et retourné",
+			source: `package subject
+
+type payload struct{ A uint64 }
+
+func produce(i int) *payload {
+	p := &payload{A: uint64(i)} //ESCAPE
+	return p
+}
+`,
+			message: "&payload{...} escapes to heap",
+			want:    models.CategoryReturnPointer,
+		},
+		{
 			name: "cause hors des quatre du livre",
 			source: `package subject
 
@@ -310,8 +407,9 @@ func TestClassifySourceIllisible(t *testing.T) {
 
 func TestClassifyExpressionNonNommee(t *testing.T) {
 	t.Parallel()
-	// `make(...) escapes to heap` ne nomme pas une variable : la cause n'est pas décidable
-	// syntaxiquement, la cellule est classée OTHER.
+	// `make(...) escapes to heap` ne nomme pas une variable. Depuis A-072 le classificateur
+	// remonte à la variable porteuse (`data`), mais son usage ne relève d'aucune des quatre
+	// causes du livre — affectation à une variable de paquet — donc la cellule reste OTHER.
 	source := `package subject
 
 var data []int
@@ -328,6 +426,53 @@ func Setup() {
 	}
 	if verdict.Category != models.CategoryOther {
 		t.Fatalf("catégorie = %s, attendue OTHER", verdict.Category)
+	}
+}
+
+func TestClassifyAllocationSansPorteur(t *testing.T) {
+	t.Parallel()
+	// A-072 : sans variable porteuse à la ligne du diagnostic, la cause n'est pas décidable et la
+	// cellule reste OTHER. C'est la garde qui empêche le correctif de deviner une cause.
+	source := `package subject
+
+type payload struct{ A uint64 }
+
+func consume(p *payload) uint64 { return p.A }
+
+func Run(n int) uint64 {
+	return consume(new(payload)) //ESCAPE
+}
+`
+	matrixDir, sourcePath, line := fixture(t, source)
+	raw := fmt.Sprintf("%s:%d:17: new(payload) escapes to heap", sourcePath, line)
+	verdict, err := New().Classify(context.Background(), matrixDir, "c", sourcePath, []string{raw})
+	if err != nil {
+		t.Fatalf("Classify : %v", err)
+	}
+	if verdict.Category != models.CategoryOther {
+		t.Fatalf("catégorie = %s, attendue OTHER", verdict.Category)
+	}
+}
+
+func TestIsAllocationMessage(t *testing.T) {
+	t.Parallel()
+	cases := map[string]bool{
+		"new(payload) escapes to heap":       true,
+		"make([]int, 4) escapes to heap":     true,
+		"&payload{...} escapes to heap":      true,
+		"&t escapes to heap":                 false,
+		"moved to heap: t":                   false,
+		"func literal escapes to heap":       false,
+		"new(payload) does not escape":       false,
+		"appel(new(payload)) escapes à côté": false,
+	}
+	for message, want := range cases {
+		t.Run(message, func(t *testing.T) {
+			t.Parallel()
+			if got := isAllocationMessage(message); got != want {
+				t.Fatalf("isAllocationMessage(%q) = %v, attendu %v", message, got, want)
+			}
+		})
 	}
 }
 

@@ -134,20 +134,107 @@ func parseSource(path string) (*parsedFile, error) {
 }
 
 // classifyDiagnostic rend la catégorie d'une ligne de diagnostic.
+//
+// Révision du 2026-09-12 (A-072) : quand le compilateur nomme l'expression d'allocation plutôt que
+// la variable (« new(payload) escapes to heap »), la cause reste décidable si l'allocation est
+// affectée à une variable du corps englobant. On classe alors d'après l'usage de cette variable
+// porteuse, comme le prescrit BR-002-2 : OTHER est réservé aux raisons hors des quatre causes du
+// livre, pas aux raisons que le classificateur ne sait pas nommer.
 func classifyDiagnostic(file *parsedFile, diag diagnostic) models.EscapeCategory {
 	// Une closure qui échappe est la cause « capture par closure », sans ambiguïté.
 	if strings.HasPrefix(diag.Message, "func literal escapes to heap") {
 		return models.CategoryClosureCapture
 	}
-	name := escapedIdentifier(diag.Message)
-	if name == "" {
-		return models.CategoryOther
-	}
 	body := enclosingBody(file, diag.Line)
 	if body == nil {
 		return models.CategoryOther
 	}
-	return classifyUsage(body, name)
+	if name := escapedIdentifier(diag.Message); name != "" {
+		return classifyUsage(body, name)
+	}
+	if !isAllocationMessage(diag.Message) {
+		return models.CategoryOther
+	}
+	carrier := allocationCarrier(file, body, diag.Line)
+	if carrier == "" {
+		return models.CategoryOther
+	}
+	return classifyCarrier(body, carrier)
+}
+
+// isAllocationMessage indique si le message nomme une expression d'allocation (`new(T)`,
+// `make(...)`, `&T{...}`) au lieu d'un identifiant. Ces expressions produisent la valeur qui
+// échappe ; la cause de l'échappement se lit sur la variable qui la reçoit.
+func isAllocationMessage(message string) bool {
+	rest, ok := strings.CutSuffix(message, " escapes to heap")
+	if !ok {
+		return false
+	}
+	switch {
+	case strings.HasPrefix(rest, "new("), strings.HasPrefix(rest, "make("):
+		return true
+	case strings.HasPrefix(rest, "&") && strings.Contains(rest, "{"):
+		return true
+	}
+	return false
+}
+
+// isAllocationExpr indique si l'expression alloue : `new(T)`, `make(...)`, `&T{...}` ou un
+// littéral composite adressé implicitement.
+func isAllocationExpr(expr ast.Expr) bool {
+	switch node := expr.(type) {
+	case *ast.CallExpr:
+		ident, ok := node.Fun.(*ast.Ident)
+		return ok && (ident.Name == "new" || ident.Name == "make")
+	case *ast.UnaryExpr:
+		if node.Op != token.AND {
+			return false
+		}
+		_, ok := node.X.(*ast.CompositeLit)
+		return ok
+	case *ast.CompositeLit:
+		return true
+	}
+	return false
+}
+
+// allocationCarrier rend le nom de la variable qui reçoit, à la ligne du diagnostic, l'allocation
+// signalée par le compilateur. La colonne n'est pas comparée : elle désigne un point interne de
+// l'expression (la parenthèse de l'appel) qui ne correspond pas de façon stable à la position du
+// nœud de l'arbre syntaxique. Le blanc souligné n'est pas un porteur.
+func allocationCarrier(file *parsedFile, body *ast.BlockStmt, line int) string {
+	carrier := ""
+	nameAt := func(names []ast.Expr, values []ast.Expr) bool {
+		for i, value := range values {
+			if i >= len(names) || file.fset.Position(value.Pos()).Line != line || !isAllocationExpr(value) {
+				continue
+			}
+			ident, ok := names[i].(*ast.Ident)
+			if !ok || ident.Name == "_" {
+				continue
+			}
+			carrier = ident.Name
+			return true
+		}
+		return false
+	}
+	ast.Inspect(body, func(node ast.Node) bool {
+		if carrier != "" {
+			return false
+		}
+		switch stmt := node.(type) {
+		case *ast.AssignStmt:
+			return !nameAt(stmt.Lhs, stmt.Rhs)
+		case *ast.ValueSpec:
+			names := make([]ast.Expr, len(stmt.Names))
+			for i, name := range stmt.Names {
+				names[i] = name
+			}
+			return !nameAt(names, stmt.Values)
+		}
+		return true
+	})
+	return carrier
 }
 
 // escapedIdentifier rend le nom de la variable déplacée sur le tas, ou la chaîne vide si le
@@ -220,7 +307,21 @@ func enclosingBody(file *parsedFile, line int) *ast.BlockStmt {
 // trouve appartient à la closure, pas à la fonction englobante — un `return p` interne serait
 // autrement lu comme un retour de pointeur.
 func classifyUsage(body *ast.BlockStmt, name string) models.EscapeCategory {
-	aliases := addressCarriers(body, name)
+	return classifyWithAliases(body, name, addressCarriers(body, name))
+}
+
+// classifyCarrier classe d'après l'usage de la variable qui reçoit une allocation. La différence
+// avec classifyUsage tient à un point : le porteur *est* le pointeur, il n'y a pas d'opérateur
+// « & » à suivre. Il est donc semé lui-même parmi les alias, de sorte que `return t, p`,
+// `ch <- p` et `m[0] = p` comptent pour le porteur p (A-072).
+func classifyCarrier(body *ast.BlockStmt, carrier string) models.EscapeCategory {
+	aliases := addressCarriers(body, carrier)
+	aliases[carrier] = true
+	return classifyWithAliases(body, carrier, aliases)
+}
+
+// classifyWithAliases est la marche commune à classifyUsage et classifyCarrier.
+func classifyWithAliases(body *ast.BlockStmt, name string, aliases map[string]bool) models.EscapeCategory {
 	captured := map[string]bool{name: true}
 	for alias := range aliases {
 		captured[alias] = true

@@ -17,8 +17,11 @@ test:
 	go test -race -shuffle=on -count=1 ./...
 
 ## Tests d'intégration (adapters réels : compilateur, système de fichiers) — build tag BEPG ch. 17.
+## Ils rejouent les verdicts archivés sous results/ (non-régression de UC-005) et classent la
+## sortie véritable de `go build -gcflags=-m` (UC-002). `-shuffle=on` comme la commande de
+## référence de CLAUDE.md : l'ordre des tests ne doit pas porter de résultat.
 integration_test:
-	go test -race -count=1 -tags=integration_test -timeout 300s ./...
+	go test -race -shuffle=on -count=1 -tags=integration_test -timeout 300s ./...
 
 build:
 	go build -o bin/escapebench ./cmd/escapebench
