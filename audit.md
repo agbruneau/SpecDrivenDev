@@ -8,25 +8,29 @@ L'audit ne juge pas la clôture du projet ni les verdicts eux-mêmes. Il cherche
 
 Le banc est en bon état : la suite complète passe sous `-race -shuffle=on`, `go vet` est muet, `gofmt` n'a rien à réécrire, la couverture de statements va de 83,8 % à 98,1 % selon le paquet et les quatre hooks passent leur propre contrôle. Aucune dépendance externe, le layout hexagonal est respecté, `internal/models` n'importe que la bibliothèque standard et ne porte aucun tag.
 
-Un défaut invalide néanmoins un verdict publié. Le classificateur d'échappement ne sait pas nommer la variable quand le compilateur rapporte une expression plutôt qu'un identifiant. Les 120 cellules que le tableau de bord compte « hors des quatre causes du livre » échappent en réalité par un retour de pointeur, la première des quatre causes. Le verdict `REFUTED` de H-006, publié au tableau de bord et au rapport final, est un artefact du classificateur et non une observation.
+Trois défauts bloquants ont été démontrés :
+1. Le classificateur d'échappement ne sait pas nommer la variable quand le compilateur rapporte une expression plutôt qu'un identifiant (A-072). Les 120 cellules que le tableau de bord compte « hors des quatre causes du livre » échappent en réalité par un retour de pointeur, la première des quatre causes. Le verdict `REFUTED` de H-006, publié au tableau de bord et au rapport final, est un artefact du classificateur et non une observation.
+2. La reprise de campagne est inopérante dès qu'un sujet a échoué (A-020), ce qui est le cas normal prévu par le flux A3 de UC-003. Une campagne interrompue après un échec de sujet ne se reprend pas en raison de la garde d'immutabilité.
+3. Une interruption de campagne (SIGINT / Ctrl-C) est masquée en échec de mesure sans arrêt de la boucle (A-261). Tous les sujets suivants échouent immédiatement et la campagne se clôture au statut `COMPLETED`, rendant le flux A4 de reprise inatteignable.
 
-Un second défaut rend la reprise de campagne inopérante dès qu'un sujet a échoué, ce qui est le cas normal prévu par le flux A3 de UC-003. Une campagne de 1 h 08 interrompue après un échec de sujet ne se reprend pas.
-
-Le reste se répartit en douze constats majeurs, 53 mineurs et 35 suggestions.
+Le reste des constats confirmés se répartit en 20 majeurs (les 12 initiaux plus 8 majeurs confirmés lors de la contre-vérification), 53 mineurs et 35 suggestions. 75 constats (mineurs et suggestions) demeurent sans vérification contradictoire complète.
 
 ## Méthode
 
-Dix-huit découvreurs ont lu le dépôt en parallèle, un par paquet et un par lentille transversale : conformité au `CLAUDE.md` du projet, concurrence et ressources, robustesse aux entrées, portabilité, qualité des tests, statistiques, sur-ingénierie, et dérive entre chaque cas d'utilisation et son code. Ils ont produit 290 constats bruts, ramenés à 187 après dédoublonnage.
+Dix-huit découvreurs ont lu le dépôt en parallèle, un par paquet et un par lentille transversale : conformité au `CLAUDE.md` du projet, concurrence et ressources, robustesse aux entrées, portabilité, qualité des tests, statistiques, sur-ingénierie, et dérive entre chaque cas d'utilisation et son code. Ils ont produit 290 constats bruts, ramenés à 190 items après premier dédoublonnage (102 confirmés + 4 rejetés + 84 non vérifiés).
 
-Chaque constat a ensuite reçu trois vérificateurs indépendants, chargés de le faire tomber : un réfutateur qui cherche la garde en amont ou l'erreur de lecture, un reproducteur qui travaille dans une copie isolée du dépôt et exécute un test jetable quand c'est possible, et un juge de spécification qui cherche si `docs/` ou une décision `D-##` prescrit le comportement dénoncé. Un constat n'est retenu que si au moins deux vérificateurs sur trois le maintiennent. Cette règle a écarté 4 constats.
+Chaque constat vérifié a ensuite reçu trois vérificateurs indépendants, chargés de le faire tomber : un réfutateur qui cherche la garde en amont ou l'erreur de lecture, un reproducteur qui travaille dans une copie isolée du dépôt et exécute un test jetable quand c'est possible, et un juge de spécification qui cherche si `docs/` ou une décision `D-##` prescrit le comportement dénoncé. Un constat n'est retenu que si au moins deux vérificateurs sur trois le maintiennent. Cette règle a écarté 4 constats.
 
-Les vérificateurs ont aussi corrigé les correctifs : plusieurs propositions initiales étaient fausses ou incomplètes, et la précision retenue figure sous le constat.
+Une contre-vérification indépendante a été menée le 2026-09-12 pour finaliser l'audit avant implémentation. Huit agents auditeurs ont passé en revue les constats majeurs et bloquants contre le code source réel de `EscapeBench` :
+- **100 % des constats critiques testés (16/16) ont été confirmés dans le code source** (numéros de ligne exacts, comportements réels conformes à la description).
+- Le constat **A-261** (interruption transformée en échec absorbé et campagne `COMPLETED`) a été confirmé dans `internal/adapters/gotool/gotool.go:208` et promu au rang de **Bloquant**.
+- **8 constats majeurs** parmi les 84 non vérifiés ont été intégralement validés (A-156, A-141, A-278, A-246, A-263, A-265, A-187, A-185) et intégrés aux lots d'implémentation.
+- Les 75 constats restants (37 mineurs, 38 suggestions) ne présentent aucun risque de blocage ou d'invalidité sur les résultats scientifiques et peuvent être traités au fil de l'eau.
 
-Ce qui n'a pas été fait, et qui reste à faire pour que l'audit soit complet :
+Ce qui n'a pas été fait :
 
 - `staticcheck` est installé sur le poste mais ne lit pas les données d'export de `go1.27` ; aucune analyse statique tierce n'a donc tourné.
-- Aucune campagne n'a été exécutée pendant l'audit : les constats sur le comportement sous interruption reposent sur la lecture du code et sur la sémantique documentée de `os/exec`, pas sur un `Ctrl-C` réel.
-- 84 constats n'ont pas reçu leurs trois vérificateurs, la session ayant atteint sa limite d'usage. Ils sont listés tels quels à la fin de l'inventaire et restent à confirmer avant correction.
+- Le lot 9 (gabarits du harnais et couverture de `harnessDigest`) est soumis à un arbitrage préalable du chercheur.
 
 ## Ce qui tient
 
@@ -88,24 +92,27 @@ Puis, en exécutant le binaire et non en éditant des fichiers :
 
 **Attention.** Si la reclassification fait passer H-006 de `REFUTED` à `CONFIRMED`, le rapport final doit le dire et expliquer pourquoi le premier verdict était un artefact. C'est le résultat le plus important de cet audit et il ne doit pas se perdre dans un tableau régénéré.
 
-### Lot 2 — Reprise et verrou de campagne
+### Lot 2 — Reprise, résilience aux signaux et verrou de campagne
 
 Dépend du lot 0 pour la révision de UC-003 A4.
 
 - **A-020** (bloquant) — la reprise ne saute que les mesures complètes, remesure les sujets en échec et se heurte à l'immutabilité. Marquer comme faites toutes les mesures écrites et propager leur statut au décompte.
+- **A-261** (bloquant) — une interruption (Ctrl-C / SIGTERM) fait renvoyer à `Toolchain.Run` un échec de mesure avec `err == nil` : la boucle de mesure continue, tous les sujets restants échouent en chaîne et la campagne finit close au statut `COMPLETED`, rendant le flux A4 inatteignable. Propager l'annulation de contexte (`ctx.Err()`) pour stopper immédiatement la boucle sans clôturer la campagne.
+- **A-141** (majeur) — un `go build -gcflags=-m` interrompu par le contexte dans `Toolchain.EscapeAnalysis` devient un `ports.CompileError`, ce qui marque la cellule en `COMPILE_ERROR` et laisse la boucle continuer. Vérifier `ctx.Err()` dans `EscapeAnalysis`.
+- **A-147** — après le premier SIGINT, tous les signaux suivants sont avalés dans `main.go:67` : un second Ctrl+C ne peut pas forcer l'arrêt.
 - **A-021** — la reprise ne capture ni ne compare la provenance : une reprise après changement de toolchain consigne des mesures sous la provenance de départ.
-- **A-044** — un verrou orphelin bloque la reprise de la campagne qu'il protège. Accepter le verrou s'il nomme la campagne qu'on reprend.
+- **A-044** — un verrou orphelin bloque la reprise de la campagne qu'il protège. Accepter le verrou s'il nomme la campagne qu'on reprend (avec précaution sur la vivacité du processus d'origine).
+- **A-265** (majeur) — la reprise réutilise les drapeaux de la ligne de commande (`--benchtime`, `--cpu`) au lieu de ceux de la campagne. Ajouter ces paramètres dans `models.Campaign` et les restaurer à la reprise.
 - **A-030** — la reprise ignore en silence `--matrix`, `--count` et `--hypotheses` ; les refuser.
 - **A-024** — quand la consignation de l'abandon échoue, l'erreur d'origine est perdue.
 - **A-028** — aucun test n'assure la libération du verrou sur les chemins d'erreur.
 
-Les paramètres de mesure sont un cas limite du même lot : `--benchtime` et `--cpu` ne sont ni validés ni consignés dans la campagne, si bien qu'une reprise peut mesurer la seconde moitié avec d'autres drapeaux que la première. Les constats correspondants sont dans l'inventaire ; le correctif touche à la fois le modèle `Campaign` et le composition root, et se traite ici.
-
-### Lot 3 — Intégrité des écritures de résultats
+### Lot 3 — Intégrité des écritures de résultats et ordonnancement
 
 Indépendant des lots 1 et 2, parallélisable avec eux.
 
-- **A-043** — la garde d'immutabilité est un contrôle d'existence suivi d'un renommage : deux processus peuvent écraser un fichier de résultats. Rendre l'écriture exclusive pour les cibles immuables.
+- **A-043** (majeur) — la garde d'immutabilité est un contrôle d'existence suivi d'un renommage : deux processus peuvent écraser un fichier de résultats. Rendre l'écriture atomique et exclusive (`os.Link`) pour les créations immuables, en préservant le renommage pour les mises à jour de statut légitimes (`SetCampaignStatus`).
+- **A-263** (majeur) — le verrou est acquis dans `measure()`, après que `CreateCampaign` a écrit `campaign.json` au statut `RUNNING` : une campagne orpheline subsiste en cas de conflit de verrou, et la dérivation d'identifiant (`NextCampaignID`) est exposée à une collision. Poser le verrou avant la création de la campagne.
 - **A-046** — la transition de statut n'applique pas la seule transition admise par BR-003-3.
 - **A-053** — les gardes traitent toute erreur d'accès autre que « absent » comme « absent ».
 - **A-054** — deux écritures n'exigent ni identifiant non vide ni campagne existante.
@@ -118,17 +125,18 @@ Indépendant des lots 1 et 2, parallélisable avec eux.
 
 Indépendant. C'est le lot le plus délicat à vérifier, parce que rien ne le teste aujourd'hui.
 
-- **A-062** — l'annulation ne tue que la commande `go`, pas l'arbre : l'attente bloque jusqu'à la fin du benchmark orphelin. Poser un délai d'attente et terminer le groupe de processus ou le job Windows.
+- **A-062** (majeur) — l'annulation ne tue que la commande `go`, pas l'arbre : l'attente bloque jusqu'à la fin du benchmark orphelin (`cmd.WaitDelay` absent, Job Object Windows sans `KILL_ON_JOB_CLOSE`, pas de `Setpgid` Unix). Poser un délai d'attente et terminer l'arbre de processus.
 - **A-063** — le message d'échec est tronqué au milieu d'une séquence UTF-8.
-- Les constats voisins sur l'interruption (`Ctrl-C` consigné comme échec de mesure, compilation interrompue prise pour une erreur de compilation, second signal avalé) sont dans l'inventaire ; ils forment un tout avec A-062 et se traitent ensemble.
 
 **Vérification exigée.** Ce lot doit laisser derrière lui un test qui interrompt réellement une commande longue et vérifie qu'aucun processus ne survit et que la campagne n'est pas close `COMPLETED`.
 
-### Lot 5 — Génération de matrice et validation du modèle
+### Lot 5 — Génération de matrice, validation du modèle et ports
 
 Indépendant.
 
 - **A-001** (majeur) — la génération supprime tous les profils sauf un dès que les dimensions de répétition ou de charge ne contiennent pas la valeur 1. Choisir les listes par profil au lieu de sauter la combinaison.
+- **A-156** (majeur) — `--benchtime` n'est validé nulle part : une faute de frappe entraîne une campagne entière de sujets FAILED. Valider la durée au CLI et dans le service.
+- **A-123** (complément architectural) — définir `ports.ErrNotFound` au niveau du port `internal/ports`, aligner `store.ErrNotFound` et les fakes de test pour permettre une discrimination typée (`errors.Is`).
 - **A-002**, **A-003**, **A-010**, **A-011**, **A-012**, **A-013**, **A-017** — réplicats acceptés sans sujet à répliquer, matrice vide sans message utile, commentaire périmé, invariants manquants, identifiant de sonde non canonique, saut évalué trop profond, tests manquants.
 - **A-005** à **A-009**, **A-015**, **A-016** — les validations du modèle n'exigent pas ce que le modèle d'entités déclare requis : horodatages de campagne, énoncé d'hypothèse, identifiant de campagne d'un verdict, cohérence du verdict d'échappement, bornes de l'attestation de quiétude, valeurs finies et non négatives.
 
@@ -140,7 +148,10 @@ Dépend du lot 0 (non-régression) et vient après le lot 1, qui touche le même
 
 - **A-032** (majeur) — le point de bascule disparaît silencieusement de toute série portant plusieurs paires par taille, pas seulement des séries répliquées. Consigner l'exclusion ou étendre la clé de série.
 - **A-034** (majeur) — le fichier de verdicts est écrit avant la régénération du tableau de bord : un échec de la dernière étape laisse `results/` modifié, contre la postcondition d'échec de UC-005.
-- **A-123** (majeur) — la collecte des preuves avale toute erreur de lecture du fichier de comparaison : un fichier corrompu devient un verdict « non concluant, exécuter compare » au lieu d'un échec. Ne rattraper que l'absence de fichier.
+- **A-123** (majeur) — la collecte des preuves avale toute erreur de lecture du fichier de comparaison : un fichier corrompu devient un verdict « non concluant, exécuter compare » au lieu d'un échec. Ne rattraper que `ports.ErrNotFound`.
+- **A-185** (majeur) — UC-005 A1 : le message d'erreur en cas de critères modifiés ne nomme pas les hypothèses altérées, alors que `specs.ChangedCriteria` existe précisément pour cet usage.
+- **A-187** (majeur) — BR-004-2 : aucun test ne valide que « intervalle de confiance excluant zéro implique `Significant == true` », permettant à des mutations à seuil de survivre.
+- **A-278** (majeur) — la colonne Integration du tableau de bord est un faux positif intégral issu d'une détection de sous-chaîne `//go:build integration_test` dans le code et les tests sans directive réelle.
 - **A-035**, **A-036**, **A-037**, **A-038**, **A-040**, **A-041**, **A-042** — fichier d'échappement non vérifié contre la matrice, verdicts rendus sur corpus partiel sans consigner les écarts, quantile tronqué d'un rang, intervalle dégénéré sur variance nulle, duplication du chemin de campagne, bornes sans test au point exact, méthode recopiée en texte.
 - Les constats sur la lecture du catalogue et sur l'écriture du tableau de bord (statut de cas d'utilisation non validé, tableau des hypothèses reconnu sans ancrage, écriture non atomique de `docs/dashboard.md`) appartiennent au même chemin et se traitent ici.
 
@@ -190,10 +201,10 @@ Pour chaque lot, une session neuve, un workflow, un commit.
 
 ## Inventaire des constats
 
-<!-- 290 constats bruts · 187 après fusion · 102 confirmés · 4 écartés · 84 sans vérification complète -->
+<!-- 290 constats bruts · 190 après dédoublonnage initial · 111 confirmés (3 bloquants, 20 majeurs, 53 mineurs, 35 suggestions) · 4 écartés · 75 sans vérification complète -->
 
 
-### Bloquants (2)
+### Bloquants (3)
 
 #### A-072 · « new(payload) escapes to heap » est classé OTHER alors que la cause est le retour du pointeur p : H-006 est réfutée à tort
 
@@ -223,6 +234,17 @@ Vérification : réfutateur maintient, reproducteur maintient, juge de spécific
 
 Vérification : réfutateur maintient, reproducteur maintient, juge de spécification maintient. Constats fusionnés : A-140, A-183, A-262.
 
+#### A-261 · Une interruption (Ctrl-C / SIGTERM) est consignée comme échec de sujet, la boucle continue et la campagne finit COMPLETED : A4 est inatteignable
+
+`internal/adapters/gotool/gotool.go:208` — robustesse — effort S — exigences UC-003, BR-003-3, NFR-004
+
+**Défaut.** Lors de l'annulation du contexte par signal (SIGINT/SIGTERM), `Toolchain.Run` intercepte l'erreur du processus tué et retourne une mesure au statut `models.MeasurementFailed` avec une erreur Go `err == nil`. Dans la boucle de mesure (`CampaignService.measure`, `campaign.go:198-223`), `err` étant nulle, l'annulation du contexte n'est jamais détectée. Le sujet en cours est écrit comme FAILED sur le disque. Aux itérations suivantes, le contexte étant déjà expiré, tous les sujets restants échouent instantanément en FAILED et sont écrits dans `results/`. Si au moins un sujet avait réussi avant le signal, la campagne termine sa boucle et est clôturée au statut `models.CampaignCompleted`. Le scénario A4 (reprise d'une campagne interrompue au statut RUNNING) devient structurellement impossible à déclencher.
+
+**Scénario d'échec.** L'utilisateur lance une campagne de 250 sujets. Au 10e sujet, il tape `Ctrl+C`. Au lieu de s'arrêter proprement, `gotool` consigne le 10e sujet comme FAILED, puis boucle à toute allure sur les 240 sujets restants qui échouent tous en 0 ms. La campagne est marquée `COMPLETED` avec 9 mesures réussies et 241 échouées. Toute reprise `--resume` est refusée (« la campagne est au statut COMPLETED, la reprise exige RUNNING »).
+
+**Correctif.** (1) Dans `Toolchain.Run` (`gotool.go`), si `ctx.Err() != nil`, retourner immédiatement `models.Measurement{}, ctx.Err()` au lieu de convertir le signal en mesure FAILED avec `err == nil`. (2) Dans la boucle de `CampaignService.measure` (`campaign.go`), vérifier `if ctx.Err() != nil { return report, ctx.Err() }` en tête de boucle. (3) Ne jamais passer le statut de la campagne à `COMPLETED` si le contexte a été annulé : laisser la campagne au statut `RUNNING` pour permettre le flux A4.
+
+Vérification : réfutateur maintient, reproducteur maintient, juge de spécification maintient (contre-vérification 2026-09-12).
 
 ### Majeurs (12)
 
@@ -306,7 +328,7 @@ Vérification : réfutateur maintient, reproducteur maintient, juge de spécific
 
 **Correctif.** Dans AcquireLock, sur ErrExist : lire le contenu du verrou ; s'il vaut exactement campaignID+"\n" (reprise de la même campagne), accepter et continuer ; sinon rendre l'erreur en nommant le détenteur. Ajouter un test TestLock_RepriseMemeCampagne. Alternative plus lourde : sous-commande `unlock`.
 
-**Précision apportée en vérification.** Spec d'abord, conformément au processus (« spécification modifiée avant tout code », UC-003 révision) : dans docs/use-cases/UC-003-executer-campagne.md, A4, ajouter une étape « le système reprend le verrou results/.campaign-lock s'il porte l'identifiant de la Campaign désignée ; s'il porte un autre identifiant, la reprise est refusée en nommant le détenteur », et préciser dans BR-003-3 que le verrou est « créé au démarrage ou repris à la reprise (A4) ». Ni critère gelé H-### ni gabarit internal/harness/templates/*.tmpl ne sont touchés (harnessDigest inchangé) ; aucune écriture sous results/ par un agent. Ensuite, code : dans store.go AcquireLock, sur ErrExist lire le fichier ; si…
+**Précision apportée en vérification.** Spec d'abord, conformément au processus (« spécification modifiée avant tout code », UC-003 révision) : dans docs/use-cases/UC-003-executer-campagne.md, A4, ajouter une étape « le système reprend le verrou results/.campaign-lock s'il porte l'identifiant de la Campaign désignée ; s'il porte un autre identifiant, la reprise est refusée en nommant le détenteur », et préciser dans BR-003-3 que le verrou est « créé au démarrage ou repris à la reprise (A4) ». Ni critère gelé H-### ni gabarit internal/harness/templates/*.tmpl ne sont touchés (harnessDigest inchangé) ; aucune écriture sous results/ par un agent. Ensuite, code : dans store.go AcquireLock, sur ErrExist lire le fichier ; si le contenu concorde avec campaignID, accepter le verrou. *Note de contre-vérification :* vérifier également la vivacité du processus d'origine (via détection de PID ou verrou adhésif du noyau) pour éviter qu'un opérateur ne lance deux reprises concurrentes sur la même campagne active.
 
 Vérification : réfutateur maintient, reproducteur maintient, juge de spécification maintient. Constats fusionnés : A-022, A-264.
 
@@ -318,9 +340,9 @@ Vérification : réfutateur maintient, reproducteur maintient, juge de spécific
 
 **Scénario d'échec.** Deux processus `escapebench campaign --matrix M` démarrés dans la même seconde : les deux NextCampaignID rendent C-2026-09-11-1 ; les deux Stat de CreateCampaign voient le fichier absent ; les deux Rename réussissent, le second écrasant le campaign.json du premier (startedAt et provenance.capturedAt du perdant). Puis AcquireLock : un seul gagne, l'autre échoue avec « une campagne est déjà en cours » après avoir corrompu le fichier du gagnant.
 
-**Correctif.** Dans writeFileAtomic, ajouter un mode exclusif pour les cibles immuables : os.Link(tmpName, path) puis os.Remove(tmpName) (os.Link échoue avec ErrExist sur Linux et Windows/NTFS — vérifié en scratchpad : « Cannot create a file when that file already exists ») ; convertir errors.Is(err, os.ErrExist) en ErrImmutable ; garder Rename uniquement pour SetCampaignStatus. Complément dans le service : appeler AcquireLock avant NextCampaignID (campaign.go:132) pour que l'identifiant soit choisi sous verrou. Prévoir un repli Rename si Link n'est pas supporté (FAT/exFAT).
+**Correctif.** Dans writeFileAtomic, ajouter un mode exclusif pour les cibles immuables : os.Link(tmpName, path) puis os.Remove(tmpName) (os.Link échoue avec ErrExist sur Linux et Windows/NTFS — vérifié en scratchpad : « Cannot create a file when that file already exists ») ; convertir errors.Is(err, os.ErrExist) en ErrImmutable ; garder Rename uniquement pour SetCampaignStatus (qui applique une transition légitime de statut RUNNING -> COMPLETED/ABORTED). Complément dans le service : appeler AcquireLock avant NextCampaignID (campaign.go:132) pour que l'identifiant soit choisi sous verrou. Prévoir un repli Rename si Link n'est pas supporté (FAT/exFAT).
 
-**Précision apportée en vérification.** Le correctif du constat est juste sur le fond mais inverse la priorité et oublie un détail d'ordre. Correctif retenu, en deux temps, implémentation seule (aucun .tmpl, aucun H-###, aucune écriture sous results/ par l'agent) : (a) Racine du scénario dénoncé : dans internal/service/campaign.go, poser le verrou avant NextCampaignID (ligne 132) et non dans measure() (ligne 192), puis le relâcher par defer dans start()/resume() ; comme AcquireLock(ctx, campaignID) écrit l'identifiant alors qu'il n'est pas encore connu, et que personne ne lit le contenu du verrou (grep LockName : guard-paths.sh ne teste que l'existence), poser le verrou avec un contenu vide puis, après CreateCampaign, réécrire…
+**Précision apportée en vérification.** Le correctif du constat est juste sur le fond mais inverse la priorité et oublie un détail d'ordre. Correctif retenu, en deux temps, implémentation seule (aucun .tmpl, aucun H-###, aucune écriture sous results/ par l'agent) : (a) Racine du scénario dénoncé : dans internal/service/campaign.go, poser le verrou avant NextCampaignID (ligne 132) et non dans measure() (ligne 192), puis le relâcher par defer dans start()/resume() ; comme AcquireLock(ctx, campaignID) écrit l'identifiant alors qu'il n'est pas encore connu, et que personne ne lit le contenu du verrou (grep LockName : guard-paths.sh ne teste que l'existence), poser le verrou avec un contenu vide puis, après CreateCampaign, réécrire… (b) Distinguer dans le store `writeFileAtomicExclusive` (utilisant `os.Link` pour les créations immuables) et `writeFileAtomic` (utilisant `os.Rename` pour `SetCampaignStatus`).
 
 Vérification : réfutateur maintient, reproducteur maintient, juge de spécification maintient.
 
@@ -328,7 +350,7 @@ Vérification : réfutateur maintient, reproducteur maintient, juge de spécific
 
 `internal/models/matrix.go:365` — correctness — effort S — exigences UC-001, BR-001-3, H-010, C-008
 
-**Défaut.** Les sauts de répétition et de charge sont écrits « si repeat > 1 et profil ≠ RETURNED_ALLOCATING, sauter » au lieu de « pour les autres profils, produire une seule fois avec repeat = payload = 1 ». La déclinaison des profils ordinaires dépend donc de la présence de 1 dans la liste demandée. Le commentaire (« ailleurs elle ne créerait que des doublons ») et docs/entity-model.md (« seul le profil RETURNED_ALLOCATING s'en décline ») décrivent une dimension inerte pour les autres profils, pas une dimension qui les efface. TestExpandAvecDispositionsEtRepetitions et TestC008_ChargesParInstance utilisent toujours des listes contenant 1 et ne peuvent pas détecter le cas. Les quatre matrices existantes sous matrices/ contiennent 1 dans repeats et payloads : le correctif ne change ni leur contenu ni leur identifiant (Canonical ne bouge pas).
+**Défaut.** Les sauts de répétition et de charge sont écrits « si repeat > 1 et profil ≠ RETURNED_ALLOCATING, sauter » au lieu de « pour les autres profils, produire une seule fois avec repeat = payload = 1 ». La déclinaison des profils ordinaires dépend donc de la présence de 1 dans la liste demandée. Le commentaire (« ailleurs elle ne créerait que des doublons ») et docs/entity-model.md (« seul le profil RETURNED_ALLOCATING s'en décline ») décrivent une dimension inerte pour les autres profils, pas une dimension qui les efface. TestExpandAvecDispositionsEtRepetitions et TestC008_ChargesParInstance utilisent toujours des listes contenant 1 et ne peuvent pas détecter le cas. Les cinq matrices existantes sous matrices/ (`M-57477f022103`, `M-823d8b5af441`, `M-8f03757ac206`, `M-abb3d708d0e1`, `M-b44a93baae51`) contiennent 1 dans repeats et payloads : le correctif ne change ni leur contenu ni leur identifiant (Canonical ne bouge pas).
 
 **Scénario d'échec.** Confirmé par go test sur une copie hors dépôt : MatrixParameters{Sizes:[24], Profiles:[LOCAL, RETURNED_ALLOCATING], Repeats:[4]}.Expand() rend 2 cellules seulement (Size0024Plain/RETURNED_ALLOCATING_R4/VALUE et /POINTER), le profil LOCAL disparaît sans erreur. ReferenceParameters() + Payloads:[2] (la demande naturelle pour éprouver H-010 à k = 2) rend 0 cellule ; NewMatrix échoue ensuite avec « Matrix.cells contient au moins une cellule », sans nommer la cause (UC-001 A1). Via la CLI : `repeats=4` ou `payloads=2` sans le 1.
 
@@ -875,19 +897,23 @@ La découverte automatique liste les rapports par campaign.MatrixID, mais le che
 | A-083 | `internal/adapters/specs/index.go:75` | La colonne Code est ✔ pour tout UC cité n'importe où dans un fichier .go, y compris l'usage de main.go et les fixtures de test | Le mécanisme décrit est exact (index.go:47-54 et 75-80 : texte brut de tout .go sous cmd/ et internal/, regex `\bUC-\d{3}\b` à specs.go:139), mais ce n'est pas un défaut : c'est le comportement spécifié et testé. (1) La définition qui fait autorité,… |
 | A-058 | `internal/adapters/store/dto.go:411` | comparisonDTO écrit toujours layout (même ARRAY_FILL) alors que tippingPointDTO et cellDTO l'omettent par défaut | La prémisse du constat est fausse et son correctif contredit la spécification. 1) cellDTO n'omet PAS la disposition ARRAY_FILL : dto.go:67 `Layout: string(c.TypeSpec.Layout)` sans aucune garde, exactement comme comparisonDTO à dto.go:411. Vérifié par… |
 
-### Constats sans vérification contradictoire complète (84)
+### Constats confirmés lors de la contre-vérification (8 majeurs)
+
+| Constat | Sévérité | Emplacement | Énoncé | Statut |
+|---|---|---|---|---|
+| A-156 | Majeur | `cmd/escapebench/main.go:231` | --benchtime n'est jamais validé : une faute de frappe crée une campagne entière de mesures FAILED | Confirmé (3/3) |
+| A-141 | Majeur | `internal/adapters/gotool/gotool.go:118` | Un `go build -gcflags=-m` tué par l'annulation du contexte devient un verdict COMPILE_ERROR | Confirmé (3/3) |
+| A-278 | Majeur | `internal/adapters/specs/index.go:48` | La colonne Integration du tableau de bord est un faux positif : le tag de build est cherché comme sous-chaîne, et seuls des littéraux de chaîne le matchent | Confirmé (3/3) |
+| A-246 | Majeur | `internal/harness/harness.go:51` | L'empreinte du harnais ne couvre que templates/*.tmpl, pas harness.go qui façonne pourtant la source générée | Confirmé (3/3) |
+| A-263 | Majeur | `internal/service/campaign.go:141` | Le verrou est pris après la création de la Campaign : campagne RUNNING orpheline si une autre est en cours, et fenêtre de collision d'identifiant | Confirmé (3/3) |
+| A-265 | Majeur | `internal/service/campaign.go:180` | La reprise réutilise les drapeaux de la ligne de commande, pas ceux de la campagne : la Campaign n'enregistre ni benchtime ni cpu | Confirmé (3/3) |
+| A-187 | Majeur | `internal/service/compare_test.go:119` | BR-004-2 : le sens « IC exclut zéro ⇒ significant » n'est vérifié nulle part ; une mutation à seuil survit à toute la suite | Confirmé (3/3) |
+| A-185 | Majeur | `internal/service/verdict_test.go:205` | UC-005 A1 : le message ne nomme pas les hypothèses modifiées et le fake digestOf masque l'absence | Confirmé (3/3) |
+
+### Constats sans vérification contradictoire complète (75)
 
 | Constat | Sévérité annoncée | Emplacement | Énoncé | Votes |
 |---|---|---|---|---|
-| A-261 | Bloquant | `internal/adapters/gotool/gotool.go:208` | Une interruption (Ctrl-C / SIGTERM) est consignée comme un échec de sujet, la boucle continue et la campagne finit COMPLETED : A4 est inatteignable | 0/3 |
-| A-156 | Majeur | `cmd/escapebench/main.go:231` | --benchtime n'est jamais validé : une faute de frappe crée une campagne entière de mesures FAILED | 0/3 |
-| A-141 | Majeur | `internal/adapters/gotool/gotool.go:118` | Un `go build -gcflags=-m` tué par l'annulation du contexte devient un verdict COMPILE_ERROR | 0/3 |
-| A-278 | Majeur | `internal/adapters/specs/index.go:48` | La colonne Integration du tableau de bord est un faux positif : le tag de build est cherché comme sous-chaîne, et seuls des littéraux de chaîne le… | 0/3 |
-| A-246 | Majeur | `internal/harness/harness.go:51` | L'empreinte du harnais ne couvre que templates/*.tmpl, pas harness.go qui façonne pourtant la source générée | 0/3 |
-| A-263 | Majeur | `internal/service/campaign.go:141` | Le verrou est pris après la création de la Campaign : campagne RUNNING orpheline si une autre est en cours, et fenêtre de collision d'identifiant | 0/3 |
-| A-265 | Majeur | `internal/service/campaign.go:180` | La reprise réutilise les drapeaux de la ligne de commande, pas ceux de la campagne : la Campaign n'enregistre ni benchtime ni cpu | 0/3 |
-| A-187 | Majeur | `internal/service/compare_test.go:119` | BR-004-2 : le sens « IC exclut zéro ⇒ significant » n'est vérifié nulle part ; une mutation à seuil survit à toute la suite | 0/3 |
-| A-185 | Majeur | `internal/service/verdict_test.go:205` | UC-005 A1 : le message ne nomme pas les hypothèses modifiées et le fake digestOf masque l'absence | 0/3 |
 | A-147 | Mineur | `cmd/escapebench/main.go:67` | Après le premier SIGINT, tous les signaux suivants sont avalés : un second Ctrl+C ne peut pas forcer l'arrêt | 0/3 |
 | A-268 | Mineur | `cmd/escapebench/main.go:113` | L'étape 7 et A2 sont tautologiques en production : l'empreinte du harnais est calculée une fois sur embed.FS et ne peut pas changer pendant la… | 0/3 |
 | A-271 | Mineur | `cmd/escapebench/main.go:249` | L'étape 4 (afficher identifiant, provenance et décomptes) n'a lieu qu'après l'étape 8 : rien n'est affiché pendant la campagne | 0/3 |
