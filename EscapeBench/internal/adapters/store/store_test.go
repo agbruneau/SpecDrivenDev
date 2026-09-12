@@ -18,6 +18,20 @@ func newStore(t *testing.T) *Store {
 	return New(t.TempDir())
 }
 
+// seedCampaign crée une campagne RUNNING, précondition des écritures de mesures et de
+// comparaisons (A-054).
+func seedCampaign(t *testing.T, s *Store, campaignID string) {
+	t.Helper()
+	err := s.CreateCampaign(context.Background(), models.Campaign{
+		ID: campaignID, MatrixID: "M-1", HarnessDigest: "h", HypothesesDigest: "d",
+		HypothesisIDs: []string{"H-001"}, Count: 20, Status: models.CampaignRunning,
+		Provenance: provenance(), StartedAt: provenance().CapturedAt,
+	})
+	if err != nil {
+		t.Fatalf("CreateCampaign : %v", err)
+	}
+}
+
 func provenance() models.Provenance {
 	return models.Provenance{GoVersion: "go1.25.0", GOOS: "linux", GOARCH: "amd64", CPUModel: "cpu",
 		CapturedAt: time.Date(2026, 9, 10, 12, 0, 0, 0, time.UTC)}
@@ -256,6 +270,7 @@ func TestMeasurementsImmuables(t *testing.T) {
 	t.Parallel()
 	ctx := context.Background()
 	s := newStore(t)
+	seedCampaign(t, s, "C-1")
 	m := models.Measurement{
 		CampaignID: "C-1", SubjectID: "probe/APPEND_GROW/1000", Status: models.MeasurementComplete,
 		NsPerOp: []float64{1, 2}, BytesPerOp: []int64{8, 8}, AllocsPerOp: []int64{1, 1},
@@ -297,6 +312,7 @@ func TestComparisonSetRoundTrip(t *testing.T) {
 	t.Parallel()
 	ctx := context.Background()
 	s := newStore(t)
+	seedCampaign(t, s, "C-1")
 	set := models.ComparisonSet{
 		CampaignID: "C-1", MatrixID: "M-1", ComputedAt: provenance().CapturedAt, Method: "bootstrap",
 		Comparisons: []models.Comparison{{
@@ -342,7 +358,8 @@ func TestComparisonSetRoundTrip(t *testing.T) {
 	}
 	// Une campagne sans fichier de comparaison est signalée comme telle.
 	if err := s.CreateCampaign(ctx, models.Campaign{ID: "C-2", MatrixID: "M", HarnessDigest: "h",
-		HypothesesDigest: "d", Count: 20, Status: models.CampaignRunning, Provenance: provenance()}); err != nil {
+		HypothesesDigest: "d", HypothesisIDs: []string{"H-001"}, Count: 20, Status: models.CampaignRunning,
+		Provenance: provenance(), StartedAt: provenance().CapturedAt}); err != nil {
 		t.Fatalf("CreateCampaign : %v", err)
 	}
 	if _, _, err := s.LatestComparisonSet(ctx, "C-2"); !errors.Is(err, ErrNotFound) {
@@ -511,5 +528,151 @@ func TestUC003_BR3_NommageDuVerrou(t *testing.T) {
 	}
 	if err := s.AcquireLock(ctx, "C-2026-09-11-1"); err != nil {
 		t.Fatalf("le verrou nommé doit être reconnu par sa campagne : %v", err)
+	}
+}
+
+// TestBR3_TransitionDeStatutUnique verrouille A-046 : BR-003-3 n'admet qu'une transition,
+// `RUNNING` vers `COMPLETED` ou `ABORTED`. Rien ne l'appliquait, si bien qu'une campagne close
+// pouvait être rouverte ou réécrite — une campagne abandonnée redevenant valide pour un verdict.
+func TestBR3_TransitionDeStatutUnique(t *testing.T) {
+	t.Parallel()
+	ctx := context.Background()
+	s := newStore(t)
+	seedCampaign(t, s, "C-1")
+	finished := provenance().CapturedAt
+
+	if err := s.SetCampaignStatus(ctx, "C-1", models.CampaignCompleted, finished, ""); err != nil {
+		t.Fatalf("SetCampaignStatus : %v", err)
+	}
+	// Une campagne close ne se rouvre pas, ni ne se réécrit.
+	for _, status := range []models.CampaignStatus{models.CampaignRunning, models.CampaignAborted, models.CampaignCompleted} {
+		if err := s.SetCampaignStatus(ctx, "C-1", status, finished, "x"); !errors.Is(err, ErrImmutable) {
+			t.Fatalf("transition vers %s : erreur = %v, ErrImmutable attendue", status, err)
+		}
+	}
+	// Depuis RUNNING, seules COMPLETED et ABORTED sont admises.
+	seedCampaign(t, s, "C-2")
+	if err := s.SetCampaignStatus(ctx, "C-2", models.CampaignRunning, finished, ""); !errors.Is(err, ErrImmutable) {
+		t.Fatalf("erreur = %v, ErrImmutable attendue", err)
+	}
+}
+
+// TestNFR4_EcrituresExigentUneCampagne verrouille A-054 : ni identifiant vide ni campagne
+// inexistante n'étaient refusés, si bien qu'une mesure s'écrivait sous un chemin sans campagne.
+func TestNFR4_EcrituresExigentUneCampagne(t *testing.T) {
+	t.Parallel()
+	ctx := context.Background()
+	s := newStore(t)
+	m := models.Measurement{SubjectID: "s", Status: models.MeasurementComplete,
+		NsPerOp: []float64{1}, BytesPerOp: []int64{8}, AllocsPerOp: []int64{1}}
+	if err := s.WriteMeasurement(ctx, m); err == nil {
+		t.Fatal("une Measurement sans campaignId doit être refusée")
+	}
+	m.CampaignID = "C-inconnue"
+	if err := s.WriteMeasurement(ctx, m); !errors.Is(err, ErrNotFound) {
+		t.Fatalf("erreur = %v, ErrNotFound attendue", err)
+	}
+	seedCampaign(t, s, "C-1")
+	m.CampaignID, m.SubjectID = "C-1", ""
+	if err := s.WriteMeasurement(ctx, m); err == nil {
+		t.Fatal("une Measurement sans subjectId doit être refusée")
+	}
+	if _, err := s.WriteComparisonSet(ctx, models.ComparisonSet{}); err == nil {
+		t.Fatal("un ComparisonSet sans campaignId doit être refusé")
+	}
+}
+
+// TestNFR4_CreationExclusive verrouille A-043 : la garde était un contrôle d'existence suivi d'un
+// renommage, que os.Rename exécute par-dessus une cible existante sans rien dire. L'immutabilité
+// n'était donc garantie que pour un seul processus.
+func TestNFR4_CreationExclusive(t *testing.T) {
+	t.Parallel()
+	dir := t.TempDir()
+	path := filepath.Join(dir, "resultat.json")
+	if err := writeFileExclusive(path, []byte("premier\n")); err != nil {
+		t.Fatalf("première écriture : %v", err)
+	}
+	// Le contrôle d'existence est court-circuité : c'est exactement la fenêtre du TOCTOU.
+	if err := writeFileExclusive(path, []byte("second\n")); !errors.Is(err, ErrImmutable) {
+		t.Fatalf("erreur = %v, ErrImmutable attendue", err)
+	}
+	content, err := os.ReadFile(path)
+	if err != nil || string(content) != "premier\n" {
+		t.Fatalf("contenu = %q, %v : le premier écrivain garde son fichier", content, err)
+	}
+	// Aucun fichier temporaire ne subsiste (A-055).
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		t.Fatalf("lecture du répertoire : %v", err)
+	}
+	for _, entry := range entries {
+		if strings.HasPrefix(entry.Name(), ".tmp-") {
+			t.Fatalf("fichier temporaire résiduel : %s", entry.Name())
+		}
+	}
+}
+
+// TestUC005_OrdreDeterministeDesRapports verrouille A-048 : deux rapports de la même seconde
+// étaient ordonnés par sort.Slice, qui n'est pas stable. Le tableau de bord retenant le dernier
+// verdict rendu sur une hypothèse, deux exécutions pouvaient publier deux tableaux différents.
+func TestUC005_OrdreDeterministeDesRapports(t *testing.T) {
+	t.Parallel()
+	ctx := context.Background()
+	s := newStore(t)
+	dir := filepath.Join(s.Root(), "results", "verdicts")
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		t.Fatalf("mkdir : %v", err)
+	}
+	// Trois campagnes, un rapport chacune, tous au même horodatage.
+	for _, id := range []string{"C-3", "C-1", "C-2"} {
+		body := `{"campaignId":"` + id + `","producedAt":"2026-09-10T19:10:13Z","verdicts":[]}`
+		if err := os.WriteFile(filepath.Join(dir, id+"-20260910T191013Z.json"), []byte(body), 0o644); err != nil {
+			t.Fatalf("écriture : %v", err)
+		}
+	}
+	var first []string
+	for range 5 {
+		reports, err := s.VerdictReports(ctx)
+		if err != nil {
+			t.Fatalf("VerdictReports : %v", err)
+		}
+		var order []string
+		for _, r := range reports {
+			order = append(order, r.CampaignID)
+		}
+		if first == nil {
+			first = order
+			continue
+		}
+		if strings.Join(order, ",") != strings.Join(first, ",") {
+			t.Fatalf("ordre non déterministe : %v puis %v", first, order)
+		}
+	}
+	if strings.Join(first, ",") != "C-1,C-2,C-3" {
+		t.Fatalf("ordre = %v, tri par nom attendu à horodatage égal", first)
+	}
+}
+
+// TestUC004_ErreurDeLectureNestPasUneAbsence verrouille A-124 : toute erreur de lecture du
+// répertoire d'une campagne devenait « introuvable », donc un verdict non concluant « exécuter
+// compare » là où le fichier existe mais n'est pas lisible.
+func TestUC004_ErreurDeLectureNestPasUneAbsence(t *testing.T) {
+	t.Parallel()
+	ctx := context.Background()
+	s := newStore(t)
+	// Un fichier là où un répertoire de campagne est attendu : la lecture échoue sans être une
+	// absence.
+	if err := os.MkdirAll(filepath.Join(s.Root(), "results", "campaigns"), 0o755); err != nil {
+		t.Fatalf("mkdir : %v", err)
+	}
+	if err := os.WriteFile(filepath.Join(s.Root(), "results", "campaigns", "C-1"), []byte("x"), 0o644); err != nil {
+		t.Fatalf("écriture : %v", err)
+	}
+	_, _, err := s.LatestComparisonSet(ctx, "C-1")
+	if err == nil {
+		t.Fatal("la lecture doit échouer")
+	}
+	if errors.Is(err, ErrNotFound) {
+		t.Fatalf("erreur = %v : une erreur de lecture n'est pas une absence", err)
 	}
 }

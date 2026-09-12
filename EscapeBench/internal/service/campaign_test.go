@@ -266,7 +266,8 @@ func TestUC003_A4_RepriseRefusee(t *testing.T) {
 	ctx := context.Background()
 	base := models.Campaign{
 		ID: "C-1", MatrixID: f.matrix.ID, HarnessDigest: "harness-v1", HypothesesDigest: "d",
-		Count: models.MinCount, Status: models.CampaignCompleted, Provenance: f.provenance.provenance,
+		HypothesisIDs: []string{"H-001"}, Count: models.MinCount, Status: models.CampaignCompleted,
+		Provenance: f.provenance.provenance, StartedAt: f.clock.Now(), FinishedAt: f.clock.Now(),
 	}
 	if err := f.store.CreateCampaign(ctx, base); err != nil {
 		t.Fatalf("CreateCampaign : %v", err)
@@ -283,6 +284,7 @@ func TestUC003_A4_RepriseRefusee(t *testing.T) {
 	running := base
 	running.ID = "C-2"
 	running.Status = models.CampaignRunning
+	running.FinishedAt = time.Time{}
 	if err := f.store.CreateCampaign(ctx, running); err != nil {
 		t.Fatalf("CreateCampaign : %v", err)
 	}

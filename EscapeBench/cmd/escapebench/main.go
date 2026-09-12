@@ -51,7 +51,9 @@ Option commune : --root <répertoire du projet> (par défaut, remonte depuis le 
 Spécification de matrice (--params) :
   sizes=8,16,24;pointer=false,true;profiles=LOCAL,RETURNED;modes=VALUE,POINTER;probes=SEQUENTIAL_SCAN:65536
   Clés reconnues : sizes, pointer, profiles, modes, layouts, repeats, payloads, replicates, probes.
-  Les clés absentes prennent la valeur de la matrice de référence (BR-001-4).
+  sizes est obligatoire ; probes, layouts, repeats, payloads et replicates absents valent leur
+  défaut du modèle (une disposition, une instance, une charge, aucun réplicat, aucune sonde).
+  pointer, profiles et modes absents prennent la valeur de la matrice de référence (BR-001-4).
 `
 
 // exit codes : 0 succès, 2 usage, 3 échec d'un cas d'utilisation.
@@ -301,6 +303,14 @@ func runCampaign(ctx context.Context, args []string) error {
 	}
 	opts := service.CampaignOptions{Resume: *resume}
 	if *resume == "" {
+		// A-156 : une faute de frappe sur --benchtime était transmise telle quelle à `go test`,
+		// qui refusait chaque sujet : la campagne entière se consignait en FAILED.
+		if err := cli.ValidateBenchTime(*benchTime); err != nil {
+			return err
+		}
+		if *cpu < 0 {
+			return fmt.Errorf("%w : --cpu %d doit être positif (C-003)", cli.ErrUsage, *cpu)
+		}
 		opts.MatrixID = *matrixID
 		opts.Count = *count
 		opts.HypothesisIDs = cli.ParseHypotheses(*hypotheses)

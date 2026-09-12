@@ -7,6 +7,7 @@ package models
 import (
 	"errors"
 	"fmt"
+	"math"
 	"sort"
 	"time"
 )
@@ -287,6 +288,12 @@ func (c Cell) Validate() error {
 	if c.SourceFile == "" {
 		return invalid("Cell.sourceFile est requis (%s)", c.ID())
 	}
+	// A-260 écarté, vérification faite : la valeur zéro de ces trois dimensions est ramenée à un
+	// par Repetitions, Payloads et ReplicateIndex, et Cell.ID() passe par ces accesseurs. Une
+	// cellule à zéro est donc identique, identifiant compris, à la même cellule à un — ce n'est pas
+	// une cellule invalide mais la valeur zéro d'un champ dont le défaut est un. L'exiger ≥ 1
+	// rejetterait aussi toute Cell décodée d'un matrix.json antérieur à C-008, où ces champs sont
+	// absents. Seule une valeur négative, qui ne se ramène à rien, reste refusée.
 	if c.Repeat < 0 {
 		return invalid("Cell.repeat doit être positif (%s)", c.ID())
 	}
@@ -405,6 +412,11 @@ func (v EscapeVerdict) Validate() error {
 	}
 	if v.Status != EscapeStatusOK {
 		return invalid("EscapeVerdict.status %q inconnu (%s)", v.Status, v.CellID)
+	}
+	// A-008 : le message du compilateur n'a de sens qu'en COMPILE_ERROR. Le laisser passer en OK
+	// autorisait un verdict qui se contredit lui-même.
+	if v.CompilerError != "" {
+		return invalid("EscapeVerdict.compilerError doit être vide si OK (%s)", v.CellID)
 	}
 	if !v.Category.Valid() {
 		return invalid("EscapeVerdict.category %q inconnue (%s)", v.Category, v.CellID)
@@ -535,8 +547,24 @@ func (c Campaign) Validate() error {
 		return invalid("Campaign.hypothesesDigest est requis (BR-003-5)")
 	case c.Count < MinCount:
 		return invalid("Campaign.count %d < %d (NFR-003)", c.Count, MinCount)
+	case len(c.HypothesisIDs) == 0:
+		return invalid("Campaign.hypothesisIds est requis (BR-003-5, %s)", c.ID)
+	case c.StartedAt.IsZero():
+		return invalid("Campaign.startedAt est requis (%s)", c.ID)
 	case c.Status != CampaignRunning && c.Status != CampaignCompleted && c.Status != CampaignAborted:
 		return invalid("Campaign.status %q inconnu", c.Status)
+	}
+	// A-005 : le modèle d'entités déclare ces champs requis selon le statut ; rien ne l'appliquait.
+	// Une campagne close sans horodatage de fin, ou abandonnée sans raison, passait la validation
+	// et se retrouvait dans results/ sans que le chercheur puisse savoir quand ni pourquoi.
+	if c.Status != CampaignRunning && c.FinishedAt.IsZero() {
+		return invalid("Campaign.finishedAt est requis si %s (%s)", c.Status, c.ID)
+	}
+	if c.Status == CampaignAborted && c.AbortReason == "" {
+		return invalid("Campaign.abortReason est requis si ABORTED (UC-003 A2, %s)", c.ID)
+	}
+	if c.Status == CampaignRunning && !c.FinishedAt.IsZero() {
+		return invalid("Campaign.finishedAt ne peut être posé si RUNNING (%s)", c.ID)
 	}
 	return c.Provenance.Validate()
 }
@@ -601,6 +629,34 @@ func (m Measurement) Validate(count int) error {
 	if len(m.NsPerOp) != count || len(m.BytesPerOp) != count || len(m.AllocsPerOp) != count {
 		return invalid("Measurement de %s : %d/%d/%d valeurs, %d attendues (NFR-003)",
 			m.SubjectID, len(m.NsPerOp), len(m.BytesPerOp), len(m.AllocsPerOp), count)
+	}
+	// A-016 : une valeur négative, infinie ou NaN traverserait médianes, rapports et intervalle de
+	// confiance jusqu'au verdict, sans qu'aucun évaluateur ne la remarque.
+	for i, ns := range m.NsPerOp {
+		if math.IsNaN(ns) || math.IsInf(ns, 0) || ns < 0 {
+			return invalid("Measurement de %s : nsPerOp[%d] = %v, une durée finie et positive est attendue",
+				m.SubjectID, i, ns)
+		}
+	}
+	for i, bytes := range m.BytesPerOp {
+		if bytes < 0 {
+			return invalid("Measurement de %s : bytesPerOp[%d] = %d, une valeur positive est attendue",
+				m.SubjectID, i, bytes)
+		}
+	}
+	for i, allocs := range m.AllocsPerOp {
+		if allocs < 0 {
+			return invalid("Measurement de %s : allocsPerOp[%d] = %d, une valeur positive est attendue",
+				m.SubjectID, i, allocs)
+		}
+	}
+	// A-009 : C-010 définit quietudeOccupancy comme une fraction. Hors de [0, 1], la garde de
+	// quiétude de H-013 compare au seuil une valeur qui n'est pas une fraction.
+	if m.QuietudeMeasured {
+		if math.IsNaN(m.QuietudeOccupancy) || m.QuietudeOccupancy < 0 || m.QuietudeOccupancy > 1 {
+			return invalid("Measurement de %s : quietudeOccupancy = %v, une fraction de [0, 1] est attendue (C-010)",
+				m.SubjectID, m.QuietudeOccupancy)
+		}
 	}
 	return nil
 }
@@ -728,6 +784,10 @@ func (h Hypothesis) Validate() error {
 		return invalid("Hypothesis.sourcePages est requis (%s)", h.ID)
 	case h.RefutationCriterion == "":
 		return invalid("Hypothesis.refutationCriterion est requis (%s)", h.ID)
+	case h.Statement == "":
+		// A-006 : l'énoncé entre dans l'empreinte gelée des critères (BR-003-5). Un énoncé vide
+		// produit une empreinte valide sur une hypothèse qui ne dit rien.
+		return invalid("Hypothesis.statement est requis (%s)", h.ID)
 	}
 	return nil
 }
@@ -755,6 +815,10 @@ func (v Verdict) Validate() error {
 	switch {
 	case v.HypothesisID == "":
 		return invalid("Verdict.hypothesisId est requis")
+	case v.CampaignID == "":
+		// A-007 : un verdict sans campagne ne peut plus être rattaché aux mesures qui le fondent
+		// (BR-005-2), et le tableau de bord affiche une ligne sans campagne.
+		return invalid("Verdict.campaignId est requis (%s)", v.HypothesisID)
 	case v.Outcome != OutcomeConfirmed && v.Outcome != OutcomeRefuted && v.Outcome != OutcomeInconclusive:
 		return invalid("Verdict.outcome %q inconnu (%s)", v.Outcome, v.HypothesisID)
 	case v.Rationale == "":

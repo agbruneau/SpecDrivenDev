@@ -73,7 +73,7 @@ func newVerdictFixture(t *testing.T) *verdictFixture {
 	f.campaign = models.Campaign{
 		ID: "C-1", MatrixID: matrix.ID, HarnessDigest: "harness-v1", HypothesesDigest: digest,
 		HypothesisIDs: idsOf(catalogue()), Count: models.MinCount, Status: models.CampaignCompleted,
-		Provenance: newProvenance().provenance, StartedAt: f.clock.Now(),
+		Provenance: newProvenance().provenance, StartedAt: f.clock.Now(), FinishedAt: f.clock.Now(),
 	}
 	if err := f.store.CreateCampaign(context.Background(), f.campaign); err != nil {
 		t.Fatalf("CreateCampaign : %v", err)

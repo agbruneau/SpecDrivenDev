@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"sort"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/agbruneau/escapebench/internal/models"
@@ -78,6 +80,11 @@ func (s *CampaignService) start(ctx context.Context, opts CampaignOptions) (Camp
 	if opts.Count < models.MinCount {
 		return CampaignReport{}, fmt.Errorf("%w : %d répétitions demandées, minimum %d (NFR-003)",
 			ErrPrecondition, opts.Count, models.MinCount)
+	}
+	// A-156 : le service garde la même règle que la ligne de commande. Un appelant qui ne passe
+	// pas par le CLI ne doit pas pouvoir lancer une campagne dont chaque sujet échouera.
+	if err := validateBenchTime(opts.BenchTime); err != nil {
+		return CampaignReport{}, err
 	}
 	matrix, err := s.repo.Load(ctx, opts.MatrixID)
 	if err != nil {
@@ -320,6 +327,28 @@ func (s *CampaignService) abort(ctx context.Context, report CampaignReport, camp
 		return report, errors.Join(cause, fmt.Errorf("consignation de l'abandon de %s : %w", campaignID, err))
 	}
 	return report, cause
+}
+
+// validateBenchTime contrôle la durée de mesure de C-003. La valeur vide est admise : elle laisse
+// `go test` appliquer son propre défaut.
+func validateBenchTime(value string) error {
+	if value == "" {
+		return nil
+	}
+	if count, found := strings.CutSuffix(value, "x"); found {
+		n, err := strconv.Atoi(count)
+		if err != nil || n <= 0 {
+			return fmt.Errorf("%w : benchtime %q : la forme <n>x attend un nombre d'itérations positif (C-003)",
+				ErrPrecondition, value)
+		}
+		return nil
+	}
+	d, err := time.ParseDuration(value)
+	if err != nil || d <= 0 {
+		return fmt.Errorf("%w : benchtime %q n'est ni une durée Go positive ni un nombre d'itérations (C-003)",
+			ErrPrecondition, value)
+	}
+	return nil
 }
 
 // requireEscapeVerdicts vérifie que UC-002 a été exécuté pour la toolchain courante.

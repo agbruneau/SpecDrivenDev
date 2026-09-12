@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/agbruneau/escapebench/internal/models"
 )
@@ -29,6 +30,9 @@ func ParseParameters(spec string) (models.MatrixParameters, error) {
 		Profiles:             models.ReferenceProfiles(),
 		PassingModes:         models.PassingModes(),
 	}
+	// A-086 : une clé répétée écrasait la précédente sans rien dire. `sizes=8;sizes=16` produisait
+	// une matrice d'une seule taille, sous un identifiant que le chercheur n'attendait pas.
+	seen := map[string]bool{}
 	for _, clause := range strings.Split(spec, ";") {
 		clause = strings.TrimSpace(clause)
 		if clause == "" {
@@ -39,6 +43,10 @@ func ParseParameters(spec string) (models.MatrixParameters, error) {
 			return models.MatrixParameters{}, fmt.Errorf("%w : clause %q attendue sous la forme clé=valeurs", ErrUsage, clause)
 		}
 		key = strings.TrimSpace(key)
+		if seen[key] {
+			return models.MatrixParameters{}, fmt.Errorf("%w : clé %q répétée ; une dimension s'énumère en une seule clause", ErrUsage, key)
+		}
+		seen[key] = true
 		switch key {
 		case "sizes":
 			sizes, err := parseInts(value)
@@ -161,9 +169,51 @@ func parseProbes(value string) ([]models.ProbeSpec, error) {
 	return out, nil
 }
 
-// ParseHypotheses lit une énumération d'identifiants d'hypothèses.
+// ParseHypotheses lit une énumération d'identifiants d'hypothèses, dédoublonnée.
+//
+// Révision du 2026-09-12 (A-087) : `H-001,H-001` produisait une empreinte de critères différente
+// de `H-001` — l'empreinte est calculée sur la liste, doublons compris — et deux verdicts pour la
+// même hypothèse dans un même rapport. L'ordre de première apparition est conservé ; le service
+// trie de toute façon avant de geler.
 func ParseHypotheses(value string) []string {
-	return splitValues(value)
+	seen := map[string]bool{}
+	var out []string
+	for _, id := range splitValues(value) {
+		if seen[id] {
+			continue
+		}
+		seen[id] = true
+		out = append(out, id)
+	}
+	return out
+}
+
+// ValidateBenchTime contrôle la durée passée à `-benchtime` (C-003).
+//
+// Révision du 2026-09-12 (A-156) : la valeur n'était validée nulle part. Une faute de frappe —
+// « 250s » pour « 250ms », « 1min » pour « 1m » — était transmise telle quelle à `go test`, qui
+// refusait chaque sujet : la campagne entière se consignait en FAILED, un sujet après l'autre,
+// sans qu'aucun contrôle n'ait eu lieu en amont.
+func ValidateBenchTime(value string) error {
+	if value == "" {
+		return fmt.Errorf("%w : --benchtime est requis (C-003)", ErrUsage)
+	}
+	// `go test -benchtime` accepte aussi la forme `<n>x`, un nombre d'itérations.
+	if count, found := strings.CutSuffix(value, "x"); found {
+		n, err := strconv.Atoi(count)
+		if err != nil || n <= 0 {
+			return fmt.Errorf("%w : --benchtime %q : la forme <n>x attend un nombre d'itérations positif", ErrUsage, value)
+		}
+		return nil
+	}
+	d, err := time.ParseDuration(value)
+	if err != nil {
+		return fmt.Errorf("%w : --benchtime %q n'est pas une durée Go (par exemple 250ms, 1s) ni un nombre d'itérations (par exemple 100x)", ErrUsage, value)
+	}
+	if d <= 0 {
+		return fmt.Errorf("%w : --benchtime %q doit être une durée positive", ErrUsage, value)
+	}
+	return nil
 }
 
 // FindRoot remonte depuis start jusqu'au répertoire du projet, reconnu à son docs/requirements.md.

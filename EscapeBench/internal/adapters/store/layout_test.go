@@ -147,6 +147,7 @@ func TestProvenanceEtComparaisonPortentLesAjoutsDeC008(t *testing.T) {
 		t.Fatalf("provenance altérée : %+v", relu.Provenance)
 	}
 
+	seedCampaign(t, s, "C-1")
 	set := models.ComparisonSet{
 		CampaignID: "C-1", MatrixID: "M-1", ComputedAt: prov.CapturedAt, Method: "bootstrap",
 		Comparisons: []models.Comparison{{

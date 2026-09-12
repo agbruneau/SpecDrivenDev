@@ -270,3 +270,65 @@ func TestFirstLineEtTruncateList(t *testing.T) {
 		t.Fatalf("truncateList = %v", got)
 	}
 }
+
+// TestUC003_BenchTimeValide verrouille A-156 : la durée de mesure n'était validée nulle part. Une
+// faute de frappe était transmise telle quelle à `go test`, qui refusait chaque sujet : la
+// campagne entière se consignait en FAILED, sans qu'aucun contrôle n'ait eu lieu en amont.
+func TestUC003_BenchTimeValide(t *testing.T) {
+	t.Parallel()
+	cases := map[string]bool{
+		"250ms": true, "1s": true, "1m30s": true, "100x": true,
+		"":     false, // le drapeau est requis par C-003
+		"250":  false, // une durée Go porte son unité
+		"1min": false, // faute de frappe pour 1m
+		"-1s":  false,
+		"0s":   false,
+		"0x":   false,
+		"abcx": false,
+	}
+	for value, valid := range cases {
+		t.Run(value, func(t *testing.T) {
+			t.Parallel()
+			err := ValidateBenchTime(value)
+			if valid && err != nil {
+				t.Fatalf("ValidateBenchTime(%q) = %v, acceptée attendue", value, err)
+			}
+			if !valid {
+				if err == nil {
+					t.Fatalf("ValidateBenchTime(%q) acceptée, refus attendu", value)
+				}
+				if !errors.Is(err, ErrUsage) {
+					t.Fatalf("erreur = %v, ErrUsage attendue", err)
+				}
+			}
+		})
+	}
+}
+
+// TestUC001_A1_CleRepetee verrouille A-086 : une clé répétée écrasait la précédente sans rien
+// dire, produisant une matrice que le chercheur n'a pas demandée sous un identifiant qu'il
+// n'attend pas.
+func TestUC001_A1_CleRepetee(t *testing.T) {
+	t.Parallel()
+	_, err := ParseParameters("sizes=8;sizes=16")
+	if !errors.Is(err, ErrUsage) {
+		t.Fatalf("erreur = %v, ErrUsage attendue", err)
+	}
+}
+
+// TestUC003_BR5_HypothesesDedoublonnees verrouille A-087 : l'empreinte des critères est calculée
+// sur la liste, doublons compris ; `H-001,H-001` produisait donc une empreinte différente de
+// `H-001` et deux verdicts pour la même hypothèse dans un même rapport.
+func TestUC003_BR5_HypothesesDedoublonnees(t *testing.T) {
+	t.Parallel()
+	got := ParseHypotheses("H-001, H-002 ,H-001")
+	want := []string{"H-001", "H-002"}
+	if len(got) != len(want) {
+		t.Fatalf("ParseHypotheses = %v, %v attendu", got, want)
+	}
+	for i := range want {
+		if got[i] != want[i] {
+			t.Fatalf("ParseHypotheses = %v, %v attendu", got, want)
+		}
+	}
+}

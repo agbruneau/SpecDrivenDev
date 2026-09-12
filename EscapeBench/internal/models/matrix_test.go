@@ -281,3 +281,93 @@ func TestValuePointerPairs(t *testing.T) {
 		t.Fatal("une cellule seule ne forme pas de paire")
 	}
 }
+
+// TestUC001_ExpandProfilsOrdinairesSansValeurUn verrouille A-001 : les sauts de répétition et de
+// charge étaient écrits « si repeat > 1 et profil ≠ RETURNED_ALLOCATING, sauter », ce qui efface
+// les autres profils dès que la liste demandée ne contient pas la valeur 1, au lieu de seulement
+// les priver de la déclinaison.
+func TestUC001_ExpandProfilsOrdinairesSansValeurUn(t *testing.T) {
+	t.Parallel()
+	cases := map[string]MatrixParameters{
+		"répétitions sans 1": {
+			Sizes: []int{24}, PointerFieldVariants: []bool{false},
+			Profiles:     []LifetimeProfile{ProfileLocal, ProfileReturnedAlloc},
+			PassingModes: PassingModes(), Repeats: []int{4},
+		},
+		"charges sans 1": {
+			Sizes: []int{24}, PointerFieldVariants: []bool{false},
+			Profiles:     []LifetimeProfile{ProfileLocal, ProfileReturnedAlloc},
+			PassingModes: PassingModes(), Payloads: []int{2},
+		},
+	}
+	for name, params := range cases {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			cells, _, err := params.Expand()
+			if err != nil {
+				t.Fatalf("Expand : %v", err)
+			}
+			byProfile := map[LifetimeProfile]int{}
+			for _, cell := range cells {
+				byProfile[cell.Profile]++
+			}
+			// LOCAL produit sa paire VALUE/POINTER, une fois, à ses valeurs par défaut.
+			if byProfile[ProfileLocal] != 2 {
+				t.Fatalf("%d cellules LOCAL, 2 attendues : %v", byProfile[ProfileLocal], byProfile)
+			}
+			for _, cell := range cells {
+				if cell.Profile == ProfileLocal && (cell.Repetitions() != 1 || cell.Payloads() != 1) {
+					t.Fatalf("la cellule %s ne se décline pas : repeat %d, payload %d",
+						cell.ID(), cell.Repetitions(), cell.Payloads())
+				}
+			}
+			if byProfile[ProfileReturnedAlloc] == 0 {
+				t.Fatalf("le profil qui alloue doit se décliner : %v", byProfile)
+			}
+		})
+	}
+}
+
+// TestUC001_A1_ReplicatsSansSerieARepliquer verrouille A-002 : le réplicat ne se décline que sur
+// la disposition NAMED_FIELDS en profil LOCAL. Demandé sans elle, il ne produisait aucune cellule
+// de plus mais entrait dans la représentation canonique : la même matrice recevait un second
+// identifiant.
+func TestUC001_A1_ReplicatsSansSerieARepliquer(t *testing.T) {
+	t.Parallel()
+	params := MatrixParameters{
+		Sizes: []int{24}, PointerFieldVariants: []bool{false},
+		Profiles: []LifetimeProfile{ProfileReturned}, PassingModes: PassingModes(),
+		Layouts: []Layout{LayoutNamedFields}, Replicates: ReplicateCount,
+	}
+	if err := params.Validate(); err == nil {
+		t.Fatal("des réplicats sans profil LOCAL doivent être refusés")
+	}
+	params.Layouts = []Layout{LayoutArrayFill}
+	params.Profiles = []LifetimeProfile{ProfileLocal}
+	if err := params.Validate(); err == nil {
+		t.Fatal("des réplicats sans disposition NAMED_FIELDS doivent être refusés")
+	}
+	// La série que H-012 lit est demandée : les réplicats sont admis.
+	params.Layouts = []Layout{LayoutNamedFields}
+	if err := params.Validate(); err != nil {
+		t.Fatalf("Validate : %v", err)
+	}
+}
+
+// TestUC001_A1_DemandeSansAucunSujet verrouille A-003 : Expand rendait zéro cellule sans rien
+// dire, et le message final ne nommait pas le paramètre fautif.
+func TestUC001_A1_DemandeSansAucunSujet(t *testing.T) {
+	t.Parallel()
+	params := MatrixParameters{
+		Sizes: []int{4096}, PointerFieldVariants: []bool{false},
+		Profiles: []LifetimeProfile{ProfileLocal}, PassingModes: PassingModes(),
+		Layouts: []Layout{LayoutNamedFieldsSham},
+	}
+	_, _, err := params.Expand()
+	if err == nil {
+		t.Fatal("une demande sans aucun sujet doit être refusée")
+	}
+	if !strings.Contains(err.Error(), string(LayoutNamedFieldsSham)) {
+		t.Fatalf("le message doit nommer la demande fautive : %v", err)
+	}
+}
