@@ -29,13 +29,17 @@ type Config struct {
 	Log     io.Writer     // progression ; io.Discard accepté
 }
 
+// goTestTimeout est le délai que go test transmet par défaut à un binaire de test ; lancé
+// directement, le binaire n'en aurait aucun (C-004, précision du 2026-09-13).
+const goTestTimeout = "-test.timeout=10m0s"
+
 // binaries sont les exécutables de mesure compilés à l'étape 4.
 type binaries struct{ driver, driverRace, program string }
 
 // command rend l'exécutable et les arguments d'un détecteur dynamique (C-006).
 func (b binaries) command(det results.Detector, caseID string) (string, []string) {
 	test := func(bin, name string) (string, []string) {
-		return bin, []string{"-test.run=^" + name + "$", "-test.v", "-test.count=1"}
+		return bin, []string{"-test.run=^" + name + "$", "-test.v", "-test.count=1", goTestTimeout}
 	}
 	switch det {
 	case results.DetectorBare:
@@ -159,7 +163,7 @@ func Run(ctx context.Context, cfg Config) (results.Run, string, error) {
 	for rep := 1; rep <= cfg.Reps; rep++ {
 		for _, a := range probeArms() {
 			env := []string{"LEAKLAB_PROBE=" + a.probe, "LEAKLAB_ARM=" + a.arm}
-			p, err := runProcess(ctx, time.Minute, labDir, env, bins.driver, "-test.run=^"+a.test+"$", "-test.count=1")
+			p, err := runProcess(ctx, time.Minute, labDir, env, bins.driver, "-test.run=^"+a.test+"$", "-test.count=1", goTestTimeout)
 			if err != nil {
 				return results.Run{}, "", err
 			}

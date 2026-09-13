@@ -53,7 +53,7 @@ func TestC008_HypothesesEtEmpreintes(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(hs) != 13 || hs[0].ID != "H-001" || hs[12].ID != "H-013" {
+	if len(hs) != 14 || hs[0].ID != "H-001" || hs[13].ID != "H-014" {
 		t.Fatalf("hypothèses lues : %d, de %s à %s", len(hs), hs[0].ID, hs[len(hs)-1].ID)
 	}
 	h := hs[0]

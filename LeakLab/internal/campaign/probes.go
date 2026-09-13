@@ -21,6 +21,7 @@ func probeArms() []probeArm {
 			arms = append(arms, probeArm{"CANCEL_RETENTION", parent + "/" + mode, "TestProbeCancelRetention"})
 		}
 	}
+	arms = append(arms, probeArm{"CANCEL_RETENTION", "AFTERFUNC_WITNESS", "TestProbeCancelRetention"})
 	for _, a := range []string{"AFTER_IN_LOOP", "REUSED_TIMER", "RETAINED_WITNESS"} {
 		arms = append(arms, probeArm{"TIMER_GROWTH", a, "TestProbeTimerGrowth"})
 	}

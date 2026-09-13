@@ -16,7 +16,7 @@ type grid map[string]results.Outcome
 
 func digests() map[string]string {
 	m := map[string]string{}
-	for i := 1; i <= 13; i++ {
+	for i := 1; i <= 14; i++ {
 		m[fmt.Sprintf("H-%03d", i)] = "gel"
 	}
 	return m
@@ -124,7 +124,7 @@ func TestUC002_A1_CritereModifie(t *testing.T) {
 
 func TestUC002_A2_DonneesManquantes(t *testing.T) {
 	cur := digests()
-	cur["H-014"] = "neuf"
+	cur["H-015"] = "neuf"
 	vs, err := Evaluate(results.Run{ID: "R-vide", CriteriaDigests: digests()}, cur)
 	if err != nil {
 		t.Fatal(err)
@@ -134,7 +134,7 @@ func TestUC002_A2_DonneesManquantes(t *testing.T) {
 			t.Errorf("%s = %s sur une campagne vide", v.HypothesisID, v.Outcome)
 		}
 	}
-	if last := vs[len(vs)-1]; last.HypothesisID != "H-014" || !strings.Contains(last.Rationale, "après") {
+	if last := vs[len(vs)-1]; last.HypothesisID != "H-015" || !strings.Contains(last.Rationale, "après") {
 		t.Fatalf("hypothèse postérieure : %+v", last)
 	}
 }
@@ -246,7 +246,21 @@ func retention(forgotten, expired float64, gForgotten float64) map[string][3]flo
 	m["CANCEL_RETENTION/OPAQUE/FORGOTTEN"] = [3]float64{0, 400, cancelN}
 	m["CANCEL_RETENTION/OPAQUE/CANCELLED"] = [3]float64{0, 10, 0}
 	m["CANCEL_RETENTION/OPAQUE/EXPIRED"] = [3]float64{0, 10, 0}
+	m["CANCEL_RETENTION/AFTERFUNC_WITNESS"] = [3]float64{0, 180, 0}
 	return m
+}
+
+func TestH014(t *testing.T) {
+	runCases(t, "H-014", []hcase{
+		{"résidu sous le coût d'expiration", makeRun(grid{}, nil, retention(200, 150, 0)), Confirmed},
+		{"résidu au-delà du témoin", makeRun(grid{}, nil, retention(200, 250, 0)), Refuted},
+		{"rien de retenu", makeRun(grid{}, nil, retention(12, 150, 0)), Refuted},
+		{"entre les seuils", makeRun(grid{}, nil, retention(200, 200, 0)), Inconclusive},
+	})
+	// Le même jeu de mesures infirme H-009 : c'est le défaut que H-014 corrige.
+	if v := verdictOfRun(t, "H-009", makeRun(grid{}, nil, retention(200, 150, 0))); v.Outcome != Refuted {
+		t.Fatalf("H-009 = %s sur un résidu de 140 octets", v.Outcome)
+	}
 }
 
 func TestH009(t *testing.T) {

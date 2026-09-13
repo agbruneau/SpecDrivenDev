@@ -15,7 +15,7 @@ const cancelN = 20000
 var evaluators = map[string]evaluator{
 	"H-001": h001, "H-002": h002, "H-003": h003, "H-004": h004, "H-005": h005,
 	"H-006": h006, "H-007": h007, "H-008": h008, "H-009": h009, "H-010": h010,
-	"H-011": h011, "H-012": h012, "H-013": h013,
+	"H-011": h011, "H-012": h012, "H-013": h013, "H-014": h014,
 }
 
 func verdictOf(refuted bool) Outcome {
@@ -178,12 +178,22 @@ func h008(e *eval) (Outcome, string) { return deadlockBoth(e, results.DetectorBa
 // CANCELABLE. Confirmée si retenue ≥ 32 et résidu < 8 pour les deux ; infirmée si retenue < 8 pour
 // les deux, ou résidu ≥ 32 pour l'un.
 func h009(e *eval) (Outcome, string) {
+	return retentionVerdict(e, func(parent string) string { return parent + "/CANCELLED" })
+}
+
+// H-014 : mêmes seuils que H-009, résidu = EXPIRED − AFTERFUNC_WITNESS.
+func h014(e *eval) (Outcome, string) {
+	return retentionVerdict(e, func(string) string { return "AFTERFUNC_WITNESS" })
+}
+
+// retentionVerdict applique les seuils communs à H-009 et H-014 ; residueBase nomme le bras
+// retranché du bras EXPIRED de chaque parent.
+func retentionVerdict(e *eval, residueBase func(parent string) string) (Outcome, string) {
 	allHeld, allResidueLow, allHeldLow, anyResidueHigh := true, true, true, false
 	var parts []string
 	for _, p := range []string{"BACKGROUND", "CANCELABLE"} {
-		c := e.median("CANCEL_RETENTION", p+"/CANCELLED", bytes)
-		held := e.median("CANCEL_RETENTION", p+"/FORGOTTEN", bytes) - c
-		residue := e.median("CANCEL_RETENTION", p+"/EXPIRED", bytes) - c
+		held := e.median("CANCEL_RETENTION", p+"/FORGOTTEN", bytes) - e.median("CANCEL_RETENTION", p+"/CANCELLED", bytes)
+		residue := e.median("CANCEL_RETENTION", p+"/EXPIRED", bytes) - e.median("CANCEL_RETENTION", residueBase(p), bytes)
 		allHeld = allHeld && held >= 32
 		allResidueLow = allResidueLow && residue < 8
 		allHeldLow = allHeldLow && held < 8

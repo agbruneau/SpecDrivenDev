@@ -6,6 +6,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -130,8 +131,26 @@ func TestUC001_Sondes(t *testing.T) {
 	if _, err := parseMetrics(a, 1, "LEAKLAB-METRIC bytesPerOp=1\n"); err == nil {
 		t.Fatal("une grandeur manquante doit être une erreur")
 	}
-	if n := len(probeArms()); n != 14 {
-		t.Fatalf("%d bras, 14 attendus (C-007)", n)
+	if n := len(probeArms()); n != 15 {
+		t.Fatalf("%d bras, 15 attendus (C-007)", n)
+	}
+}
+
+// TestUC001_C004_DelaiParDefaut verrouille la précision de C-004 : un binaire de test lancé
+// directement n'a aucun délai ; le banc lui passe celui que go test transmet.
+func TestUC001_C004_DelaiParDefaut(t *testing.T) {
+	b := binaries{driver: "d", driverRace: "r", program: "p"}
+	for _, det := range []results.Detector{results.DetectorBare, results.DetectorRace, results.DetectorSynctest, results.DetectorNumGoroutine, results.DetectorLeakProfile} {
+		_, args := b.command(det, "dispatch-leak")
+		if !slices.Contains(args, goTestTimeout) {
+			t.Errorf("%s : arguments %v sans %s", det, args, goTestTimeout)
+		}
+	}
+	if name, args := b.command(results.DetectorProgram, "dispatch-leak"); name != "p" || len(args) != 1 {
+		t.Errorf("PROGRAM : %s %v", name, args)
+	}
+	if goTestTimeout != "-test.timeout=10m0s" {
+		t.Errorf("délai %s, celui de go test attendu", goTestTimeout)
 	}
 }
 

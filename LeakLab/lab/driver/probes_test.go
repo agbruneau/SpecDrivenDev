@@ -43,9 +43,22 @@ func (opaque) Value(any) any { return nil }
 
 const cancelN = 20000
 
-// TestProbeCancelRetention est la sonde CANCEL_RETENTION (H-009, H-010).
+// TestProbeCancelRetention est la sonde CANCEL_RETENTION (H-009, H-010, H-014).
 func TestProbeCancelRetention(t *testing.T) {
-	parentName, mode, _ := strings.Cut(arm(t, "CANCEL_RETENTION"), "/")
+	which := arm(t, "CANCEL_RETENTION")
+	if which == "AFTERFUNC_WITNESS" {
+		// Témoin de H-014 : le coût d'expiration de N minuteries, sans aucun contexte.
+		g0, h0 := runtime.NumGoroutine(), heapAlloc()
+		for range cancelN {
+			time.AfterFunc(time.Millisecond, func() {})
+		}
+		time.Sleep(500 * time.Millisecond)
+		h1, g1 := heapAlloc(), runtime.NumGoroutine()
+		metric("bytesPerOp", float64(h1-h0)/cancelN)
+		metric("goroutineDelta", g1-g0)
+		return
+	}
+	parentName, mode, _ := strings.Cut(which, "/")
 	var parent context.Context
 	switch parentName {
 	case "BACKGROUND":
