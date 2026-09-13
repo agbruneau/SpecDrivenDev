@@ -84,7 +84,7 @@ Entité dérivée, jamais stockée : les observations d'un couple cas × détect
 | Attribut | Type | Description |
 |---|---|---|
 | probe | enum | `SYNCTEST_TIMEOUT`, `CANCEL_RETENTION`, `TIMER_GROWTH` |
-| arm | string | Bras (C-007) : `SYNCTEST`, `REAL` ; `<PARENT>/<MODE>` ; `AFTER_IN_LOOP`, `REUSED_TIMER`, `RETAINED_WITNESS` |
+| arm | string | Bras (C-007) : `SYNCTEST`, `REAL` ; `<PARENT>/<MODE>`, `AFTERFUNC_WITNESS` ; `AFTER_IN_LOOP`, `REUSED_TIMER`, `RETAINED_WITNESS` |
 | rep | int | Numéro de répétition |
 | wallNs | int64 | Temps réel (SYNCTEST_TIMEOUT) |
 | bytesPerOp | float64 | Octets de tas retenus par contexte ou par itération |

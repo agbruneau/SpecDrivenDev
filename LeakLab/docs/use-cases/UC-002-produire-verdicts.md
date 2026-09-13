@@ -9,7 +9,7 @@
 **Status:** Approved
 
 **Linked Requirements:** FR-005, FR-006, NFR-004, C-008
-**Linked Hypotheses:** H-001 à H-013
+**Linked Hypotheses:** H-001 à H-014
 **Entities:** Run, Observation, Cell, ProbeResult, Case, Hypothesis, Verdict
 
 ## Preconditions
