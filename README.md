@@ -193,8 +193,8 @@ Conventions : prose en français, identifiants et code en anglais; pages citées
 
 Les trois ouvrages sont versionnés dans [`Book/`](Book/).
 
-Marco, E. (2026). *Agentic Coding with Claude Code: The everyday developer's guide to agentic coding with Claude Code*. Packt Publishing. Première publication en mars 2026 (© 2025). ISBN 978-1-80602-259-5. Fichier : [`Book/Agentic_Coding_with_Claude_Code.pdf`](Book/Agentic_Coding_with_Claude_Code.pdf).
+Marco, E. (2026). *Agentic Coding with Claude Code: The everyday developer's guide to agentic coding with Claude Code*. Packt Publishing. Première publication en mars 2026 (© 2025). ISBN 978-1-80602-259-5. https://www.packtpub.com/en-us/product/agentic-coding-with-claude-code-9781806022588?srsltid=AfmBOoqLTRdd2Iww3jmKZsRJsNli4rD28CxueQ1QPNNRgPhhnDmm-dKY. 
 
-Martinelli, S. (2026). *Spec-Driven Development: From Specs to Code with AI Agents*. Apress (Apress Pocket Guides). ISBN 979-8-8688-2850-8 (imprimé), 979-8-8688-2851-5 (numérique). https://doi.org/10.1007/979-8-8688-2851-5. Fichier : [`Book/Spec-Driven Development.pdf`](Book/Spec-Driven%20Development.pdf).
+Martinelli, S. (2026). *Spec-Driven Development: From Specs to Code with AI Agents*. Apress (Apress Pocket Guides). ISBN 979-8-8688-2850-8 (imprimé), 979-8-8688-2851-5 (numérique). https://doi.org/10.1007/979-8-8688-2851-5.
 
-Shahsavan, S. (2026). *Building Enterprise Projects with Go: Clarity at Scale in Production-Grade Go Systems*. Apress. ISBN 979-8-8688-2369-5 (imprimé), 979-8-8688-2370-1 (numérique). https://doi.org/10.1007/979-8-8688-2370-1. Fichier : [`Book/Building_Enterprise_Projects_with_Go.pdf`](Book/Building_Enterprise_Projects_with_Go.pdf).
+Shahsavan, S. (2026). *Building Enterprise Projects with Go: Clarity at Scale in Production-Grade Go Systems*. Apress. ISBN 979-8-8688-2369-5 (imprimé), 979-8-8688-2370-1 (numérique). https://doi.org/10.1007/979-8-8688-2370-1.
