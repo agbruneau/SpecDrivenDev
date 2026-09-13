@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"sort"
 	"strings"
@@ -15,7 +14,9 @@ import (
 // Doublures en mémoire : le service ne parle qu'aux ports, aucun test n'a besoin du disque ni de
 // la chaîne d'outils (BEPG p. 373-375).
 
-var errNotFound = errors.New("introuvable")
+// errNotFound est la sentinelle du port : gather doit pouvoir distinguer une absence légitime
+// d'une lecture en erreur, et un fake qui inventerait la sienne masquerait ce contrôle (A-123).
+var errNotFound = ports.ErrNotFound
 
 type fakeClock struct{ instant time.Time }
 
@@ -142,7 +143,11 @@ type memoryStore struct {
 	locked       bool
 	lockedBy     string
 	writeErr     error
-	stamp        int
+	// comparisonErr simule une lecture en erreur du fichier de comparaison, distincte de son
+	// absence : le service doit les traiter différemment (A-123).
+	comparisonErr   error
+	partialWriteErr error
+	stamp           int
 }
 
 func newStore() *memoryStore {
@@ -180,6 +185,11 @@ func (s *memoryStore) WriteSources(_ context.Context, matrixID string, files map
 		return s.writeErr
 	}
 	s.sources[matrixID] = files
+	// partialWriteErr simule une écriture interrompue à mi-parcours : les fichiers déjà écrits
+	// subsistent, ce que A-250 laissait en place sans nettoyage.
+	if s.partialWriteErr != nil {
+		return s.partialWriteErr
+	}
 	return nil
 }
 
@@ -296,6 +306,9 @@ func (s *memoryStore) WriteComparisonSet(_ context.Context, set models.Compariso
 }
 
 func (s *memoryStore) LatestComparisonSet(_ context.Context, campaignID string) (models.ComparisonSet, string, error) {
+	if s.comparisonErr != nil {
+		return models.ComparisonSet{}, "", s.comparisonErr
+	}
 	sets := s.comparisons[campaignID]
 	if len(sets) == 0 {
 		return models.ComparisonSet{}, "", fmt.Errorf("%w : comparaison de %s", errNotFound, campaignID)
@@ -311,17 +324,31 @@ func (s *memoryStore) CampaignPath(campaignID string) string {
 	return "results/campaigns/" + campaignID + "/campaign.json"
 }
 
+// AcquireLock reproduit la reprise du verrou du store réel : un verrou qui porte l'identifiant
+// demandé est repris, comme l'exige A4 (A-044).
 func (s *memoryStore) AcquireLock(_ context.Context, campaignID string) error {
 	if s.locked {
-		return fmt.Errorf("une campagne est déjà en cours (%s)", s.lockedBy)
+		if campaignID != "" && s.lockedBy == campaignID {
+			return nil
+		}
+		return fmt.Errorf("%w : tenu par %s", ports.ErrLockHeld, s.lockedBy)
 	}
 	s.locked = true
 	s.lockedBy = campaignID
 	return nil
 }
 
+func (s *memoryStore) AdoptLock(_ context.Context, campaignID string) error {
+	if !s.locked {
+		return fmt.Errorf("nommage d'un verrou non tenu")
+	}
+	s.lockedBy = campaignID
+	return nil
+}
+
 func (s *memoryStore) ReleaseLock(context.Context) error {
 	s.locked = false
+	s.lockedBy = ""
 	return nil
 }
 
@@ -333,14 +360,6 @@ func (s *memoryStore) WriteVerdictReport(_ context.Context, report models.Verdic
 	}
 	s.verdicts = append(s.verdicts, report)
 	return "results/verdicts/" + report.CampaignID + "-" + s.nextStamp() + ".json", nil
-}
-
-func (s *memoryStore) LatestVerdictReport(context.Context) (models.VerdictReport, string, error) {
-	if len(s.verdicts) == 0 {
-		return models.VerdictReport{}, "", fmt.Errorf("%w : aucun verdict", errNotFound)
-	}
-	latest := s.verdicts[len(s.verdicts)-1]
-	return latest, "results/verdicts/latest.json", nil
 }
 
 // VerdictReports rend tous les rapports, du plus ancien au plus récent (C-009 : le tableau de bord

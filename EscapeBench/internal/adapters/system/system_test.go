@@ -21,7 +21,7 @@ func TestClock(t *testing.T) {
 func TestCaptureProvenance(t *testing.T) {
 	t.Parallel()
 	instant := time.Date(2026, 9, 10, 12, 0, 0, 0, time.UTC)
-	prober := NewProber(FixedClock{Instant: instant}, func() string { return "  Un CPU  " })
+	prober := NewProber(FixedClock{Instant: instant}, func(context.Context) string { return "  Un CPU  " })
 	provenance, err := prober.Capture(context.Background())
 	if err != nil {
 		t.Fatalf("Capture : %v", err)
@@ -44,7 +44,7 @@ func TestCaptureProvenance(t *testing.T) {
 
 func TestCaptureAvecCPUInconnu(t *testing.T) {
 	t.Parallel()
-	prober := NewProber(nil, func() string { return "   " })
+	prober := NewProber(nil, func(context.Context) string { return "   " })
 	provenance, err := prober.Capture(context.Background())
 	if err != nil {
 		t.Fatalf("Capture : %v", err)
@@ -60,7 +60,7 @@ func TestCaptureAvecCPUInconnu(t *testing.T) {
 func TestDetectCPUModel(t *testing.T) {
 	t.Parallel()
 	// La détection réelle ne rend jamais la chaîne vide, quelle que soit la plateforme.
-	if strings.TrimSpace(DetectCPUModel()) == "" {
+	if strings.TrimSpace(DetectCPUModel(context.Background())) == "" {
 		t.Fatal("DetectCPUModel ne doit jamais rendre une chaîne vide")
 	}
 	prober := NewProber(nil, nil)

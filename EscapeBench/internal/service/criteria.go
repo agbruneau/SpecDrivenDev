@@ -27,8 +27,9 @@ var evaluators = map[string]evaluator{
 	"H-013": evaluateH013,
 }
 
-// SmallStructBytes est la borne « 1 à 3 mots machine » de BEPG p. 253, en octets sur 64 bits.
-const SmallStructBytes = models.SmallStructBytes
+// smallStructBytes est la borne « 1 à 3 mots machine » de BEPG p. 253, en octets sur 64 bits.
+// A-243 : l'alias était exporté et n'avait aucun importateur ; models.SmallStructBytes fait foi.
+const smallStructBytes = models.SmallStructBytes
 
 // inconclusive construit une évaluation non concluante (UC-005, A2 et étape 5).
 func inconclusive(format string, args ...any) evaluation {
@@ -49,7 +50,7 @@ func evaluateH001(e Evidence) evaluation {
 	}
 	var eligible, refuting []models.Comparison
 	for _, comparison := range e.ComparisonSet.Comparisons {
-		if comparison.Profile != models.ProfileLocal || comparison.HasPointerField || comparison.SizeBytes > SmallStructBytes {
+		if comparison.Profile != models.ProfileLocal || comparison.HasPointerField || comparison.SizeBytes > smallStructBytes {
 			continue
 		}
 		if comparison.EffectiveLayout() != models.LayoutArrayFill {
@@ -62,14 +63,14 @@ func evaluateH001(e Evidence) evaluation {
 	}
 	if len(eligible) == 0 {
 		return inconclusive("aucune paire LOCAL %s sans champ pointeur de taille ≤ %d octets dans la campagne %s",
-			models.LayoutArrayFill, SmallStructBytes, e.Campaign.ID)
+			models.LayoutArrayFill, smallStructBytes, e.Campaign.ID)
 	}
 	files := []string{e.ComparisonPath}
 	if len(refuting) >= 2 {
 		return evaluation{
 			Outcome: models.OutcomeRefuted,
 			Rationale: fmt.Sprintf("%d paires ≤ %d octets ont significant vrai et ciHigh < 0 : %s (sur %d paires éligibles)",
-				len(refuting), SmallStructBytes, join(pairLabels(refuting)), len(eligible)),
+				len(refuting), smallStructBytes, join(pairLabels(refuting)), len(eligible)),
 			Files: files,
 		}
 	}
@@ -107,7 +108,7 @@ func evaluateH002(e Evidence) evaluation {
 			continue
 		}
 		observed = append(observed, fmt.Sprintf("%s : %d octets", label, size))
-		if size <= SmallStructBytes {
+		if size <= smallStructBytes {
 			refuting = append(refuting, fmt.Sprintf("%s à %d octets", label, size))
 		}
 	}
@@ -119,13 +120,13 @@ func evaluateH002(e Evidence) evaluation {
 	if len(refuting) > 0 {
 		return evaluation{
 			Outcome:   models.OutcomeRefuted,
-			Rationale: fmt.Sprintf("point de bascule ≤ %d octets pour %s (séries : %s)", SmallStructBytes, join(refuting), join(observed)),
+			Rationale: fmt.Sprintf("point de bascule ≤ %d octets pour %s (séries : %s)", smallStructBytes, join(refuting), join(observed)),
 			Files:     files,
 		}
 	}
 	return evaluation{
 		Outcome:   models.OutcomeConfirmed,
-		Rationale: fmt.Sprintf("aucun point de bascule LOCAL ≤ %d octets (séries : %s)", SmallStructBytes, join(observed)),
+		Rationale: fmt.Sprintf("aucun point de bascule LOCAL ≤ %d octets (séries : %s)", smallStructBytes, join(observed)),
 		Files:     files,
 	}
 }

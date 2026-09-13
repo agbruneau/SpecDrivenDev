@@ -6,7 +6,15 @@
 set -uo pipefail
 ROOT="${CLAUDE_PROJECT_DIR:-$(pwd)}"
 INPUT="$(cat)"
-ACTIVE="$(printf '%s' "$INPUT" | jq -r '.stop_hook_active // false' 2>/dev/null || echo false)"
+# A-110 : sans jq la garde anti-boucle disparaissait et la suite était relancée à chaque
+# tour. Détecter le drapeau sans jq dans ce cas plutôt que de le lire comme false.
+if command -v jq >/dev/null 2>&1; then
+  ACTIVE="$(printf '%s' "$INPUT" | jq -r '.stop_hook_active // false' 2>/dev/null || echo false)"
+else
+  echo 'go-test : jq introuvable, lecture dégradée de stop_hook_active.' >&2
+  ACTIVE=false
+  printf '%s' "$INPUT" | grep -qE '"stop_hook_active"[[:space:]]*:[[:space:]]*true' && ACTIVE=true
+fi
 [ "$ACTIVE" = "true" ] && exit 0
 cd "$ROOT" || exit 0
 command -v go >/dev/null 2>&1 || exit 0

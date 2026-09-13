@@ -1,11 +1,18 @@
 # EscapeBench — contrat exécutable (BEPG ch. 11, p. 324-325) : le Makefile dit QUOI, le CI dit OÙ.
+# A-115 : sans cette ligne, `make` sans argument exécute la première cible, fmt, et réécrit les
+# sources. La cible par défaut est le contrôle, jamais une modification.
+.DEFAULT_GOAL := check
+
 COUNT ?= 20
 PARAMS ?=
 MATRIX ?=
 CAMPAIGN ?=
 HYPOTHESES ?=
 
-.PHONY: fmt vet test integration_test matrix escape campaign compare verdict dashboard tidy build clean
+.PHONY: check fmt vet test integration_test matrix escape campaign compare verdict dashboard tidy build clean
+
+## Contrôle complet, cible par défaut : la commande de référence de CLAUDE.md.
+check: vet test
 
 fmt:
 	gofmt -l -w ./cmd ./internal
@@ -17,8 +24,11 @@ test:
 	go test -race -shuffle=on -count=1 ./...
 
 ## Tests d'intégration (adapters réels : compilateur, système de fichiers) — build tag BEPG ch. 17.
+## Ils rejouent les verdicts archivés sous results/ (non-régression de UC-005) et classent la
+## sortie véritable de `go build -gcflags=-m` (UC-002). `-shuffle=on` comme la commande de
+## référence de CLAUDE.md : l'ordre des tests ne doit pas porter de résultat.
 integration_test:
-	go test -race -count=1 -tags=integration_test -timeout 300s ./...
+	go test -race -shuffle=on -count=1 -tags=integration_test -timeout 300s ./...
 
 build:
 	go build -o bin/escapebench ./cmd/escapebench

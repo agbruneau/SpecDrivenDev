@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+	"math"
 	"sort"
 	"strings"
 
@@ -40,7 +41,7 @@ func evaluateH007(e Evidence) evaluation {
 		if c.Profile != models.ProfileLocal || c.Layout != models.LayoutNamedFields || c.SizeBytes < RegisterArgumentBytes {
 			continue
 		}
-		if pointerWins(c, noiseFloor(e, c.HasPointerField), c) {
+		if pointerWins(c, noiseFloor(e, c.HasPointerField)) {
 			sensitivity = true
 			break
 		}
@@ -69,7 +70,7 @@ func evaluateH007(e Evidence) evaluation {
 		var winning []string
 		for _, size := range smallStructSizes() {
 			c := named[size]
-			if pointerWins(c, floor, c) {
+			if pointerWins(c, floor) {
 				winning = append(winning, fmt.Sprintf("%d o", size))
 			}
 		}
@@ -102,7 +103,7 @@ func noiseFloor(e Evidence, hasPointerField bool) float64 {
 		if c.Profile != models.ProfileLocal || c.Layout != models.LayoutNamedFieldsSham || c.HasPointerField != hasPointerField {
 			continue
 		}
-		if delta := abs(c.DeltaNsPerOp); delta > floor {
+		if delta := math.Abs(c.DeltaNsPerOp); delta > floor {
 			floor = delta
 		}
 	}
@@ -112,11 +113,11 @@ func noiseFloor(e Evidence, hasPointerField bool) float64 {
 // pointerWins indique qu'une Comparison donne l'avantage au pointeur au-delà du seuil : l'écart
 // est significatif et sa borne haute dépasse le plancher de bruit, ou la barrière relative si
 // celle-ci est plus exigeante.
-func pointerWins(c models.Comparison, floor float64, ref models.Comparison) bool {
-	threshold := floor
-	if relative := NoiseFloorRatio * ref.MedianValueNs; relative > threshold {
-		threshold = relative
-	}
+// A-230 : le paramètre `ref` n'a jamais reçu autre chose que `c` à ses deux sites d'appel. Le
+// garder laissait croire que le plancher relatif pouvait se calculer sur une autre comparaison que
+// celle jugée, ce qu'aucun critère gelé ne prévoit.
+func pointerWins(c models.Comparison, floor float64) bool {
+	threshold := max(floor, NoiseFloorRatio*c.MedianValueNs)
 	return c.Significant && c.CIHigh <= -threshold
 }
 
@@ -413,13 +414,6 @@ func constantAllocs(m models.Measurement) bool {
 }
 
 // abs rend la valeur absolue d'un flottant.
-func abs(v float64) float64 {
-	if v < 0 {
-		return -v
-	}
-	return v
-}
-
 // suffixList rend une énumération entre parenthèses, ou la chaîne vide si elle est vide.
 func suffixList(values []string) string {
 	if len(values) == 0 {

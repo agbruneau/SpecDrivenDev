@@ -16,6 +16,10 @@ type ReproducibilityCheck struct {
 	ComparedTo string
 	Differing  []string
 	Violation  bool
+	// Unreadable nomme les rapports antérieurs que la comparaison n'a pas pu lire. Ils sont
+	// signalés plutôt que fatals : un fichier de results/ est immuable, et l'un d'eux devenu
+	// illisible bloquait sinon UC-002 pour cette matrice, sans recours (A-256).
+	Unreadable []string
 }
 
 // EscapeReportSummary est ce que UC-002 rend observable (étape 7).
@@ -132,16 +136,27 @@ func (s *EscapeService) checkReproducibility(ctx context.Context, matrixID strin
 	if err != nil {
 		return nil, err
 	}
+	var unreadable []string
 	for i := len(paths) - 1; i >= 0; i-- {
 		previous, err := s.store.ReadEscapeReport(ctx, paths[i])
 		if err != nil {
-			return nil, err
+			// A-256 : un rapport antérieur illisible bloquait définitivement UC-002 pour cette
+			// matrice — un fichier immuable, que le chercheur ne peut pas retirer. Le contrôle de
+			// reproductibilité de A3 est une comparaison à l'existant : un fichier qu'on ne sait
+			// pas lire n'est pas une comparaison possible, pas un échec de classification. On
+			// continue vers un rapport plus ancien, en portant l'erreur au rapport rendu.
+			unreadable = append(unreadable, fmt.Sprintf("%s : %v", paths[i], err))
+			continue
 		}
 		if !previous.Provenance.SameToolchain(report.Provenance) {
 			continue
 		}
 		differing := DifferingVerdicts(previous, report)
-		return &ReproducibilityCheck{ComparedTo: paths[i], Differing: differing, Violation: len(differing) > 0}, nil
+		return &ReproducibilityCheck{ComparedTo: paths[i], Differing: differing,
+			Violation: len(differing) > 0, Unreadable: unreadable}, nil
+	}
+	if len(unreadable) > 0 {
+		return &ReproducibilityCheck{Unreadable: unreadable}, nil
 	}
 	return nil, nil
 }

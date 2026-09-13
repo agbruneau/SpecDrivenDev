@@ -325,19 +325,29 @@ func TestUC004_PointDeBasculeNonPublieSurSerieRepliquee(t *testing.T) {
 		{SizeBytes: 16, Profile: models.ProfileLocal, Layout: models.LayoutNamedFields, DeltaNsPerOp: -1, CIHigh: -0.5, Significant: true},
 	}
 	key := models.TippingKey{Profile: models.ProfileLocal, Layout: models.LayoutNamedFields}
-	if got, ok := TippingPoints(simple)[key]; !ok || got != 8 {
+	points, excluded := TippingPoints(simple)
+	if got, ok := points[key]; !ok || got != 8 {
 		t.Fatalf("série simple : point de bascule = %d, présent = %v", got, ok)
+	}
+	if len(excluded) != 0 {
+		t.Fatalf("aucune série n'est exclue ici : %v", excluded)
 	}
 	// La même série, répliquée : deux Comparison portent la taille 8.
 	repliquee := append(append([]models.Comparison(nil), simple...), simple[0])
-	if _, ok := TippingPoints(repliquee)[key]; ok {
+	points, excluded = TippingPoints(repliquee)
+	if _, ok := points[key]; ok {
 		t.Fatal("une série répliquée ne doit pas publier de point de bascule")
+	}
+	// A-032 : l'exclusion est consignée avec sa raison, jamais silencieuse.
+	if len(excluded) != 1 || excluded[0].Key != key || excluded[0].Reason == "" {
+		t.Fatalf("l'exclusion doit être consignée avec sa raison : %+v", excluded)
 	}
 	// Une série non répliquée du même fichier reste publiée.
 	autre := models.TippingKey{Profile: models.ProfileLocal, Layout: models.LayoutArrayFill}
 	repliquee = append(repliquee, models.Comparison{SizeBytes: 8, Profile: models.ProfileLocal,
 		Layout: models.LayoutArrayFill, DeltaNsPerOp: -1, CIHigh: -0.5, Significant: true})
-	if _, ok := TippingPoints(repliquee)[autre]; !ok {
+	points, _ = TippingPoints(repliquee)
+	if _, ok := points[autre]; !ok {
 		t.Fatal("les séries non répliquées du même fichier doivent rester publiées")
 	}
 }

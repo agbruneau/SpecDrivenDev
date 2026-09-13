@@ -5,9 +5,15 @@
 set -uo pipefail
 ROOT="${CLAUDE_PROJECT_DIR:-$(pwd)}"
 INPUT="$(cat)"
+command -v jq >/dev/null 2>&1 || { echo 'spec-lint : jq introuvable, contrôle ignoré.' >&2; exit 0; }
 FILE="$(printf '%s' "$INPUT" | jq -r '.tool_input.file_path // empty' 2>/dev/null || true)"
 FILE="${FILE//\\//}"; ROOT="${ROOT//\\//}"   # chemins Windows C:\... -> C:/...
-case "$FILE" in */docs/use-cases/UC-[0-9][0-9][0-9]-*.md) ;; *) exit 0 ;; esac
+# A-109 : un chemin relatif est un cas légitime ; le motif exigeait un `/` devant docs.
+case "$FILE" in
+  docs/use-cases/UC-[0-9][0-9][0-9]-*.md|*/docs/use-cases/UC-[0-9][0-9][0-9]-*.md) ;;
+  *) exit 0 ;;
+esac
+[ -f "$FILE" ] || FILE="$ROOT/$FILE"
 [ -f "$FILE" ] || exit 0
 
 missing=()
@@ -30,8 +36,13 @@ if [ -f "$REQ" ]; then
   done
 fi
 
-# Mots vagues (SDD p. 51) dans les flux
-VAGUE="$(grep -niE '\b(normalement|rapidement|si possible|au besoin|devrait|normally|quickly|as needed|should)\b' "$FILE" | grep -vE 'Notes de revue|^[0-9]+:>' || true)"
+# Mots vagues (SDD p. 51) dans les flux.
+# A-108 : les citations du livre (« … », "…") sont retirées avant l'examen — une citation
+# verbatim n'est pas une formulation vague du spécificateur — et `-w` (POSIX) remplace
+# `\b`, qui est une extension GNU.
+VAGUE="$(sed -E 's/«[^»]*»//g; s/"[^"]*"//g' "$FILE" \
+  | grep -nwiE '(normalement|rapidement|si possible|au besoin|devrait|normally|quickly|as needed|should)' \
+  | grep -vE 'Notes de revue|^[0-9]+:>' || true)"
 
 if [ ${#missing[@]} -gt 0 ] || [ -n "$VAGUE" ]; then
   {

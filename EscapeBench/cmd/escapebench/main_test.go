@@ -177,7 +177,7 @@ func TestRunCompareCampagneInconnue(t *testing.T) {
 
 func TestHarnessDigestStable(t *testing.T) {
 	t.Parallel()
-	d, err := newDeps(projectDocs(t))
+	d, err := newDeps(context.Background(), projectDocs(t))
 	if err != nil {
 		t.Fatalf("newDeps : %v", err)
 	}
@@ -195,7 +195,7 @@ func TestNewDepsSansRacineExplicite(t *testing.T) {
 	t.Parallel()
 	// Sans --root, la racine est cherchée depuis le répertoire courant : les tests de ce paquet
 	// s'exécutent dans cmd/escapebench, la remontée doit trouver le dépôt.
-	d, err := newDeps("")
+	d, err := newDeps(context.Background(), "")
 	if err != nil {
 		t.Fatalf("newDeps : %v", err)
 	}

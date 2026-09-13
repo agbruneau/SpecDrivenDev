@@ -257,3 +257,41 @@ func TestUC001_MatriceExistanteIllisible(t *testing.T) {
 		t.Fatalf("Generate : %v", err)
 	}
 }
+
+// TestUC001_PanneDeCompilationNestPasUnSujetFautif verrouille A-249 : toute erreur de Build était
+// consignée comme un sujet non compilable (A3). Une toolchain absente, un disque plein ou une
+// annulation faisaient supprimer la matrice pour une panne qui ne la concerne pas, et le message
+// accusait le code généré.
+func TestUC001_PanneDeCompilationNestPasUnSujetFautif(t *testing.T) {
+	t.Parallel()
+	f := newMatrixFixture()
+	panne := errors.New("go introuvable dans PATH")
+	f.compiler.err = panne
+
+	_, err := f.generator.Generate(context.Background(), smallParameters())
+	if !errors.Is(err, panne) {
+		t.Fatalf("erreur = %v, la panne d'origine attendue", err)
+	}
+	if errors.Is(err, ErrSubjectsNotCompilable) {
+		t.Fatalf("une panne de la chaîne d'outils n'est pas un sujet non compilable : %v", err)
+	}
+}
+
+// TestUC001_RepertoirePartielNettoye verrouille A-250 : un échec de WriteSources ou de Finalize
+// laissait un répertoire de matrice incomplet. L'identifiant étant déterministe, la génération
+// suivante de la même matrice y écrivait par-dessus des sources dont rien ne dit si elles sont
+// complètes.
+func TestUC001_RepertoirePartielNettoye(t *testing.T) {
+	t.Parallel()
+	f := newMatrixFixture()
+	f.store.partialWriteErr = errors.New("disque plein")
+
+	params := smallParameters()
+	if _, err := f.generator.Generate(context.Background(), params); err == nil {
+		t.Fatal("la génération doit échouer")
+	}
+	matrixID := params.MatrixID()
+	if _, ok := f.store.sources[matrixID]; ok {
+		t.Fatalf("aucune source partielle ne doit subsister pour %s", matrixID)
+	}
+}

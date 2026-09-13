@@ -195,11 +195,11 @@ func h012CellsOf(e Evidence) map[h012Key]h012Cell {
 			values = append(values, c.MedianValueNs)
 			pointers = append(pointers, c.MedianPointerNs)
 		}
-		cell.medianValue = medianOf(values)
-		cell.medianPointer = medianOf(pointers)
+		cell.medianValue = models.MedianFloat(values)
+		cell.medianPointer = models.MedianFloat(pointers)
 		cell.floor = trimmedRange(cell.deltas)
-		cell.relativeBar = NoiseFloorRatio * maxOf(cell.medianValue, cell.medianPointer)
-		cell.threshold = maxOf(cell.floor, cell.relativeBar)
+		cell.relativeBar = NoiseFloorRatio * max(cell.medianValue, cell.medianPointer)
+		cell.threshold = max(cell.floor, cell.relativeBar)
 		for i := range cell.ciHighs {
 			if cell.significant[i] && cell.ciHighs[i] <= -cell.threshold {
 				cell.crossing++
@@ -224,28 +224,6 @@ func trimmedRange(values []float64) float64 {
 		sorted = sorted[1 : len(sorted)-1]
 	}
 	return sorted[len(sorted)-1] - sorted[0]
-}
-
-// medianOf rend la médiane d'une liste non vide.
-func medianOf(values []float64) float64 {
-	if len(values) == 0 {
-		return 0
-	}
-	sorted := append([]float64(nil), values...)
-	sort.Float64s(sorted)
-	mid := len(sorted) / 2
-	if len(sorted)%2 == 1 {
-		return sorted[mid]
-	}
-	return (sorted[mid-1] + sorted[mid]) / 2
-}
-
-// maxOf rend la plus grande de deux valeurs.
-func maxOf(a, b float64) float64 {
-	if a > b {
-		return a
-	}
-	return b
 }
 
 // formatFloats met en forme une liste de valeurs pour une rationale.

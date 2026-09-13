@@ -24,8 +24,10 @@ type FixedClock struct{ Instant time.Time }
 // Now rend l'heure figée.
 func (c FixedClock) Now() time.Time { return c.Instant.UTC() }
 
-// CPUReader lit le modèle de processeur ; injecté pour rendre la capture testable.
-type CPUReader func() string
+// CPUReader lit le modèle de processeur ; injecté pour rendre la capture testable. Il prend un
+// contexte parce qu'il touche le système de fichiers ou le registre (CLAUDE.md : « toute I/O prend
+// un context.Context en premier paramètre », A-130).
+type CPUReader func(ctx context.Context) string
 
 // Prober capture la provenance d'une mesure.
 type Prober struct {
@@ -63,8 +65,8 @@ func NewProber(clock interface{ Now() time.Time }, cpu CPUReader) *Prober {
 // sans provenance complète est invalide (NFR-001). Les trois tailles mémoire ajoutées par C-008
 // valent zéro quand la machine ne les expose pas ; une hypothèse qui en dépend se déclare alors
 // non concluante plutôt que de supposer une valeur.
-func (p *Prober) Capture(_ context.Context) (models.Provenance, error) {
-	cpu := strings.TrimSpace(p.cpu())
+func (p *Prober) Capture(ctx context.Context) (models.Provenance, error) {
+	cpu := strings.TrimSpace(p.cpu(ctx))
 	if cpu == "" {
 		cpu = "inconnu"
 	}
@@ -83,16 +85,15 @@ func (p *Prober) Capture(_ context.Context) (models.Provenance, error) {
 	return provenance, provenance.Validate()
 }
 
-// DetectCPUModel lit le modèle de processeur de la machine. Sous Windows la variable
-// PROCESSOR_IDENTIFIER suffit ; ailleurs, /proc/cpuinfo est lu quand il existe.
-func DetectCPUModel() string {
-	if model := os.Getenv("PROCESSOR_IDENTIFIER"); model != "" {
-		return model
+// DetectCPUModel lit le modèle de processeur de la machine (NFR-001). La source est propre à la
+// plateforme ; quand aucune ne répond, l'architecture est consignée avec la mention que le modèle
+// n'a pas été détecté, plutôt qu'une valeur inventée.
+func DetectCPUModel(ctx context.Context) string {
+	if err := ctx.Err(); err != nil {
+		return runtime.GOARCH + " (modèle non détecté)"
 	}
-	if content, err := os.ReadFile("/proc/cpuinfo"); err == nil {
-		if model := cpuModelFromCPUInfo(string(content)); model != "" {
-			return model
-		}
+	if model := platformCPUModel(); model != "" {
+		return model
 	}
 	return runtime.GOARCH + " (modèle non détecté)"
 }

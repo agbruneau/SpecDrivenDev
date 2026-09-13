@@ -225,8 +225,17 @@ func (p MatrixParameters) Validate() error {
 		problems = append(problems, fmt.Sprintf("nombre de réplicats doit valoir %d ou %d (%d)",
 			DefaultReplicates(), ReplicateCount, p.Replicates))
 	}
-	// Le témoin nul ne se mesure qu'en profil LOCAL : demandé avec d'autres profils, il
-	// produirait des cellules que Cell.Validate refuse.
+	// A-002 : le réplicat ne se décline que sur la disposition NAMED_FIELDS en profil LOCAL, la
+	// seule série que H-012 lit. Demandé sans elle, il ne produisait aucune cellule de plus mais
+	// entrait dans la représentation canonique : la même matrice recevait un second identifiant,
+	// et deux campagnes réputées porter des matrices différentes mesuraient les mêmes sujets.
+	if p.Replicates == ReplicateCount && !replicableSeriesRequested(p) {
+		problems = append(problems, fmt.Sprintf(
+			"%d réplicats demandés sans série à répliquer : ils ne se déclinent que sur la disposition %s en profil %s (C-009)",
+			ReplicateCount, LayoutNamedFields, ProfileLocal))
+	}
+	// A-010 : le commentaire qui tenait ici annonçait un refus du témoin nul hors du profil LOCAL,
+	// retiré par D-22 — le générateur saute désormais la combinaison au lieu de refuser la matrice.
 	for _, spec := range p.Probes {
 		if !spec.Kind.Valid() {
 			problems = append(problems, fmt.Sprintf("genre de Probe %q inconnu", spec.Kind))
@@ -243,6 +252,31 @@ func (p MatrixParameters) Validate() error {
 		return invalid("%s", strings.Join(problems, " ; "))
 	}
 	return nil
+}
+
+// replicableSeriesRequested indique si la demande contient la série que le réplicat décline :
+// disposition NAMED_FIELDS en profil LOCAL (C-009).
+func replicableSeriesRequested(p MatrixParameters) bool {
+	layouts := p.Layouts
+	if len(layouts) == 0 {
+		layouts = DefaultLayouts()
+	}
+	hasLayout := false
+	for _, layout := range layouts {
+		if layout == LayoutNamedFields {
+			hasLayout = true
+			break
+		}
+	}
+	if !hasLayout {
+		return false
+	}
+	for _, profile := range p.Profiles {
+		if profile == ProfileLocal {
+			return true
+		}
+	}
+	return false
 }
 
 // Canonical rend la représentation stable des paramètres normalisés, base de l'identifiant.
@@ -359,29 +393,36 @@ func (p MatrixParameters) Expand() ([]Cell, []Probe, error) {
 						if layout == LayoutNamedFieldsSham && profile != ProfileLocal {
 							continue
 						}
-						for _, repeat := range n.Repeats {
-							// Seul un profil qui produit plusieurs instances par opération dépend de
-							// la répétition ; ailleurs elle ne créerait que des doublons.
-							if repeat > 1 && profile != ProfileReturnedAlloc {
-								continue
-							}
-							for _, payload := range n.Payloads {
-								// Même règle pour la charge : seul le profil qui en alloue une s'en
-								// décline.
-								if payload > 1 && profile != ProfileReturnedAlloc {
-									continue
-								}
+						// Seul un profil qui produit plusieurs instances par opération dépend de la
+						// répétition, et seul celui qui alloue une charge dépend de la charge ;
+						// ailleurs ces dimensions ne créeraient que des doublons. Les autres profils
+						// se produisent donc une fois, à leurs valeurs par défaut.
+						//
+						// Révision du 2026-09-12 (A-001) : le saut était écrit « si repeat > 1 et
+						// profil ≠ RETURNED_ALLOCATING, sauter », ce qui efface les autres profils
+						// dès que la liste demandée ne contient pas la valeur 1 — et non seulement
+						// les prive de la déclinaison. `repeats=4` supprimait LOCAL, `payloads=2`
+						// rendait zéro cellule, et NewMatrix échouait ensuite sans nommer la cause.
+						repeats, payloads := n.Repeats, n.Payloads
+						if profile != ProfileReturnedAlloc {
+							repeats, payloads = DefaultRepeats(), DefaultPayloads()
+						}
+						for _, repeat := range repeats {
+							for _, payload := range payloads {
 								// BR-001-3 : une Cell par mode demandé, donc la paire complète quand
 								// les deux le sont.
+								// Le réplicat ne se décline que là où H-012 le lit. Ailleurs il ne
+								// produirait que des doublons, et la clause de séparation de C-009
+								// vaut alors pour le seul sous-ensemble répliqué.
+								//
+								// A-013 : ce saut ne dépend ni du mode de passage ni de la cellule
+								// construite ; il était évalué une fois par mode, après construction.
+								if replicate > 1 && (layout != LayoutNamedFields || profile != ProfileLocal) {
+									continue
+								}
 								for _, mode := range n.PassingModes {
 									cell := Cell{TypeSpec: spec, Profile: profile, PassingMode: mode,
 										Repeat: repeat, Payload: payload, Replicate: replicate}
-									// Le réplicat ne se décline que là où H-012 le lit. Ailleurs il ne
-									// produirait que des doublons, et la clause de séparation de C-009
-									// vaut alors pour le seul sous-ensemble répliqué.
-									if replicate > 1 && (layout != LayoutNamedFields || profile != ProfileLocal) {
-										continue
-									}
 									cell.SourceFile = SourcePath(cell.ID())
 									if err := cell.Validate(); err != nil {
 										return nil, nil, err
@@ -404,7 +445,43 @@ func (p MatrixParameters) Expand() ([]Cell, []Probe, error) {
 		}
 		probes = append(probes, probe)
 	}
+	// A-003 : Expand rendait zéro cellule sans rien dire quand tous les sauts de génération
+	// s'appliquent, et NewMatrix échouait ensuite sur « Matrix.cells contient au moins une
+	// cellule » — un message qui ne nomme pas la demande fautive (UC-001, A1).
+	if len(cells) == 0 && len(probes) == 0 {
+		return nil, nil, invalid(
+			"la demande ne produit aucun sujet : %s ; vérifier les dispositions, les profils et les sondes demandés",
+			describeSkips(n))
+	}
 	return cells, probes, nil
+}
+
+// describeSkips explique pourquoi une demande peut ne produire aucune cellule : chaque saut de
+// génération est nommé avec la demande qui le déclenche.
+func describeSkips(n MatrixParameters) string {
+	var reasons []string
+	onlySham := len(n.Layouts) == 1 && n.Layouts[0] == LayoutNamedFieldsSham
+	if onlySham {
+		reasons = append(reasons, fmt.Sprintf(
+			"la seule disposition demandée est le témoin nul %s, qui ne se décline qu'en profil %s et au plus %d octets",
+			LayoutNamedFieldsSham, ProfileLocal, SmallStructBytes))
+	}
+	if len(n.Sizes) > 0 && onlySham {
+		allTooBig := true
+		for _, size := range n.Sizes {
+			if size <= SmallStructBytes {
+				allTooBig = false
+				break
+			}
+		}
+		if allTooBig {
+			reasons = append(reasons, fmt.Sprintf("toutes les tailles demandées dépassent %d octets", SmallStructBytes))
+		}
+	}
+	if len(reasons) == 0 {
+		reasons = append(reasons, fmt.Sprintf("dispositions %v, profils %v, tailles %v", n.Layouts, n.Profiles, n.Sizes))
+	}
+	return strings.Join(reasons, " ; ")
 }
 
 // SourcePath rend le chemin, relatif au répertoire de la Matrix, du fichier source d'un sujet.

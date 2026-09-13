@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"hash/fnv"
+	"math"
 	"math/rand/v2"
 	"sort"
 
@@ -16,7 +17,13 @@ import (
 const BootstrapResamples = 2000
 
 // ComparisonMethod décrit la méthode d'estimation, écrite dans le fichier de comparaison.
-const ComparisonMethod = "bootstrap percentile de la différence des médianes, 2000 rééchantillonnages, IC 95 %, graine dérivée des identifiants de la paire"
+//
+// Révision du 2026-09-12 (A-042) : le nombre de rééchantillonnages y était recopié en texte.
+// Changer BootstrapResamples aurait laissé le fichier annoncer l'ancienne valeur, c'est-à-dire
+// décrire une méthode qui n'est pas celle qui a produit les intervalles.
+var ComparisonMethod = fmt.Sprintf(
+	"bootstrap percentile de la différence des médianes, %d rééchantillonnages, IC 95 %%, graine dérivée des identifiants de la paire",
+	BootstrapResamples)
 
 // ComparisonReport est ce que UC-004 rend observable (étape 7).
 type ComparisonReport struct {
@@ -96,8 +103,8 @@ func (c *Comparator) Compare(ctx context.Context, campaignID string) (Comparison
 		return ComparisonReport{}, fmt.Errorf("%w : aucune paire complète dans la campagne %s", ErrPrecondition, campaignID)
 	}
 
-	// Étape 5 et A3 : point de bascule par couple (profil, champ pointeur).
-	set.TippingPoints = TippingPoints(set.Comparisons)
+	// Étapes 5, A3 et A4 : point de bascule par série, et raison quand il n'est pas calculable.
+	set.TippingPoints, set.ExcludedSeries = TippingPoints(set.Comparisons)
 
 	// Étape 6 : écriture d'un nouveau fichier horodaté (BR-004-3).
 	path, err := c.store.WriteComparisonSet(ctx, set)
@@ -186,12 +193,18 @@ func bootstrapDeltaCI(value, pointer []float64, seed uint64) (low, high float64)
 	return percentile(deltas, 0.025), percentile(deltas, 0.975)
 }
 
-// percentile rend le quantile d'un échantillon déjà trié.
+// percentile rend le quantile d'un échantillon déjà trié, par arrondi au rang le plus proche.
+//
+// Révision du 2026-09-12 (A-037) : la troncature de `int(p * (n-1))` décalait systématiquement le
+// quantile vers le bas. Sur 2000 rééchantillonnages, la borne haute à 0,975 tombait au rang 1949
+// au lieu de 1949,025 arrondi à 1949 — sans conséquence ici, mais la même troncature déplaçait la
+// borne d'un rang entier dès que `p * (n-1)` approchait l'entier supérieur. L'arrondi au rang le
+// plus proche est la convention du quantile de type 1, celle que la méthode consignée annonce.
 func percentile(sorted []float64, p float64) float64 {
 	if len(sorted) == 0 {
 		return 0
 	}
-	index := int(p * float64(len(sorted)-1))
+	index := int(math.Round(p * float64(len(sorted)-1)))
 	if index < 0 {
 		index = 0
 	}
@@ -201,22 +214,34 @@ func percentile(sorted []float64, p float64) float64 {
 	return sorted[index]
 }
 
+// SeriesNotRanked est la raison consignée pour une série dont le point de bascule n'est pas
+// calculable (UC-004, A4).
+const SeriesNotRanked = "plusieurs paires par taille : réplicats de cellule (C-009) ou déclinaisons de répétition et de charge (C-008) ; l'ordre de deux Comparison de même taille ne porte aucune information"
+
 // TippingPoints rend, pour chaque triplet (profil, disposition, champ pointeur), la plus petite taille telle que
 // pour cette taille et toutes les tailles supérieures mesurées du couple, la Comparison est
 // significative et deltaNsPerOp est négatif ; TippingNotObserved sinon (UC-004, étape 5 et A3).
-func TippingPoints(comparisons []models.Comparison) map[models.TippingKey]int {
+// Les séries dont le point de bascule n'est pas calculable sont rendues à part, avec leur raison
+// (UC-004, A4).
+func TippingPoints(comparisons []models.Comparison) (map[models.TippingKey]int, []models.ExcludedSeries) {
 	bySeries := map[models.TippingKey][]models.Comparison{}
 	for _, comparison := range comparisons {
 		key := models.TippingKey{Profile: comparison.Profile, Layout: comparison.EffectiveLayout(), HasPointerField: comparison.HasPointerField}
 		bySeries[key] = append(bySeries[key], comparison)
 	}
 	out := make(map[models.TippingKey]int, len(bySeries))
+	var excluded []models.ExcludedSeries
 	for key, series := range bySeries {
-		// C-009 : une série répliquée porte plusieurs Comparison par taille. Le balayage descendant
-		// s'arrête au premier élément défavorable et sort.Slice n'est pas stable : le point de
-		// bascule d'une telle série dépendrait de l'ordre du fichier. Il n'est donc pas publié.
-		// Aucun critère gelé ne le lit, H-012 groupant ses réplicats par ses propres attributs.
+		// Une série à plusieurs Comparison par taille — réplicats de C-009, déclinaisons de
+		// répétition et de charge de C-008 — n'a pas de point de bascule : le balayage descendant
+		// s'arrête au premier élément défavorable et l'ordre de deux Comparison de même taille ne
+		// porte aucune information. Aucun critère gelé ne lit ce point de bascule, H-012 groupant
+		// ses réplicats par ses propres attributs.
+		//
+		// Révision du 2026-09-12 (A-032) : l'exclusion était silencieuse, et présentée comme la
+		// signature d'une série répliquée alors qu'elle frappe aussi RETURNED_ALLOCATING.
 		if hasDuplicateSizes(series) {
+			excluded = append(excluded, models.ExcludedSeries{Key: key, Reason: SeriesNotRanked})
 			continue
 		}
 		sort.Slice(series, func(i, j int) bool { return series[i].SizeBytes < series[j].SizeBytes })
@@ -232,11 +257,11 @@ func TippingPoints(comparisons []models.Comparison) map[models.TippingKey]int {
 		}
 		out[key] = tipping
 	}
-	return out
+	sort.Slice(excluded, func(i, j int) bool { return lessTippingKey(excluded[i].Key, excluded[j].Key) })
+	return out, excluded
 }
 
-// hasDuplicateSizes indique qu'une même taille apparaît plus d'une fois dans la série, ce qui est
-// la signature d'une série répliquée (C-009).
+// hasDuplicateSizes indique qu'une même taille apparaît plus d'une fois dans la série.
 func hasDuplicateSizes(series []models.Comparison) bool {
 	seen := make(map[int]bool, len(series))
 	for _, comparison := range series {
@@ -254,14 +279,17 @@ func sortedKeys(m map[models.TippingKey]int) []models.TippingKey {
 	for key := range m {
 		keys = append(keys, key)
 	}
-	sort.Slice(keys, func(i, j int) bool {
-		if keys[i].Profile != keys[j].Profile {
-			return keys[i].Profile < keys[j].Profile
-		}
-		if keys[i].Layout != keys[j].Layout {
-			return keys[i].Layout < keys[j].Layout
-		}
-		return !keys[i].HasPointerField && keys[j].HasPointerField
-	})
+	sort.Slice(keys, func(i, j int) bool { return lessTippingKey(keys[i], keys[j]) })
 	return keys
+}
+
+// lessTippingKey ordonne deux clés de série : profil, puis disposition, puis champ pointeur.
+func lessTippingKey(a, b models.TippingKey) bool {
+	if a.Profile != b.Profile {
+		return a.Profile < b.Profile
+	}
+	if a.Layout != b.Layout {
+		return a.Layout < b.Layout
+	}
+	return !a.HasPointerField && b.HasPointerField
 }

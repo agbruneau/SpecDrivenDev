@@ -17,6 +17,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"io"
 	"os"
 	"os/signal"
 	"syscall"
@@ -50,7 +51,9 @@ Option commune : --root <répertoire du projet> (par défaut, remonte depuis le 
 Spécification de matrice (--params) :
   sizes=8,16,24;pointer=false,true;profiles=LOCAL,RETURNED;modes=VALUE,POINTER;probes=SEQUENTIAL_SCAN:65536
   Clés reconnues : sizes, pointer, profiles, modes, layouts, repeats, payloads, replicates, probes.
-  Les clés absentes prennent la valeur de la matrice de référence (BR-001-4).
+  sizes est obligatoire ; probes, layouts, repeats, payloads et replicates absents valent leur
+  défaut du modèle (une disposition, une instance, une charge, aucun réplicat, aucune sonde).
+  pointer, profiles et modes absents prennent la valeur de la matrice de référence (BR-001-4).
 `
 
 // exit codes : 0 succès, 2 usage, 3 échec d'un cas d'utilisation.
@@ -64,16 +67,47 @@ func main() {
 		fmt.Fprint(os.Stderr, usage)
 		os.Exit(exitUsage)
 	}
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	ctx, stop := interruptContext()
 	defer stop()
 
 	if err := run(ctx, os.Args[1], os.Args[2:]); err != nil {
+		if errors.Is(err, errHelp) {
+			fmt.Fprint(os.Stdout, usage)
+			return
+		}
 		if errors.Is(err, cli.ErrUsage) {
 			fmt.Fprintf(os.Stderr, "%v\n\n%s", err, usage)
 			os.Exit(exitUsage)
 		}
 		fmt.Fprintf(os.Stderr, "escapebench %s : %v\n", os.Args[1], err)
 		os.Exit(exitFailure)
+	}
+}
+
+// interruptContext rend un contexte annulé au premier signal d'interruption, et rétablit le
+// comportement par défaut ensuite.
+//
+// Révision du 2026-09-12 (A-147) : signal.NotifyContext continue d'intercepter les signaux après
+// le premier, de sorte qu'un second Ctrl+C ne pouvait plus forcer l'arrêt. Une campagne qui
+// n'honore pas son annulation — un sujet dont le benchmark court encore — laissait l'utilisateur
+// sans recours. Le premier signal demande l'arrêt propre et reprenable (UC-003, A5) ; le second
+// retrouve le comportement du système.
+func interruptContext() (context.Context, context.CancelFunc) {
+	ctx, cancel := context.WithCancel(context.Background())
+	signals := make(chan os.Signal, 1)
+	signal.Notify(signals, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		select {
+		case <-signals:
+			fmt.Fprintln(os.Stderr, "\ninterruption demandée : arrêt après le sujet en cours ; un second signal force l'arrêt")
+			cancel()
+			signal.Stop(signals)
+		case <-ctx.Done():
+		}
+	}()
+	return ctx, func() {
+		signal.Stop(signals)
+		cancel()
 	}
 }
 
@@ -115,16 +149,21 @@ type deps struct {
 func (d *deps) HarnessDigest(context.Context) (string, error) { return d.renderer.Digest(), nil }
 
 // newDeps construit les adapters à partir de la racine du projet.
-func newDeps(rootFlag string) (*deps, error) {
-	start := rootFlag
-	if start == "" {
-		cwd, err := os.Getwd()
-		if err != nil {
-			return nil, err
+func newDeps(ctx context.Context, rootFlag string) (*deps, error) {
+	// A-093 : un --root explicite désigne la racine, il ne sert pas de point de départ à une
+	// remontée. Sans cette distinction, un chemin fautif se résolvait au projet englobant et le
+	// banc lisait — puis écrivait — dans un autre dépôt que celui demandé.
+	var root string
+	var err error
+	if rootFlag != "" {
+		root, err = cli.ProjectRoot(ctx, rootFlag)
+	} else {
+		cwd, wdErr := os.Getwd()
+		if wdErr != nil {
+			return nil, wdErr
 		}
-		start = cwd
+		root, err = cli.FindRoot(ctx, cwd)
 	}
-	root, err := cli.FindRoot(start)
 	if err != nil {
 		return nil, err
 	}
@@ -140,8 +179,8 @@ func newDeps(rootFlag string) (*deps, error) {
 		// C-010 : la sonde de quiétude est branchée ici, à la racine de composition. Un adaptateur
 		// n'en importe pas un autre ; sur une plateforme qui ne sait pas la produire, la mesure se
 		// déclare non faite et H-013 rend non concluant.
-		toolchain: gotool.New(nil, root).WithQuietude(func() (time.Duration, bool) {
-			sample := system.NewQuietudeProbe().Sample()
+		toolchain: gotool.New(nil, root).WithQuietude(func(ctx context.Context) (time.Duration, bool) {
+			sample := system.NewQuietudeProbe().Sample(ctx)
 			return sample.Busy, sample.Measured
 		}, system.CPUCount()),
 		classifier: escape.New(),
@@ -159,12 +198,33 @@ func addRoot(fs *flag.FlagSet) *string {
 }
 
 // parse analyse les options d'une sous-commande.
+//
+// Révision du 2026-09-12 (A-085) : flag.FlagSet imprime lui-même l'erreur et l'usage de la
+// sous-commande avant de la rendre ; la réimprimer avec l'usage général la montrait deux fois.
+// La sortie du FlagSet est donc mise au silence, l'appelant restant seul à écrire. `-h` n'est pas
+// une erreur d'usage : c'est la demande d'aide, qui sort avec succès.
 func parse(fs *flag.FlagSet, args []string) error {
-	fs.SetOutput(os.Stderr)
-	if err := fs.Parse(args); err != nil {
+	fs.SetOutput(io.Discard)
+	err := fs.Parse(args)
+	switch {
+	case err == nil:
+		return nil
+	case errors.Is(err, flag.ErrHelp):
+		return errHelp
+	default:
 		return fmt.Errorf("%w : %s", cli.ErrUsage, err)
 	}
-	return nil
+}
+
+// errHelp signale que l'aide a été demandée ; ce n'est pas un échec.
+var errHelp = errors.New("aide demandée")
+
+// providedFlags rend les noms des drapeaux effectivement posés sur la ligne de commande. Une
+// valeur par défaut ne se distingue pas autrement d'une valeur choisie.
+func providedFlags(fs *flag.FlagSet) map[string]bool {
+	provided := map[string]bool{}
+	fs.Visit(func(f *flag.Flag) { provided[f.Name] = true })
+	return provided
 }
 
 // runMatrix exécute UC-001.
@@ -187,13 +247,17 @@ func runMatrix(ctx context.Context, args []string) error {
 		}
 		parameters = parsed
 	}
-	d, err := newDeps(*root)
+	d, err := newDeps(ctx, *root)
 	if err != nil {
 		return err
 	}
 	generator := service.NewMatrixGenerator(d.store, d.renderer, d.toolchain, d, d.store, d.clock)
 	report, err := generator.Generate(ctx, parameters)
-	fmt.Print(cli.RenderMatrix(report))
+	// A-084 : n'imprimer le rapport que s'il porte quelque chose. Un échec en amont de la
+	// génération rendait un rapport vide, affiché comme une matrice sans identifiant ni cellule.
+	if report.MatrixID != "" {
+		fmt.Print(cli.RenderMatrix(report))
+	}
 	return err
 }
 
@@ -208,7 +272,7 @@ func runEscape(ctx context.Context, args []string) error {
 	if *matrixID == "" {
 		return fmt.Errorf("%w : --matrix est obligatoire", cli.ErrUsage)
 	}
-	d, err := newDeps(*root)
+	d, err := newDeps(ctx, *root)
 	if err != nil {
 		return err
 	}
@@ -234,19 +298,46 @@ func runCampaign(ctx context.Context, args []string) error {
 	if err := parse(fs, args); err != nil {
 		return err
 	}
+	provided := providedFlags(fs)
 	if *matrixID == "" && *resume == "" {
 		return fmt.Errorf("%w : --matrix ou --resume est obligatoire", cli.ErrUsage)
 	}
-	d, err := newDeps(*root)
+	d, err := newDeps(ctx, *root)
 	if err != nil {
 		return err
 	}
+	opts := service.CampaignOptions{Resume: *resume}
+	if *resume == "" {
+		// A-156 : une faute de frappe sur --benchtime était transmise telle quelle à `go test`,
+		// qui refusait chaque sujet : la campagne entière se consignait en FAILED.
+		if err := cli.ValidateBenchTime(*benchTime); err != nil {
+			return err
+		}
+		if *cpu < 0 {
+			return fmt.Errorf("%w : --cpu %d doit être positif (C-003)", cli.ErrUsage, *cpu)
+		}
+		opts.MatrixID = *matrixID
+		opts.Count = *count
+		opts.HypothesisIDs = cli.ParseHypotheses(*hypotheses)
+		opts.BenchTime = *benchTime
+		opts.CPU = *cpu
+	} else {
+		// A4 : la reprise porte sur les paramètres gelés de la campagne. Les accepter en silence
+		// ferait croire au chercheur qu'il étend ou redirige la campagne (A-030, A-265).
+		for _, name := range []string{"matrix", "count", "hypotheses", "benchtime", "cpu"} {
+			if provided[name] {
+				return fmt.Errorf("%w : --resume reprend la campagne %s avec ses paramètres gelés ; --%s est refusé",
+					cli.ErrUsage, *resume, name)
+			}
+		}
+	}
 	svc := service.NewCampaignService(d.store, d.store, d.store, d.toolchain, d, d.prober, d.specs, specs.Digest, d.clock)
-	report, err := svc.Run(ctx, service.CampaignOptions{
-		MatrixID: *matrixID, Count: *count, HypothesisIDs: cli.ParseHypotheses(*hypotheses),
-		BenchTime: *benchTime, CPU: *cpu, Resume: *resume,
-	})
-	fmt.Print(cli.RenderCampaign(report))
+	report, err := svc.Run(ctx, opts)
+	// A-084 : un rapport vide, imprimé quand le service échoue avant d'avoir rien produit,
+	// affichait « Campagne : — statut : » et des décomptes à zéro sous l'erreur.
+	if report.CampaignID != "" {
+		fmt.Print(cli.RenderCampaign(report))
+	}
 	return err
 }
 
@@ -261,7 +352,7 @@ func runCompare(ctx context.Context, args []string) error {
 	if *campaignID == "" {
 		return fmt.Errorf("%w : --campaign est obligatoire", cli.ErrUsage)
 	}
-	d, err := newDeps(*root)
+	d, err := newDeps(ctx, *root)
 	if err != nil {
 		return err
 	}
@@ -286,7 +377,7 @@ func runVerdict(ctx context.Context, args []string) error {
 	if *campaignID == "" {
 		return fmt.Errorf("%w : --campaign est obligatoire", cli.ErrUsage)
 	}
-	d, err := newDeps(*root)
+	d, err := newDeps(ctx, *root)
 	if err != nil {
 		return err
 	}
@@ -306,7 +397,7 @@ func runDashboard(ctx context.Context, args []string) error {
 	if err := parse(fs, args); err != nil {
 		return err
 	}
-	d, err := newDeps(*root)
+	d, err := newDeps(ctx, *root)
 	if err != nil {
 		return err
 	}

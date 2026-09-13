@@ -4,5 +4,8 @@ tmpcheck/
 # chaque matrice est un module imbriqué (C-007), invisible de go ./... .
 matrices/
 results/.campaign-lock
+# A-055 : fichiers temporaires d'une écriture interrompue sous results/ ou matrices/. Ils ne
+# doivent pas apparaître dans `git status` comme des résultats à commettre.
+.tmp-*
 .claude/settings.local.json
 CLAUDE.local.md

@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+	"math"
 	"strings"
 	"testing"
 	"time"
@@ -285,7 +286,9 @@ func TestProvenance(t *testing.T) {
 func TestCampaignValidate(t *testing.T) {
 	t.Parallel()
 	provenance := Provenance{GoVersion: "g", GOOS: "o", GOARCH: "a", CPUModel: "c", CapturedAt: time.Unix(1, 0)}
-	base := Campaign{ID: "C-1", MatrixID: "M-1", HarnessDigest: "h", HypothesesDigest: "d", Count: MinCount, Status: CampaignRunning, Provenance: provenance}
+	base := Campaign{ID: "C-1", MatrixID: "M-1", HarnessDigest: "h", HypothesesDigest: "d",
+		HypothesisIDs: []string{"H-001"}, Count: MinCount, Status: CampaignRunning,
+		Provenance: provenance, StartedAt: time.Unix(1, 0)}
 	if err := base.Validate(); err != nil {
 		t.Fatalf("Validate : %v", err)
 	}
@@ -370,7 +373,7 @@ func TestMedians(t *testing.T) {
 
 func TestHypothesisAndVerdictValidate(t *testing.T) {
 	t.Parallel()
-	hypothesis := Hypothesis{ID: "H-001", SourcePages: "p. 1", RefutationCriterion: "critère"}
+	hypothesis := Hypothesis{ID: "H-001", SourcePages: "p. 1", Statement: "énoncé", RefutationCriterion: "critère"}
 	if err := hypothesis.Validate(); err != nil {
 		t.Fatalf("Validate : %v", err)
 	}
@@ -407,4 +410,102 @@ func TestHypothesisAndVerdictValidate(t *testing.T) {
 			}
 		})
 	}
+}
+
+// TestUC003_ValidationsDuModeleDEntites verrouille A-005 à A-009 et A-016 : le modèle d'entités
+// déclare ces champs requis ou bornés, mais rien ne l'appliquait. Un enregistrement incomplet ou
+// aberrant traversait les validations jusque dans `results/`, où plus rien ne le rattrape.
+func TestUC003_ValidationsDuModeleDEntites(t *testing.T) {
+	t.Parallel()
+	prov := Provenance{GoVersion: "g", GOOS: "o", GOARCH: "a", CPUModel: "c", CapturedAt: time.Unix(1, 0)}
+	campaign := func() Campaign {
+		return Campaign{ID: "C-1", MatrixID: "M-1", HarnessDigest: "h", HypothesesDigest: "d",
+			HypothesisIDs: []string{"H-001"}, Count: MinCount, Status: CampaignRunning,
+			Provenance: prov, StartedAt: time.Unix(1, 0)}
+	}
+	t.Run("campagne", func(t *testing.T) {
+		t.Parallel()
+		for name, mutate := range map[string]func(*Campaign){
+			"sans hypothèse gelée": func(c *Campaign) { c.HypothesisIDs = nil },
+			"sans startedAt":       func(c *Campaign) { c.StartedAt = time.Time{} },
+			"close sans finishedAt": func(c *Campaign) {
+				c.Status = CampaignCompleted
+			},
+			"abandonnée sans raison": func(c *Campaign) {
+				c.Status, c.FinishedAt = CampaignAborted, time.Unix(2, 0)
+			},
+			"en cours avec finishedAt": func(c *Campaign) { c.FinishedAt = time.Unix(2, 0) },
+		} {
+			t.Run(name, func(t *testing.T) {
+				t.Parallel()
+				c := campaign()
+				mutate(&c)
+				if err := c.Validate(); err == nil {
+					t.Fatalf("Validate accepte une campagne %s", name)
+				}
+			})
+		}
+	})
+
+	t.Run("mesure", func(t *testing.T) {
+		t.Parallel()
+		complete := func() Measurement {
+			return Measurement{CampaignID: "C-1", SubjectID: "s", Status: MeasurementComplete,
+				NsPerOp: []float64{1}, BytesPerOp: []int64{8}, AllocsPerOp: []int64{1}}
+		}
+		for name, mutate := range map[string]func(*Measurement){
+			"durée négative":        func(m *Measurement) { m.NsPerOp = []float64{-1} },
+			"durée infinie":         func(m *Measurement) { m.NsPerOp = []float64{math.Inf(1)} },
+			"durée NaN":             func(m *Measurement) { m.NsPerOp = []float64{math.NaN()} },
+			"octets négatifs":       func(m *Measurement) { m.BytesPerOp = []int64{-8} },
+			"allocations négatives": func(m *Measurement) { m.AllocsPerOp = []int64{-1} },
+			"occupation > 1": func(m *Measurement) {
+				m.QuietudeMeasured, m.QuietudeOccupancy = true, 1.5
+			},
+			"occupation négative": func(m *Measurement) {
+				m.QuietudeMeasured, m.QuietudeOccupancy = true, -0.1
+			},
+		} {
+			t.Run(name, func(t *testing.T) {
+				t.Parallel()
+				m := complete()
+				mutate(&m)
+				if err := m.Validate(1); err == nil {
+					t.Fatalf("Validate accepte une mesure avec %s", name)
+				}
+			})
+		}
+		// Une occupation nulle est une valeur légitime, pas une absence (C-010).
+		m := complete()
+		m.QuietudeMeasured = true
+		if err := m.Validate(1); err != nil {
+			t.Fatalf("une occupation nulle est légitime : %v", err)
+		}
+	})
+
+	t.Run("verdict d'échappement", func(t *testing.T) {
+		t.Parallel()
+		v := EscapeVerdict{CellID: "c", Status: EscapeStatusOK, Category: CategoryNone,
+			CompilerError: "un message qui n'a pas lieu d'être"}
+		if err := v.Validate(); err == nil {
+			t.Fatal("compilerError n'a de sens qu'en COMPILE_ERROR (BR-002-1)")
+		}
+	})
+
+	t.Run("verdict d'hypothèse", func(t *testing.T) {
+		t.Parallel()
+		v := Verdict{HypothesisID: "H-001", Outcome: OutcomeConfirmed,
+			Rationale: "parce que", ResultFiles: []string{"results/x.json"}}
+		if err := v.Validate(); err == nil {
+			t.Fatal("un verdict sans campaignId ne peut plus être rattaché à ses mesures (BR-005-2)")
+		}
+	})
+
+	t.Run("hypothèse", func(t *testing.T) {
+		t.Parallel()
+		h := Hypothesis{ID: "H-001", SourcePages: "p. 1", RefutationCriterion: "critère"}
+		if err := h.Validate(); err == nil {
+			t.Fatal("l'énoncé entre dans l'empreinte gelée : il est requis (BR-003-5)")
+		}
+	})
 }
