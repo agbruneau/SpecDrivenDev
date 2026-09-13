@@ -50,7 +50,7 @@ Deux marqueurs accompagnent les constats dont le correctif a un coût de process
 
 ## État d'implantation au 2026-09-12
 
-Les lots 0 à 8 et 10 sont implantés sur la branche `claude/audit-md-implementation-cctjkk`. Ce qui suit reste ouvert, et rien d'autre.
+Les lots 0 à 8 et 10 sont implantés sur la branche `claude/audit-md-implementation-cctjkk`, depuis fusionnée dans `main`. Ce qui suit reste ouvert, et rien d'autre.
 
 | Ce qui reste | Pourquoi | Qui décide |
 |---|---|---|
@@ -63,6 +63,8 @@ Le volet documentaire de A-246 est fait : `C-005` et le modèle d'entités consi
 **Le rejeu du lot 1 est fait (2026-09-12).** `M-b44a93baae51` a été régénérée depuis ses paramètres — même identifiant, 532 cellules, même empreinte de harnais que les campagnes — et UC-002 y a été rejoué sous `go1.27.0` : `OTHER` passe de 120 à 0, `RETURN_POINTER` de 140 à 260, tout le reste inchangé. Comparé cellule par cellule au rapport archivé, l'écart est d'une seule transition `OTHER` vers `RETURN_POINTER` sur exactement 120 cellules, toutes `RETURNED_ALLOCATING` en mode valeur. UC-005 rejoué sur `C-2026-09-10-7` et `C-2026-09-10-11` fait passer **H-006 de `REFUTED` à `CONFIRMED`**, les onze autres hypothèses de chaque campagne restant strictement identiques, verdict et motif. Le tableau de bord est régénéré. Le rejeu a eu lieu sous `linux/amd64` quand les campagnes étaient sous `windows/amd64` : la réserve et ce qui la lève sont consignés en `D-48`.
 
 **Vérifié après implantation.** Les treize verdicts archivés sont inchangés — sauf H-006, dont la correction est précisément le but du lot 1 et fait l'objet d'un erratum daté au rapport final. Un harnais de non-régression rejoue 43 des 49 verdicts publiés sur les dix campagnes archivées, motif compris, et un second test vérifie que l'empreinte des critères gelés de chacune est encore celle que `docs/requirements.md` produit — les révisions de `docs/` faites ici n'ont déplacé aucune empreinte.
+
+**Vérifié sur le poste de référence (2026-09-13).** Sous `go1.27.0 windows/amd64`, la suite unitaire échouait sur `TestUC004_ErreurDeLectureNestPasUneAbsence`, qui verrouille A-124. Windows rend « chemin introuvable » quand on lit un fichier comme un répertoire, de sorte que les six lectures de répertoire de `internal/adapters/store` confondaient encore un fichier avec une absence. Un helper `readDir` réexamine le chemin avant de conclure à l'absence ; `go vet`, la suite unitaire et la suite d'intégration passent sous `-race -shuffle=on`.
 
 ## Planification d'exécution des correctifs
 

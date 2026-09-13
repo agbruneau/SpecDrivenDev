@@ -4,7 +4,7 @@ Banc de mesure reproductible qui éprouve, par des verdicts sur des hypothèses 
 
 Le projet est conduit selon l'*AI Unified Process* (Martinelli, *Spec-Driven Development*, Apress 2026) avec Claude Code : `docs/` fait autorité, le code est dérivé des cas d'utilisation.
 
-**État : clos le 2026-09-10.** Les treize hypothèses ont un verdict (sept infirmées, six confirmées) et les cinq cas d'utilisation sont au statut `Deployed`. Résultats et lecture : [`../Doc/RAPPORT-FINAL_EscapeBench.md`](../Doc/RAPPORT-FINAL_EscapeBench.md) ; présentation d'ensemble : [`../README.md`](../README.md).
+**État : clos le 2026-09-10, verdicts révisés le 2026-09-12 après l'audit du code.** Les treize hypothèses ont un verdict (cinq infirmées, huit confirmées, H-006 étant passée d'infirmée à confirmée par erratum) et les cinq cas d'utilisation sont au statut `Deployed`. Résultats et lecture : [`../Doc/RAPPORT-FINAL_EscapeBench.md`](../Doc/RAPPORT-FINAL_EscapeBench.md) ; présentation d'ensemble : [`../README.md`](../README.md).
 
 ## Où regarder
 
@@ -24,7 +24,8 @@ Le projet est conduit selon l'*AI Unified Process* (Martinelli, *Spec-Driven Dev
 | [`results/`](results/) | Sorties versionnées du binaire, en écriture seule : verdicts d'échappement, campagnes, verdicts par hypothèse (voir [`results/README.md`](results/README.md)) |
 | `matrices/`, `bin/` | Sources générées et binaire compilé, ignorés par Git ; une matrice se régénère depuis son `matrix.json` et le harnais |
 | [`LANCEMENT.md`](LANCEMENT.md) | Procédure de lancement du développement, session par session, et commandes qui rejouent les campagnes de clôture |
-| [`../Doc/DECISION.md`](../Doc/DECISION.md) | Décisions D-01 à D-38 : écarts assumés, conception du harnais, statistiques, clôture |
+| [`../Doc/DECISION.md`](../Doc/DECISION.md) | Décisions D-01 à D-49 : écarts assumés, conception du harnais, statistiques, clôture, correctifs de l'audit |
+| [`../Doc/AUDIT.md`](../Doc/AUDIT.md) | Audit du code du 2026-09-12 : constats, lots de correctifs, points laissés au chercheur |
 | [`../Campagnes/`](../Campagnes/), [`../Revue/`](../Revue/) | Rapports des campagnes intermédiaires et revues contradictoires |
 
 ## Rejouer une campagne
@@ -48,4 +49,5 @@ go run ./cmd/escapebench verdict --campaign <campaignId>
 - La matrice de référence (230 sujets) demande environ 29 minutes sur le poste de référence (NFR-005).
 - `verdict` retrouve de lui-même les verdicts d'échappement de la matrice pour H-006 ; `--escape <fichier>` en désigne un précis.
 - `campaign --hypotheses H-00x,…` restreint les hypothèses gelées par la campagne. H-012 l'exige : elle demande une matrice à cinq réplicats et ne peut pas partager une campagne avec H-007 (C-009).
+- `go test -race -shuffle=on -count=1 -tags=integration_test ./...` ajoute le harnais de non-régression, qui rejoue les évaluateurs sur les verdicts archivés sous `results/`.
 - `escapebench dashboard` régénère `docs/dashboard.md` sans produire de verdict ; `bash .claude/hooks/selftest.sh` contrôle les quatre hooks.

@@ -1,6 +1,6 @@
 # Décisions de construction — EscapeBench (P1)
 
-**Date :** 2026-09-10 · **Portée :** implémentation complète de UC-001 à UC-005 dans `EscapeBench/`, à partir du noyau de spécification revu le même jour (`REVUE-PRELANCEMENT_2026-09-10.md`).
+**Date :** 2026-09-10, complété le 2026-09-12 (D-39 à D-49, implantation de l'audit) · **Portée :** implémentation complète de UC-001 à UC-005 dans `EscapeBench/`, à partir du noyau de spécification revu le même jour ([`Revue/REVUE-PRELANCEMENT_2026-09-10.md`](../Revue/REVUE-PRELANCEMENT_2026-09-10.md)).
 
 Ce document consigne les décisions prises pendant la construction, en particulier celles qui s'écartent de la lettre du processus ou qui figent un choix que la spécification laissait ouvert. Il ne répète pas ce que le code et les cas d'utilisation disent déjà.
 
@@ -135,7 +135,7 @@ L'alternative — attendre le poste Windows — laissait un verdict faux publié
 Cette section datait de la fin de la construction. Elle est révisée à la clôture du 2026-09-10 : trois de ses quatre points sont levés.
 
 - ~~Aucune campagne de référence n'a été exécutée.~~ **Levé.** Six campagnes ont été menées de bout en bout, dont la campagne de référence `C-2026-09-10-1` et une campagne à 541 sujets couvrant douze hypothèses. Les treize hypothèses du catalogue ont un verdict.
-- **Colonne `Integration` du tableau de bord fondée sur la présence, non sur l'exécution.** Inchangé, et assumé. Un test sous `//go:build integration_test` qui référence un cas d'utilisation suffit à marquer la colonne. Faire tourner la suite d'intégration à chaque régénération aurait rendu `escapebench dashboard` inutilisable au quotidien.
+- **Colonne `Integration` du tableau de bord fondée sur la présence, non sur l'exécution.** Toujours assumé. Un test sous `//go:build integration_test` qui référence un cas d'utilisation suffit à marquer la colonne. Faire tourner la suite d'intégration à chaque régénération aurait rendu `escapebench dashboard` inutilisable au quotidien. Révisé le 2026-09-12 (D-41) : la contrainte de build se lit désormais au sens de `go/build/constraint`, et deux jeux de tests d'intégration réels remplissent la colonne.
 - ~~`make` reste requis et absent du poste.~~ **Levé.** La commande de référence est désormais `go vet ./... && go test -race -shuffle=on -count=1 ./...`, dans `CLAUDE.md`, dans le skill `/implement` et dans `LANCEMENT.md`. Le `Makefile` reste disponible pour qui a `make` ; c'est ce que tout le projet a de toute façon utilisé.
 - ~~Statut `Verified` non atteint.~~ **Levé.** Les cinq cas d'utilisation sont à `Deployed`, dernier statut de la chaîne, défini par le tableau de bord comme « campagne exécutée et rapport publié ». Chaque fichier de UC consigne ce qui l'établit.
 

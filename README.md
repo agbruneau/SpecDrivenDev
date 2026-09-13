@@ -1,10 +1,10 @@
 # Prospection : Cadrage et Développement IA avec Claude Code
 
-**Statut** : premier projet (EscapeBench) clos le 2026-09-10; sept autres au stade du cadrage.
+**Statut** : premier projet (EscapeBench) clos le 2026-09-10, verdicts révisés le 2026-09-12 après un audit du code; sept autres projets au stade du cadrage.
 
 ## Résumé
 
-Les ouvrages de génie logiciel transmettent des règles de performance chiffrées que l'on applique souvent sans les vérifier. Ce dépôt en fait des objets d'étude. Il repère dans *Building Enterprise Projects with Go* (Shahsavan, 2026) les affirmations assez précises pour qu'une mesure puisse les contredire, puis construit avec un agent de codage, Claude Code (Marco, 2026), des bancs d'essai qui les mettent à l'épreuve. Le développement suit le *Spec-Driven Development* (Martinelli, 2026) : chaque affirmation devient une hypothèse dont le critère de réfutation est écrit et gelé avant la première mesure. Le premier banc, EscapeBench, porte sur la gestion de la mémoire en Go. Sur treize hypothèses, sept sont infirmées et six confirmées. Les infirmations les plus instructives ne montrent pas que le livre se trompe, mais qu'il décrit un cas particulier sans le dire : la règle des « un à trois mots machine » dépend de la forme d'une structure autant que de sa taille; le rapport de 10 à 200 entre cache et mémoire vaut pour une latence, pas pour un débit; et le passage au pointeur ne double les allocations que si la fonction n'alloue rien d'autre.
+Les ouvrages de génie logiciel transmettent des règles de performance chiffrées que l'on applique souvent sans les vérifier. Ce dépôt en fait des objets d'étude. Il repère dans *Building Enterprise Projects with Go* (Shahsavan, 2026) les affirmations assez précises pour qu'une mesure puisse les contredire, puis construit avec un agent de codage, Claude Code (Marco, 2026), des bancs d'essai qui les mettent à l'épreuve. Le développement suit le *Spec-Driven Development* (Martinelli, 2026) : chaque affirmation devient une hypothèse dont le critère de réfutation est écrit et gelé avant la première mesure. Le premier banc, EscapeBench, porte sur la gestion de la mémoire en Go. Sur treize hypothèses, cinq sont infirmées et huit confirmées. Les infirmations les plus instructives ne montrent pas que le livre se trompe, mais qu'il décrit un cas particulier sans le dire : la règle des « un à trois mots machine » dépend de la forme d'une structure autant que de sa taille; le rapport de 10 à 200 entre cache et mémoire vaut pour une latence, pas pour un débit; et le passage au pointeur ne double les allocations que si la fonction n'alloue rien d'autre. Un audit du code mené après la clôture a en outre montré qu'un verdict publié, l'infirmation de H-006, était un artefact du banc : corrigé et rejoué, il passe à *confirmée*.
 
 **Mots-clés** : Go, analyse d'échappement, micro-benchmark, réfutabilité, *Spec-Driven Development*, agents de codage, Claude Code.
 
@@ -69,12 +69,13 @@ Pour chaque paire valeur/pointeur, le banc calcule l'écart des médianes sur le
 - **Témoins de sensibilité.** Un critère exige de montrer que le banc sait détecter un effet réel, faute de quoi il rend *non concluante*.
 - **Attestation de quiétude.** Autour de chaque mesure, le banc relève l'occupation des cœurs extérieurs au sujet mesuré; au-delà de 12 %, l'hypothèse de latence H-013 refuse de trancher.
 - **Revues contradictoires.** Des sous-agents sont chargés de réfuter chaque constat d'une revue. Celle des capacités ajoutées pour la seconde génération d'hypothèses a soumis trente-cinq constats à trois vérificateurs chacun et en a retenu sept.
+- **Audit du code et non-régression.** Après la clôture, un audit a confronté le code aux spécifications : dix-huit lectures parallèles, puis trois vérificateurs indépendants par constat ([`Doc/AUDIT.md`](Doc/AUDIT.md)). Un harnais de non-régression rejoue les évaluateurs sur 67 verdicts archivés, et un test vérifie que l'empreinte des critères gelés de chaque campagne n'a pas bougé.
 
 ## 4. Résultats
 
 ### 4.1 Conditions
 
-Les treize verdicts viennent de deux campagnes menées en série sur la même machine, le 2026-09-10 : `C-2026-09-10-11` (douze hypothèses, 541 sujets, 1 h 08) et `C-2026-09-10-12` (H-012, 82 sujets, 11 min). Machine : Intel Core Ultra 9 275HX, 24 cœurs logiques, cache L1 de données de 48 Kio, dernier niveau de cache de 36 Mio, Windows sur amd64, Go 1.27.0. Aucun sujet en échec; occupation médiane des cœurs extérieurs au sujet de 5,8 % et 5,5 %.
+Les treize verdicts viennent de deux campagnes menées en série sur la même machine, le 2026-09-10 : `C-2026-09-10-11` (douze hypothèses, 541 sujets, 1 h 08) et `C-2026-09-10-12` (H-012, 82 sujets, 11 min). Machine : Intel Core Ultra 9 275HX, 24 cœurs logiques, cache L1 de données de 48 Kio, dernier niveau de cache de 36 Mio, Windows sur amd64, Go 1.27.0. Aucun sujet en échec; occupation médiane des cœurs extérieurs au sujet de 5,8 % et 5,5 %. Le verdict de H-006 vient du rejeu du 2026-09-12 : classification d'échappement refaite après correction du classificateur (Go 1.27.0, linux/amd64), puis verdicts reproduits sur `C-2026-09-10-11`, dont les onze autres sont restés identiques.
 
 ### 4.2 Verdicts
 
@@ -85,7 +86,7 @@ Les treize verdicts viennent de deux campagnes menées en série sur la même ma
 | H-003 | Passer au pointeur double les allocations (256) | 0 → 1 allocation sur les 20 paires où la valeur n'alloue rien | confirmée |
 | H-004 | Un défaut de cache coûte de 10 à 200 fois un succès (254) | Parcours dispersé contre séquentiel : ×1,9 à 32 Mio, ×2,8 à 128 Mio | **infirmée** |
 | H-005 | Préallocation environ 6 fois plus rapide, un cinquième de la mémoire (114), avec une tolérance doublée | Temps ×0,225, mémoire ×0,196 | confirmée |
-| H-006 | Les quatre causes d'échappement couvrent les cas observés (238–242) | 120 cellules sur 380 échappent hors des quatre causes | **infirmée** |
+| H-006 | Les quatre causes d'échappement couvrent les cas observés (238–242) | Les 380 cellules qui échappent se rangent toutes dans les quatre causes (verdict corrigé le 2026-09-12) | confirmée |
 | H-007 | Comme H-002, sur des champs nommés | Pointeur en avance, au-delà du bruit, sur au plus une des trois petites tailles par série | confirmée |
 | H-008 | Comme H-004, sur une chaîne de pointeurs dépendante | 0,81 ns en L1, 137 ns hors cache, rapport ×169,9 | confirmée |
 | H-009 | La règle du conteneur vaut pour la *map*, la tranche et la structure (241) | La locale échappe dans les trois conteneurs, à toutes les tailles mesurées | confirmée |
@@ -102,7 +103,7 @@ Les treize verdicts viennent de deux campagnes menées en série sur la même ma
 
 **Le doublement est un cas particulier (H-003, H-010).** Si une fonction alloue déjà *k* objets par appel, retourner un pointeur en ajoute un : le rapport vaut (*k* + 1) / *k* et n'atteint 2 que pour *k* = 1. H-003, qui compte le passage de 0 à 1 allocation comme un doublement, reste confirmée; c'est la formulation générale du livre qui tombe.
 
-**Une liste d'exemples, pas une classification (H-006).** Sur 380 cellules qui échappent, 120 le font pour une raison absente des quatre causes : une charge allouée par la fonction part sur le tas alors que la structure mesurée reste sur la pile. Le livre présentait ses causes comme les plus courantes, sans prétendre à l'exhaustivité; la mesure lui donne raison de cette prudence.
+**Un verdict faux, puis corrigé (H-006).** Publiée le 2026-09-10, l'infirmation de H-006 reposait sur 120 cellules qui semblaient échapper hors des quatre causes. L'audit du code a montré qu'elles n'avaient jamais été classées : quand le compilateur nomme l'expression allouée (`new(payload) escapes to heap`) plutôt qu'une variable, le classificateur concluait à une autre cause sans lire le code. Or cette allocation est rangée dans une variable que la fonction retourne : c'est un retour de pointeur, la première des quatre causes. Une fois le classificateur corrigé, les 380 cellules qui échappent se rangent dans les quatre causes et le verdict passe à *confirmée* ([`Doc/RAPPORT-FINAL_EscapeBench.md`](Doc/RAPPORT-FINAL_EscapeBench.md), *Errata*).
 
 **La marge décide, pas la mesure (H-005, H-011).** La préallocation tient deux des trois chiffres de la page 114 : un cinquième de la mémoire et une seule allocation au lieu de 27. Le gain en temps, ×4,45, passe la tolérance large de H-005 mais manque celle que le livre s'accorde lui-même (×4,8).
 
@@ -112,11 +113,13 @@ Les treize verdicts viennent de deux campagnes menées en série sur la même ma
 
 ### 5.1 Portée des confirmations
 
-Une confirmation vaut ce que valait la possibilité d'infirmer. H-008 et H-013 ne pouvaient pas l'être sur cette machine : leur critère infirme si la latence hors cache tombe sous 100 ns, et la mémoire de la machine en sert 137. Seule une machine plus rapide, par exemple arm64, pourrait les contredire. H-012 lit la règle de la page 253 sans l'exception qu'autorise le « typiquement » du livre, car la lecture tolérante rendait l'infirmation arithmétiquement inatteignable. Elle écarte aussi la cellule de 8 octets à champ pointeur, dont l'unique champ est le pointeur lui-même. Jugée, cette cellule aurait infirmé l'hypothèse dans ses cinq réplicats : son retrait, qui favorise le livre, a été déclaré avant la mesure pour cette raison.
+Une confirmation vaut ce que valait la possibilité d'infirmer. H-008 et H-013 ne pouvaient pas l'être sur cette machine : leur critère infirme si la latence hors cache tombe sous 100 ns, et la mémoire de la machine en sert 137. Seule une machine plus rapide, par exemple arm64, pourrait les contredire. H-012 lit la règle de la page 253 sans l'exception qu'autorise le « typiquement » du livre, car la lecture tolérante rendait l'infirmation arithmétiquement inatteignable. Elle écarte aussi la cellule de 8 octets à champ pointeur, dont l'unique champ est le pointeur lui-même. Jugée, cette cellule aurait infirmé l'hypothèse dans ses cinq réplicats : son retrait, qui favorise le livre, a été déclaré avant la mesure pour cette raison. H-006, enfin, ne juge que les situations que le banc sait produire : hormis la variable locale, ses profils de durée de vie reproduisent chacun l'une des quatre causes du livre. La confirmation dit qu'aucune cinquième cause n'est apparue dans ce corpus, pas que la liste est exhaustive, ce que le livre ne prétend d'ailleurs pas.
 
 ### 5.2 Ce que le banc a appris sur lui-même
 
 Les revues contradictoires ont trouvé quatre défauts de construction. Le gabarit de H-010 rendait le doublement inévitable, jusqu'à ce que le nombre de charges allouées devienne une dimension mesurée. Le témoin nul de H-007 comparait deux bras au code machine identique et sous-estimait donc le bruit d'une vraie paire; les réplicats de H-012 le mesurent sur la paire réelle. La branche du rapport de H-008 ne se distinguait pas d'une mémoire encombrée par d'autres processus; l'attestation de quiétude de H-013 y répond. Les trois ont été corrigés par des hypothèses successeurs, jamais par la retouche d'un critère gelé. Le quatrième, une confusion du classificateur entre stockage dans un conteneur et retour d'adresse par le champ d'une structure, n'influe sur aucun verdict et reste épinglé par un test.
+
+Le défaut le plus grave n'a été trouvé qu'après la clôture, par l'audit du code : l'erreur du classificateur qui a produit le verdict faux de H-006 (voir 4.3). L'audit a retenu trois défauts bloquants, dont deux empêchaient de reprendre une campagne interrompue, et vingt majeurs. Tous les lots de correctifs ont été appliqués sauf un, laissé à la décision du chercheur (section 7), et le harnais de non-régression établit que les douze autres verdicts publiés n'ont pas bougé.
 
 ### 5.3 Le développement assisté par IA (QR2)
 
@@ -125,15 +128,17 @@ Le dépôt n'offre pas de groupe témoin : les observations suivantes décrivent
 - **Le gel a empêché la rationalisation après coup.** Les critères défectueux ont été remplacés par sept hypothèses successeurs plutôt que réécrits, et l'empreinte des critères bloque tout verdict si leur texte change.
 - **Les pouvoirs sont séparés.** Un *hook* interdit à l'agent d'écrire les résultats, les matrices et le tableau de bord : seul le binaire du banc les produit, et le harnais est verrouillé pendant une campagne.
 - **La garde a mordu contre son auteur.** Une campagne a été mesurée sous charge parce que des processus d'une contre-épreuve précédente n'avaient pas été arrêtés, une erreur de l'agent. Onze hypothèses ont rendu leur verdict sans rien voir; H-013 a rendu *non concluante* en nommant la cause. La campagne a été refaite, et la version contaminée conservée comme témoin.
+- **Un verdict faux a été publié, puis corrigé par erratum.** Ni les revues contradictoires ni les gardes du banc n'avaient vu l'erreur du classificateur à l'origine de l'infirmation de H-006; l'audit du code l'a trouvée deux jours après la publication. La correction est datée et motivée dans le rapport final plutôt que substituée en silence, et le rejeu, mené sous Linux alors que les campagnes l'avaient été sous Windows, consigne pourquoi cet écart de provenance est sans effet (décision D-48).
 - **Un écart au processus est assumé.** L'AIUP réserve le passage d'un cas d'utilisation au statut `Approved` à une décision humaine. L'agent l'a franchi lui-même, en vertu du mandat de construire sans intervention (décision D-01, [`Doc/DECISION.md`](Doc/DECISION.md)) : la revue humaine prévue par Martinelli (2026) n'a pas eu lieu.
 
-**Réponse à QR2.** Le cas montre qu'un agent peut conduire l'étude de bout en bout en gardant chaque verdict rattaché à un critère gelé, à une page du livre et à un code identifié. Il ne montre pas que l'agent aurait détecté seul ses défauts de construction : ce sont les revues contradictoires et les gardes du banc qui les ont révélés.
+**Réponse à QR2.** Le cas montre qu'un agent peut conduire l'étude de bout en bout en gardant chaque verdict rattaché à un critère gelé, à une page du livre et à un code identifié. Il ne montre pas que l'agent aurait détecté seul ses défauts de construction : ce sont les revues contradictoires, les gardes du banc et un audit du code postérieur à la clôture qui les ont révélés. Pour H-006, la traçabilité a permis de corriger un verdict faux, pas d'éviter sa publication.
 
 ## 6. Limites et menaces à la validité
 
 - **Validité externe.** Micro-benchmarks sur des types synthétiques, une seule machine, une seule soirée, Windows sur amd64 et Go 1.27.0, alors que le livre se réfère à Go 1.25. L'analyse d'échappement varie d'une version du compilateur à l'autre (Shahsavan, 2026, p. 242) : les résultats sont datés par construction.
 - **Validité de construit.** Un verdict juge une opérationnalisation de l'affirmation, pas sa prose : H-004 et H-008 donnent deux verdicts opposés sur la même page du livre.
 - **Validité interne.** L'attestation de quiétude mesure l'occupation des processeurs, indicateur nécessaire mais non suffisant de l'encombrement de la mémoire. Mesurer la bande passante demanderait les compteurs de performance du processeur, hors de la bibliothèque standard à laquelle le banc se limite.
+- **Provenance du rejeu de H-006.** La classification corrigée a été refaite sous linux/amd64, alors que les campagnes l'avaient été sous windows/amd64, avec la même version de Go. Sur 532 cellules, 412 rendent la même catégorie sur les deux systèmes et les 120 autres sont exactement celles que vise le correctif (D-48); un rejeu sur le poste de référence lèverait la réserve.
 - **Revue humaine.** Voir l'écart au processus décrit en 5.3.
 
 ## 7. Travaux futurs
@@ -141,6 +146,8 @@ Le dépôt n'offre pas de groupe témoin : les observations suivantes décrivent
 - Rejouer H-008 et H-013 sur une machine dont la mémoire sert un accès dépendant en moins de 100 ns, par exemple arm64.
 - Désassembler les deux bras d'une paire pour expliquer pourquoi, à 8 octets avec champ pointeur, le bras pointeur exécute une lecture de plus et va pourtant plus vite.
 - Borner directement l'encombrement de la mémoire par les compteurs de performance du processeur.
+- Rejouer la classification d'échappement de H-006 sur le poste de référence Windows.
+- Trancher les points de l'audit laissés au chercheur : le lot 9, qui touche les gabarits du harnais et rendrait les campagnes antérieures incomparables, et le constat A-036, qui changerait les verdicts de H-003 et H-004 rendus sur un corpus partiel.
 - Conduire les projets suivants selon la séquence recommandée, P3 (LeakLab, détectabilité des anti-patrons de concurrence) puis P4 (HexaGuard, règle de dépendance hexagonale exécutable), en partant d'`EscapeBench/` comme gabarit.
 
 ## 8. Reproduire les résultats
@@ -156,14 +163,19 @@ go run ./cmd/escapebench compare --campaign <campaignId>
 go run ./cmd/escapebench verdict --campaign <campaignId>
 ```
 
-La matrice de référence demande environ 29 minutes sur la machine décrite en 4.1. H-012 exige une matrice à cinq réplicats et une campagne qui nomme ses hypothèses (`--hypotheses`). Les classifications d'échappement, les mesures de campagne et les verdicts publiés sont archivés dans [`EscapeBench/results/`](EscapeBench/results/); la procédure détaillée est dans [`EscapeBench/LANCEMENT.md`](EscapeBench/LANCEMENT.md).
+La matrice de référence demande environ 29 minutes sur la machine décrite en 4.1. Le harnais de non-régression, qui rejoue les évaluateurs sur les verdicts archivés sans rien mesurer, s'exécute en moins d'une minute :
+
+```bash
+go test -race -shuffle=on -count=1 -tags=integration_test ./...
+```
+
+H-012 exige une matrice à cinq réplicats et une campagne qui nomme ses hypothèses (`--hypotheses`). Les classifications d'échappement, les mesures de campagne et les verdicts publiés sont archivés dans [`EscapeBench/results/`](EscapeBench/results/); la procédure détaillée est dans [`EscapeBench/LANCEMENT.md`](EscapeBench/LANCEMENT.md).
 
 ## 9. Organisation du dépôt
 
 ```
 Prospection/
-├── Book/          ouvrages de référence (PDF)
-├── Doc/           cadrage, méthode, décisions et rapport final
+├── Doc/           cadrage, méthode, décisions, audit du code et rapport final
 ├── Campagnes/     rapports des campagnes de mesure intermédiaires
 ├── Revue/         revues du dépôt et revues contradictoires
 └── EscapeBench/   le banc (P1) : spécification, code Go, réglages de l'agent, résultats
@@ -174,7 +186,8 @@ Prospection/
 | [`Doc/RAPPORT-FINAL_EscapeBench.md`](Doc/RAPPORT-FINAL_EscapeBench.md) | Verdicts consolidés, portée des confirmations, défauts de construction, questions ouvertes. **À lire en premier.** |
 | [`Doc/Projets-candidats_Building-Enterprise-Projects-with-Go.md`](Doc/Projets-candidats_Building-Enterprise-Projects-with-Go.md) | Cartographie des affirmations réfutables, grille d'évaluation, fiches P1 à P8, séquence recommandée |
 | [`Doc/Guide-implementation_AIUP-Claude-Code.md`](Doc/Guide-implementation_AIUP-Claude-Code.md) | Méthode : AIUP adapté aux bancs de réfutation, réglages Claude Code, cycle de travail par cas d'utilisation |
-| [`Doc/DECISION.md`](Doc/DECISION.md) | Journal des décisions D-01 à D-38 : écarts assumés, conception du harnais, statistiques, clôture |
+| [`Doc/DECISION.md`](Doc/DECISION.md) | Journal des décisions D-01 à D-49 : écarts assumés, conception du harnais, statistiques, clôture, correctifs de l'audit |
+| [`Doc/AUDIT.md`](Doc/AUDIT.md) | Audit du code du 2026-09-12 : constats vérifiés, lots de correctifs, état d'implantation et points laissés au chercheur |
 | [`Campagnes/RAPPORT-CAMPAGNE_C-2026-09-10-1.md`](Campagnes/RAPPORT-CAMPAGNE_C-2026-09-10-1.md) | Campagne de référence : premiers verdicts (H-001 à H-006) et audit contradictoire |
 | [`Campagnes/RAPPORT-CAMPAGNE_C-2026-09-10-3.md`](Campagnes/RAPPORT-CAMPAGNE_C-2026-09-10-3.md) | Première épreuve de la seconde génération (H-007 à H-013) |
 | [`Campagnes/RAPPORT-CAMPAGNE_C-2026-09-10-4.md`](Campagnes/RAPPORT-CAMPAGNE_C-2026-09-10-4.md) | Première épreuve de H-012 sur une matrice à réplicats |
@@ -191,9 +204,9 @@ Conventions : prose en français, identifiants et code en anglais; pages citées
 
 ## Références
 
-Les trois ouvrages sont versionnés dans [`Book/`](Book/).
+Les ouvrages ne sont pas distribués avec le dépôt; les liens mènent à la notice de l'éditeur.
 
-Marco, E. (2026). *Agentic Coding with Claude Code: The everyday developer's guide to agentic coding with Claude Code*. Packt Publishing. Première publication en mars 2026 (© 2025). ISBN 978-1-80602-259-5. https://www.packtpub.com/en-us/product/agentic-coding-with-claude-code-9781806022588?srsltid=AfmBOoqLTRdd2Iww3jmKZsRJsNli4rD28CxueQ1QPNNRgPhhnDmm-dKY. 
+Marco, E. (2026). *Agentic Coding with Claude Code: The everyday developer's guide to agentic coding with Claude Code*. Packt Publishing. Première publication en mars 2026 (© 2025). ISBN 978-1-80602-259-5 (imprimé), 978-1-80602-258-8 (numérique). https://www.packtpub.com/en-us/product/agentic-coding-with-claude-code-9781806022588.
 
 Martinelli, S. (2026). *Spec-Driven Development: From Specs to Code with AI Agents*. Apress (Apress Pocket Guides). ISBN 979-8-8688-2850-8 (imprimé), 979-8-8688-2851-5 (numérique). https://doi.org/10.1007/979-8-8688-2851-5.
 

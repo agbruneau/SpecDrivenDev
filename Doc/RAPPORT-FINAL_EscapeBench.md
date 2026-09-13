@@ -22,11 +22,11 @@ Clôture du 2026-09-10. Le banc a éprouvé treize affirmations de *Building Ent
 | H-012 | 253 | Même affirmation que H-007, sur un plancher de bruit apparié et mesuré | confirmée |
 | H-013 | 254 | Même affirmation que H-008, sous attestation de quiétude de la machine | confirmée |
 
-Sept infirmations, six confirmations. Les verdicts viennent de deux campagnes menées en série sur la même machine et dans la même soirée: `C-2026-09-10-11` pour douze hypothèses, 541 sujets et 1 h 08; `C-2026-09-10-12` pour H-012, 82 sujets et 11 min. Aucun sujet en échec. L'occupation médiane des cœurs hors du sujet vaut 5,8 % et 5,5 %, sous le seuil de 12 % que C-010 annonce.
+Cinq infirmations, huit confirmations. Les verdicts viennent de deux campagnes menées en série sur la même machine et dans la même soirée: `C-2026-09-10-11` pour douze hypothèses, 541 sujets et 1 h 08; `C-2026-09-10-12` pour H-012, 82 sujets et 11 min. Aucun sujet en échec. L'occupation médiane des cœurs hors du sujet vaut 5,8 % et 5,5 %, sous le seuil de 12 % que C-010 annonce.
 
 Deux hypothèses ne peuvent pas cohabiter dans une même campagne, et c'est voulu. H-012 exige cinq réplicats de chaque paire; H-007 indexe ses comparaisons par taille et n'en retiendrait qu'une, tirée de l'ordre du fichier. La campagne refuse donc la combinaison au lieu de rendre un verdict que cet ordre aurait dicté.
 
-## Les quatre infirmations qui portent
+## Les infirmations qui portent
 
 **H-004 tombe de très loin.** Le livre annonce un rapport de dix à deux cents entre un accès dispersé et un accès séquentiel. Mesuré sur des jeux de travail de 32 et 128 Mio, le rapport vaut 1,9 et 2,8. L'écart n'est pas marginal, il est d'un ordre de grandeur. La raison est que les deux parcours mesurent un débit et non une latence: leurs chargements sont indépendants et se recouvrent, si bien que le préchargeur matériel absorbe l'essentiel de la dispersion. C'est ce que H-008 corrige en mesurant une chaîne dépendante, où chaque adresse est lue à l'accès précédent, et H-008 est confirmée avec un rapport de 169,9. La même affirmation du livre est donc fausse sur le sujet de mesure qu'on lui applique d'ordinaire et vraie sur celui qui l'éprouve réellement.
 
@@ -34,7 +34,7 @@ Deux hypothèses ne peuvent pas cohabiter dans une même campagne, et c'est voul
 
 **H-006 tombe sur un cas que le livre ne prévoyait pas.** Sur 380 cellules qui échappent, 120 le font pour une raison étrangère aux quatre causes énumérées: la charge allouée par le profil de retour s'échappe alors que la structure mesurée, elle, reste sur la pile. Le catalogue notait déjà que le livre ne revendique pas l'exhaustivité, parlant d'un des cas les plus courants. Cette infirmation le confirme par la mesure.
 
-> **Erratum du 2026-09-12 — ce paragraphe est faux, et le rejeu l'a établi.** L'audit du code a démontré que les 120 cellules comptées « hors des quatre causes » n'ont jamais été classées : le classificateur d'échappement rendait `OTHER` dès que le compilateur nomme l'expression d'allocation plutôt qu'une variable. La sortie réelle du compilateur pour ces cellules est « `new(payload) escapes to heap` », que `escapedIdentifier` ne savait pas lire ; `classifyDiagnostic` rendait alors `OTHER` sans consulter l'arbre syntaxique. Or le corps de `produceValueAlloc` affecte cette allocation à `p` puis exécute `return t, p` : la charge échappe **par retour de pointeur**, la première des quatre causes du livre, et non par une cause étrangère. Le verdict `REFUTED` publié pour H-006 est un artefact du classificateur, pas une observation. Le défaut est corrigé, et le rejeu mené le 2026-09-12 a rendu **`CONFIRMED`** : les 380 cellules qui échappent se classent toutes dans les quatre causes du livre, `OTHER` valant zéro contre 120 auparavant. Voir `audit.md` (constat A-072) et `Doc/DECISION.md` (D-39, D-48).
+> **Erratum du 2026-09-12 — ce paragraphe est faux, et le rejeu l'a établi.** L'audit du code a démontré que les 120 cellules comptées « hors des quatre causes » n'ont jamais été classées : le classificateur d'échappement rendait `OTHER` dès que le compilateur nomme l'expression d'allocation plutôt qu'une variable. La sortie réelle du compilateur pour ces cellules est « `new(payload) escapes to heap` », que `escapedIdentifier` ne savait pas lire ; `classifyDiagnostic` rendait alors `OTHER` sans consulter l'arbre syntaxique. Or le corps de `produceValueAlloc` affecte cette allocation à `p` puis exécute `return t, p` : la charge échappe **par retour de pointeur**, la première des quatre causes du livre, et non par une cause étrangère. Le verdict `REFUTED` publié pour H-006 est un artefact du classificateur, pas une observation. Le défaut est corrigé, et le rejeu mené le 2026-09-12 a rendu **`CONFIRMED`** : les 380 cellules qui échappent se classent toutes dans les quatre causes du livre, `OTHER` valant zéro contre 120 auparavant. Voir [`AUDIT.md`](AUDIT.md) (constat A-072) et [`DECISION.md`](DECISION.md) (D-39, D-48).
 
 **H-011 tombe de peu, et pas là où on l'attendrait.** La préallocation tient deux des trois chiffres de la page 114: la mémoire vaut un cinquième et le compte d'allocations tombe de 27 à exactement un. C'est le gain en temps qui manque, à 4,45 fois pour un plancher de 4,8. H-005, qui accorde une tolérance deux fois plus large sur la même mesure, reste confirmée. La différence entre les deux verdicts est la largeur de la marge, pas la mesure.
 
@@ -49,6 +49,8 @@ UC-005 a ensuite été rejoué sur les deux campagnes qui portaient un H-006 inf
 **La réserve qu'il faut lire avec ce verdict.** Les campagnes ont été mesurées sur `windows/amd64` ; le rejeu a eu lieu sur `linux/amd64`, la version de Go étant la même. Le nouveau rapport d'échappement porte donc une provenance que la règle de sélection de UC-005 n'apparie pas à celle des campagnes, et il a été désigné explicitement par `--escape` ; les fichiers de verdicts le citent. Ce qui autorise cette désignation n'est pas une commodité mais une mesure : sur 532 cellules, 412 rendent la même catégorie sous `windows/go1.27.0` et sous `linux/go1.27.0`, et les 120 qui diffèrent sont exactement celles que le correctif vise. Le système d'exploitation est donc sans effet sur ce corpus. Un rejeu sur le poste de référence lèverait la réserve tout à fait ; rien dans les données n'incite à en attendre autre chose.
 
 **Ce qui n'a pas été rejoué.** La matrice `M-8f03757ac206` porte elle aussi 80 cellules `OTHER`, mais ses paramètres ne sont consignés nulle part et n'ont pas été retrouvés. Aucune des campagnes qui l'emploient ne gèle H-006 : le verdict publié n'en dépend pas.
+
+**2026-09-13 — Décompte et état du dépôt.** Le décompte publié à la clôture, « sept infirmations, six confirmations », ne correspondait pas au tableau, qui en comptait six et sept ; depuis la correction de H-006, il est de cinq et huit. Le titre « Les quatre infirmations qui portent » perd son nombre pour la même raison. Le tableau de l'état du dépôt annonçait six campagnes archivées, dont une contaminée : `results/` en porte dix, dont deux mesurées sous charge, `C-2026-09-10-6` délibérément (D-33) et `C-2026-09-10-7` par erreur (D-36).
 
 ## Ce que les confirmations valent, et ce qu'elles ne valent pas
 
@@ -75,7 +77,7 @@ Un quatrième défaut a été trouvé et non corrigé, faute de pouvoir l'être 
 | Cas d'utilisation | les cinq à `Deployed` |
 | Hypothèses au catalogue | treize, toutes avec un évaluateur et un verdict |
 | Contraintes de capacité | C-008, C-009 et C-010 satisfaites |
-| Campagnes archivées | six, dont une contaminée conservée comme témoin |
+| Campagnes archivées | dix, dont deux mesurées sous charge : l'une pour éprouver la garde, l'autre par erreur et conservée comme témoin |
 | Analyse statique et mise en forme | propres |
 | Suite de tests | au vert sous détecteur de course et ordre aléatoire |
 | Couverture de statements | 93,6 % |
