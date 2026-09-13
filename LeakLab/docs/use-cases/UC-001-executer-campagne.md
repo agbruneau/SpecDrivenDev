@@ -6,7 +6,7 @@
 **Use Case Name:** Exécuter une campagne
 **Primary Actor:** Chercheur
 **Goal:** Obtenir, pour le corpus de référence, toutes les observations des détecteurs et toutes les mesures des sondes, avec leur provenance, dans un fichier de résultats immuable
-**Status:** Approved
+**Status:** Deployed
 
 **Linked Requirements:** FR-001, FR-002, FR-003, FR-004, NFR-001, NFR-002, NFR-003, NFR-004, NFR-005, C-001, C-003, C-004, C-005, C-006, C-007, C-008
 **Linked Hypotheses:** H-001 à H-014
@@ -81,3 +81,4 @@ Le fichier de campagne est écrit en une fois, à la fin, et jamais écrasé (NF
 ## Notes de revue
 
 - L'oracle (FR-001) s'appuie sur les piles de goroutines (`runtime.Stack`) et non sur le nombre de goroutines ni sur le profil `goroutineleak`, qui sont des détecteurs jugés : la vérité terrain ne doit dépendre d'aucun détecteur qu'elle sert à juger. Les cas de `D` ne sont pas exécutés par l'oracle, qui ne ferait que se bloquer ; les cas de `R` y sont exécutés sans `-race`.
+- Clôture du 2026-09-13 : statut porté à `Deployed` (« campagne exécutée et rapport publié »). Ce qui l'établit : la campagne de référence `R-2026-09-13-2` (960 observations dynamiques, 64 statiques, 75 mesures de sonde, 9 min 01), l'oracle au vert sur 29 cas, la suite `go test -race -shuffle=on` au vert et le rapport `Doc/RAPPORT-FINAL_LeakLab.md`. La première campagne, `R-2026-09-13-1`, ne passait pas `-test.timeout` aux binaires et n'était pas conforme à C-004 ; le défaut est corrigé et verrouillé par `TestUC001_C004_DelaiParDefaut` (`Doc/DECISION_LeakLab.md`, D-13).

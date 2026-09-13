@@ -6,7 +6,7 @@
 **Use Case Name:** Produire les verdicts
 **Primary Actor:** Chercheur
 **Goal:** Obtenir, pour une campagne, le verdict de chaque hypothèse par son seul critère gelé et la matrice de détectabilité
-**Status:** Approved
+**Status:** Deployed
 
 **Linked Requirements:** FR-005, FR-006, NFR-004, C-008
 **Linked Hypotheses:** H-001 à H-014
@@ -57,3 +57,7 @@ Chaque verdict cite les cellules (`cas/DÉTECTEUR`) ou les bras (`SONDE/BRAS`) q
 
 ### BR-002-3: Matrice publiée avec les verdicts
 La matrice de détectabilité est produite par ce cas d'utilisation et jamais éditée à la main.
+
+## Notes de revue
+
+- Clôture du 2026-09-13 : statut porté à `Deployed`. Ce qui l'établit : les verdicts des quatorze hypothèses sur `R-2026-09-13-2`, un test par critère (`TestH001` à `TestH014`) couvrant chaque branche confirmée, infirmée et non concluante, le refus sur empreinte modifiée (`TestUC002_A1_CritereModifie`) et la matrice publiée dans `results/verdicts/`.

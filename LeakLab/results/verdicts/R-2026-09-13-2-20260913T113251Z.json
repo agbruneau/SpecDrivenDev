@@ -1,0 +1,293 @@
+[
+  {
+    "hypothesisId": "H-001",
+    "runId": "R-2026-09-13-2",
+    "outcome": "CONFIRMED",
+    "rationale": "BARE détecte 0 cas de L sur 11 (aucun) ; dispatch-leak détecté : false ; witness-fail détecté : true",
+    "evidence": [
+      "witness-fail/BARE",
+      "dispatch-leak/BARE",
+      "dispatch-buffered-leak/BARE",
+      "abandoned-receive-leak/BARE",
+      "select-no-cancel-leak/BARE",
+      "waitgroup-leak/BARE",
+      "cond-leak/BARE",
+      "mutex-leak/BARE",
+      "global-channel-leak/BARE",
+      "empty-select-leak/BARE",
+      "ctx-watcher-leak/BARE",
+      "io-without-context-leak/BARE"
+    ]
+  },
+  {
+    "hypothesisId": "H-002",
+    "runId": "R-2026-09-13-2",
+    "outcome": "REFUTED",
+    "rationale": "0 exécutions BARE de cas de L sur 55 contiennent un signalement ; LEAKLAB-WITNESS capturé : true",
+    "evidence": [
+      "witness-fail/BARE",
+      "dispatch-leak/BARE",
+      "dispatch-buffered-leak/BARE",
+      "abandoned-receive-leak/BARE",
+      "select-no-cancel-leak/BARE",
+      "waitgroup-leak/BARE",
+      "cond-leak/BARE",
+      "mutex-leak/BARE",
+      "global-channel-leak/BARE",
+      "empty-select-leak/BARE",
+      "ctx-watcher-leak/BARE",
+      "io-without-context-leak/BARE"
+    ]
+  },
+  {
+    "hypothesisId": "H-003",
+    "runId": "R-2026-09-13-2",
+    "outcome": "CONFIRMED",
+    "rationale": "cas de R non diagnostiqués : aucun ; cas sans course diagnostiqués RACE : aucun",
+    "evidence": [
+      "counter-race/RACE",
+      "append-race/RACE",
+      "dispatch-leak/RACE",
+      "dispatch-buffered-leak/RACE",
+      "abandoned-receive-leak/RACE",
+      "select-no-cancel-leak/RACE",
+      "waitgroup-leak/RACE",
+      "cond-leak/RACE",
+      "mutex-leak/RACE",
+      "global-channel-leak/RACE",
+      "empty-select-leak/RACE",
+      "ctx-watcher-leak/RACE",
+      "io-without-context-leak/RACE",
+      "forgotten-cancel/RACE",
+      "dispatch-fix/RACE",
+      "abandoned-receive-fix/RACE",
+      "select-no-cancel-fix/RACE",
+      "waitgroup-fix/RACE",
+      "cond-fix/RACE",
+      "mutex-fix/RACE",
+      "global-channel-fix/RACE",
+      "empty-select-fix/RACE",
+      "ctx-watcher-fix/RACE",
+      "io-without-context-fix/RACE",
+      "forgotten-cancel-fix/RACE",
+      "counter-race-fix/RACE",
+      "append-race-fix/RACE",
+      "deadlock-send-fix/RACE",
+      "deadlock-range-fix/RACE",
+      "witness-fail/RACE"
+    ]
+  },
+  {
+    "hypothesisId": "H-004",
+    "runId": "R-2026-09-13-2",
+    "outcome": "REFUTED",
+    "rationale": "0 cas de N attribuables à -race sur 14 (aucun)",
+    "evidence": [
+      "dispatch-leak/RACE",
+      "dispatch-leak/BARE",
+      "dispatch-buffered-leak/RACE",
+      "dispatch-buffered-leak/BARE",
+      "abandoned-receive-leak/RACE",
+      "abandoned-receive-leak/BARE",
+      "select-no-cancel-leak/RACE",
+      "select-no-cancel-leak/BARE",
+      "waitgroup-leak/RACE",
+      "waitgroup-leak/BARE",
+      "cond-leak/RACE",
+      "cond-leak/BARE",
+      "mutex-leak/RACE",
+      "mutex-leak/BARE",
+      "global-channel-leak/RACE",
+      "global-channel-leak/BARE",
+      "empty-select-leak/RACE",
+      "empty-select-leak/BARE",
+      "ctx-watcher-leak/RACE",
+      "ctx-watcher-leak/BARE",
+      "io-without-context-leak/RACE",
+      "io-without-context-leak/BARE",
+      "forgotten-cancel/RACE",
+      "forgotten-cancel/BARE",
+      "deadlock-send/RACE",
+      "deadlock-send/BARE",
+      "deadlock-range/RACE",
+      "deadlock-range/BARE"
+    ]
+  },
+  {
+    "hypothesisId": "H-005",
+    "runId": "R-2026-09-13-2",
+    "outcome": "REFUTED",
+    "rationale": "SYNCTEST diagnostique DEADLOCK sur 8 cas de L sur 11 ; non diagnostiqués : mutex-leak (HANG), global-channel-leak (HANG), io-without-context-leak (HANG)",
+    "evidence": [
+      "dispatch-leak/SYNCTEST",
+      "dispatch-buffered-leak/SYNCTEST",
+      "abandoned-receive-leak/SYNCTEST",
+      "select-no-cancel-leak/SYNCTEST",
+      "waitgroup-leak/SYNCTEST",
+      "cond-leak/SYNCTEST",
+      "mutex-leak/SYNCTEST",
+      "global-channel-leak/SYNCTEST",
+      "empty-select-leak/SYNCTEST",
+      "ctx-watcher-leak/SYNCTEST",
+      "io-without-context-leak/SYNCTEST"
+    ]
+  },
+  {
+    "hypothesisId": "H-006",
+    "runId": "R-2026-09-13-2",
+    "outcome": "CONFIRMED",
+    "rationale": "médiane REAL 500.6 ms ; médiane SYNCTEST 0.000 ms",
+    "evidence": [
+      "SYNCTEST_TIMEOUT/REAL",
+      "SYNCTEST_TIMEOUT/SYNCTEST"
+    ]
+  },
+  {
+    "hypothesisId": "H-007",
+    "runId": "R-2026-09-13-2",
+    "outcome": "CONFIRMED",
+    "rationale": "deadlock-send/PROGRAM : DEADLOCK ; deadlock-range/PROGRAM : DEADLOCK",
+    "evidence": [
+      "deadlock-send/PROGRAM",
+      "deadlock-range/PROGRAM"
+    ]
+  },
+  {
+    "hypothesisId": "H-008",
+    "runId": "R-2026-09-13-2",
+    "outcome": "REFUTED",
+    "rationale": "deadlock-send/BARE : HANG ; deadlock-range/BARE : HANG",
+    "evidence": [
+      "deadlock-send/BARE",
+      "deadlock-range/BARE"
+    ]
+  },
+  {
+    "hypothesisId": "H-009",
+    "runId": "R-2026-09-13-2",
+    "outcome": "REFUTED",
+    "rationale": "BACKGROUND : retenue 275.1 o, résidu 157.3 o ; CANCELABLE : retenue 318.9 o, résidu 171.7 o",
+    "evidence": [
+      "CANCEL_RETENTION/BACKGROUND/FORGOTTEN",
+      "CANCEL_RETENTION/BACKGROUND/CANCELLED",
+      "CANCEL_RETENTION/BACKGROUND/EXPIRED",
+      "CANCEL_RETENTION/CANCELABLE/FORGOTTEN",
+      "CANCEL_RETENTION/CANCELABLE/CANCELLED",
+      "CANCEL_RETENTION/CANCELABLE/EXPIRED"
+    ]
+  },
+  {
+    "hypothesisId": "H-010",
+    "runId": "R-2026-09-13-2",
+    "outcome": "REFUTED",
+    "rationale": "delta de goroutines : BACKGROUND 0, CANCELABLE 0, OPAQUE (témoin) 20000, N = 20000",
+    "evidence": [
+      "CANCEL_RETENTION/BACKGROUND/FORGOTTEN",
+      "CANCEL_RETENTION/BACKGROUND/CANCELLED",
+      "CANCEL_RETENTION/CANCELABLE/FORGOTTEN",
+      "CANCEL_RETENTION/CANCELABLE/CANCELLED",
+      "CANCEL_RETENTION/OPAQUE/FORGOTTEN",
+      "CANCEL_RETENTION/OPAQUE/CANCELLED"
+    ]
+  },
+  {
+    "hypothesisId": "H-011",
+    "runId": "R-2026-09-13-2",
+    "outcome": "REFUTED",
+    "rationale": "croissance 0.01 o par itération ; référence 257.74 o",
+    "evidence": [
+      "TIMER_GROWTH/REUSED_TIMER",
+      "TIMER_GROWTH/AFTER_IN_LOOP",
+      "TIMER_GROWTH/RETAINED_WITNESS"
+    ]
+  },
+  {
+    "hypothesisId": "H-012",
+    "runId": "R-2026-09-13-2",
+    "outcome": "CONFIRMED",
+    "rationale": "fuites manquées : aucun ; cas sains signalés : aucun",
+    "evidence": [
+      "dispatch-leak/NUMGOROUTINE",
+      "dispatch-buffered-leak/NUMGOROUTINE",
+      "abandoned-receive-leak/NUMGOROUTINE",
+      "select-no-cancel-leak/NUMGOROUTINE",
+      "waitgroup-leak/NUMGOROUTINE",
+      "cond-leak/NUMGOROUTINE",
+      "mutex-leak/NUMGOROUTINE",
+      "global-channel-leak/NUMGOROUTINE",
+      "empty-select-leak/NUMGOROUTINE",
+      "ctx-watcher-leak/NUMGOROUTINE",
+      "io-without-context-leak/NUMGOROUTINE",
+      "forgotten-cancel/NUMGOROUTINE",
+      "counter-race/NUMGOROUTINE",
+      "append-race/NUMGOROUTINE",
+      "dispatch-fix/NUMGOROUTINE",
+      "abandoned-receive-fix/NUMGOROUTINE",
+      "select-no-cancel-fix/NUMGOROUTINE",
+      "waitgroup-fix/NUMGOROUTINE",
+      "cond-fix/NUMGOROUTINE",
+      "mutex-fix/NUMGOROUTINE",
+      "global-channel-fix/NUMGOROUTINE",
+      "empty-select-fix/NUMGOROUTINE",
+      "ctx-watcher-fix/NUMGOROUTINE",
+      "io-without-context-fix/NUMGOROUTINE",
+      "forgotten-cancel-fix/NUMGOROUTINE",
+      "counter-race-fix/NUMGOROUTINE",
+      "append-race-fix/NUMGOROUTINE",
+      "deadlock-send-fix/NUMGOROUTINE",
+      "deadlock-range-fix/NUMGOROUTINE"
+    ]
+  },
+  {
+    "hypothesisId": "H-013",
+    "runId": "R-2026-09-13-2",
+    "outcome": "REFUTED",
+    "rationale": "domaine manqué : mutex-leak ; cas sains signalés : aucun ; hors domaine, sans décider : global-channel-leak (PASS), empty-select-leak (LEAK), ctx-watcher-leak (PASS), io-without-context-leak (PASS)",
+    "evidence": [
+      "dispatch-leak/LEAKPROFILE",
+      "dispatch-buffered-leak/LEAKPROFILE",
+      "abandoned-receive-leak/LEAKPROFILE",
+      "select-no-cancel-leak/LEAKPROFILE",
+      "waitgroup-leak/LEAKPROFILE",
+      "cond-leak/LEAKPROFILE",
+      "mutex-leak/LEAKPROFILE",
+      "forgotten-cancel/LEAKPROFILE",
+      "counter-race/LEAKPROFILE",
+      "append-race/LEAKPROFILE",
+      "dispatch-fix/LEAKPROFILE",
+      "abandoned-receive-fix/LEAKPROFILE",
+      "select-no-cancel-fix/LEAKPROFILE",
+      "waitgroup-fix/LEAKPROFILE",
+      "cond-fix/LEAKPROFILE",
+      "mutex-fix/LEAKPROFILE",
+      "global-channel-fix/LEAKPROFILE",
+      "empty-select-fix/LEAKPROFILE",
+      "ctx-watcher-fix/LEAKPROFILE",
+      "io-without-context-fix/LEAKPROFILE",
+      "forgotten-cancel-fix/LEAKPROFILE",
+      "counter-race-fix/LEAKPROFILE",
+      "append-race-fix/LEAKPROFILE",
+      "deadlock-send-fix/LEAKPROFILE",
+      "deadlock-range-fix/LEAKPROFILE",
+      "global-channel-leak/LEAKPROFILE",
+      "empty-select-leak/LEAKPROFILE",
+      "ctx-watcher-leak/LEAKPROFILE",
+      "io-without-context-leak/LEAKPROFILE"
+    ]
+  },
+  {
+    "hypothesisId": "H-014",
+    "runId": "R-2026-09-13-2",
+    "outcome": "CONFIRMED",
+    "rationale": "BACKGROUND : retenue 275.1 o, résidu -51.0 o ; CANCELABLE : retenue 318.9 o, résidu -36.6 o",
+    "evidence": [
+      "CANCEL_RETENTION/BACKGROUND/FORGOTTEN",
+      "CANCEL_RETENTION/BACKGROUND/CANCELLED",
+      "CANCEL_RETENTION/BACKGROUND/EXPIRED",
+      "CANCEL_RETENTION/AFTERFUNC_WITNESS",
+      "CANCEL_RETENTION/CANCELABLE/FORGOTTEN",
+      "CANCEL_RETENTION/CANCELABLE/CANCELLED",
+      "CANCEL_RETENTION/CANCELABLE/EXPIRED"
+    ]
+  }
+]

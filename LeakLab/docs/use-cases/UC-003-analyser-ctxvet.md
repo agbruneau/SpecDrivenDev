@@ -6,7 +6,7 @@
 **Use Case Name:** Analyser un paquet avec ctxvet
 **Primary Actor:** Développeur (Pipeline CI en acteur secondaire)
 **Goal:** Obtenir la liste des appels d'I/O qui ignorent le contexte dans un répertoire Go, avec l'API qui le respecte
-**Status:** Approved
+**Status:** Deployed
 
 **Linked Requirements:** FR-003, FR-007, C-002
 **Linked Hypotheses:** aucune (l'analyseur alimente la matrice, pas un critère)
@@ -50,3 +50,7 @@ Un appel `x.F` n'est visé que si `x` désigne, dans le fichier, l'import du paq
 
 ### BR-003-3: Portée assumée
 L'analyse est syntaxique : les méthodes (`db.Query`, `conn.Read`) ne sont pas visées, faute de types. C'est une limite déclarée, mesurée par la matrice.
+
+## Notes de revue
+
+- Clôture du 2026-09-13 : statut porté à `Deployed`. Ce qui l'établit : `ctxvet` a diagnostiqué dans la campagne de référence le seul cas `CTX_IO` du corpus et aucun autre ; ses règles BR-003-1 à BR-003-3 sont couvertes par `TestUC003_*`.

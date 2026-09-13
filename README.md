@@ -1,12 +1,12 @@
 # Prospection : Cadrage et Développement IA avec Claude Code
 
-**Statut** : premier projet (EscapeBench) clos le 2026-09-10, verdicts révisés le 2026-09-12 après un audit du code; sept autres projets au stade du cadrage.
+**Statut** : deux projets clos, EscapeBench (P1) le 2026-09-10, avec des verdicts révisés le 2026-09-12 après un audit du code, et LeakLab (P3) le 2026-09-13; six autres projets au stade du cadrage.
 
 ## Résumé
 
-Les ouvrages de génie logiciel transmettent des règles de performance chiffrées que l'on applique souvent sans les vérifier. Ce dépôt en fait des objets d'étude. Il repère dans *Building Enterprise Projects with Go* (Shahsavan, 2026) les affirmations assez précises pour qu'une mesure puisse les contredire, puis construit avec un agent de codage, Claude Code (Marco, 2026), des bancs d'essai qui les mettent à l'épreuve. Le développement suit le *Spec-Driven Development* (Martinelli, 2026) : chaque affirmation devient une hypothèse dont le critère de réfutation est écrit et gelé avant la première mesure. Le premier banc, EscapeBench, porte sur la gestion de la mémoire en Go. Sur treize hypothèses, cinq sont infirmées et huit confirmées. Les infirmations les plus instructives ne montrent pas que le livre se trompe, mais qu'il décrit un cas particulier sans le dire : la règle des « un à trois mots machine » dépend de la forme d'une structure autant que de sa taille; le rapport de 10 à 200 entre cache et mémoire vaut pour une latence, pas pour un débit; et le passage au pointeur ne double les allocations que si la fonction n'alloue rien d'autre. Un audit du code mené après la clôture a en outre montré qu'un verdict publié, l'infirmation de H-006, était un artefact du banc : corrigé et rejoué, il passe à *confirmée*.
+Les ouvrages de génie logiciel transmettent des règles de performance chiffrées que l'on applique souvent sans les vérifier. Ce dépôt en fait des objets d'étude. Il repère dans *Building Enterprise Projects with Go* (Shahsavan, 2026) les affirmations assez précises pour qu'une mesure puisse les contredire, puis construit avec un agent de codage, Claude Code (Marco, 2026), des bancs d'essai qui les mettent à l'épreuve. Le développement suit le *Spec-Driven Development* (Martinelli, 2026) : chaque affirmation devient une hypothèse dont le critère de réfutation est écrit et gelé avant la première mesure. Le premier banc, EscapeBench, porte sur la gestion de la mémoire en Go. Sur treize hypothèses, cinq sont infirmées et huit confirmées. Les infirmations les plus instructives ne montrent pas que le livre se trompe, mais qu'il décrit un cas particulier sans le dire : la règle des « un à trois mots machine » dépend de la forme d'une structure autant que de sa taille; le rapport de 10 à 200 entre cache et mémoire vaut pour une latence, pas pour un débit; et le passage au pointeur ne double les allocations que si la fonction n'alloue rien d'autre. Un audit du code mené après la clôture a en outre montré qu'un verdict publié, l'infirmation de H-006, était un artefact du banc : corrigé et rejoué, il passe à *confirmée*. Le second banc, LeakLab, éprouve ce que le livre dit des fuites de goroutines, des interblocages et des outils censés les révéler. Sur quatorze hypothèses, huit sont infirmées : un test ordinaire et le détecteur de courses ne voient aucune des onze fuites du corpus, `testing/synctest` en manque trois, et deux interblocages que le livre dit fatals bloquent dix minutes sous `go test`.
 
-**Mots-clés** : Go, analyse d'échappement, micro-benchmark, réfutabilité, *Spec-Driven Development*, agents de codage, Claude Code.
+**Mots-clés** : Go, analyse d'échappement, micro-benchmark, concurrence, fuites de goroutines, réfutabilité, *Spec-Driven Development*, agents de codage, Claude Code.
 
 ## 1. Introduction
 
@@ -148,9 +148,58 @@ Le dépôt n'offre pas de groupe témoin : les observations suivantes décrivent
 - Borner directement l'encombrement de la mémoire par les compteurs de performance du processeur.
 - Rejouer la classification d'échappement de H-006 sur le poste de référence Windows.
 - Trancher les points de l'audit laissés au chercheur : le lot 9, qui touche les gabarits du harnais et rendrait les campagnes antérieures incomparables, et le constat A-036, qui changerait les verdicts de H-003 et H-004 rendus sur un corpus partiel.
-- Conduire les projets suivants selon la séquence recommandée, P3 (LeakLab, détectabilité des anti-patrons de concurrence) puis P4 (HexaGuard, règle de dépendance hexagonale exécutable), en partant d'`EscapeBench/` comme gabarit.
+- Conduire le projet suivant de la séquence recommandée, P4 (HexaGuard, règle de dépendance hexagonale exécutable), P3 étant réalisé (section 8).
 
-## 8. Reproduire les résultats
+## 8. Second projet : LeakLab (P3)
+
+### 8.1 Question
+
+Pour chaque anti-patron de concurrence du chapitre 20 — fuite de goroutine, interblocage de canal, contexte non annulé, I/O qui ignore le contexte — et pour les courses de données, quel mécanisme de détection le révèle, avec quels faux négatifs et quels faux positifs? Le livre fait des promesses sur ces outils : le cadre de test signalerait les goroutines fuitées (p. 217), `-race` en CI attraperait les bogues de concurrence (p. 232), `synctest` paniquerait sur toute goroutine restée bloquée (p. 291–292), la hausse de `runtime.NumGoroutine()` signalerait une fuite (p. 293). Il chiffre ou qualifie aussi des coûts : un délai de 500 ms testé instantanément (p. 291), la mémoire et les goroutines d'un `cancel()` oublié (p. 567), la croissance de la mémoire d'un `time.After` en boucle (p. 276).
+
+### 8.2 Méthode
+
+Le processus est celui d'EscapeBench (section 3), avec trois différences tirées de ses défauts.
+
+- **Un corpus à vérité terrain indépendante.** 32 cas minimaux, dont 16 fautifs (11 fuites, 2 interblocages, 1 contexte non annulé, 2 courses), leurs 15 corrections et un témoin qui échoue. La vérité terrain est vérifiée par un oracle qui lit les piles de goroutines, et non par l'un des détecteurs qu'elle sert à juger : c'est la leçon du verdict faux de H-006.
+- **Huit détecteurs, un processus par observation.** Test ordinaire, test sous `-race`, bulle `synctest`, compte de goroutines, profil `goroutineleak` (Go 1.27), programme, `go vet` et `ctxvet`, un analyseur écrit pour le banc. Chaque cas passe sous chaque détecteur dynamique cinq fois, dans un processus neuf tué au bout de 5 s. Les critères lisent l'issue majoritaire.
+- **Un témoin par hypothèse** : un cas qui doit échouer, un bras hors bulle, un parent de contexte que `context` surveille par une goroutine, des minuteries gardées exprès. Sans lui, un verdict ne distingue pas un détecteur muet d'une affirmation vraie.
+
+Les critères ont été committés avant la première ligne de code ([`LeakLab/docs/requirements.md`](LeakLab/docs/requirements.md)).
+
+### 8.3 Verdicts
+
+Campagne de référence `R-2026-09-13-2` : go1.27.0, windows/amd64, 1 099 mesures en 9 min, aucune cellule dont les répétitions divergent.
+
+| Hyp. | Affirmation (page) | Mesure | Verdict |
+|---|---|---|---|
+| H-001 | Une fuite passe les tests en silence (561) | Test ordinaire vert sur les 11 fuites | confirmée |
+| H-002 | Le cadre de test signale les goroutines fuitées (217) | Aucun signalement sur 55 exécutions | **infirmée** |
+| H-003 | `-race` rapporte les courses (232) | 2 courses sur 2, aucun faux positif | confirmée |
+| H-004 | `-race` en CI attrape les bogues de concurrence (232) | 0 défaut autre qu'une course sur 14 | **infirmée** |
+| H-005 | `synctest` panique sur une goroutine restée bloquée (289–292) | 8 fuites sur 11 ; bloque sur mutex, canal global, réseau | **infirmée** |
+| H-006 | Le délai de 500 ms se teste instantanément (291) | Sous la résolution de l'horloge, contre 500,6 ms hors bulle | confirmée |
+| H-007 | Les deux interblocages finissent en erreur fatale (564) | Vrai pour un programme | confirmée |
+| H-008 | Même affirmation, sous `go test` | Les deux bloquent : l'alarme de 10 min empêche la détection | **infirmée** |
+| H-009 | Un `cancel()` oublié retient de la mémoire jusqu'à l'échéance (567) | Sonde défectueuse (voir H-014) | **infirmée** |
+| H-010 | Un `cancel()` oublié coûte des goroutines (567) | 0 avec un parent standard | **infirmée** |
+| H-011 | `time.After` en boucle fait croître la mémoire (276) | +0,01 octet par itération | **infirmée** |
+| H-012 | La hausse de `NumGoroutine` signale une fuite (293) | 11 fuites sur 11, aucun faux positif | confirmée |
+| H-013 | Le profil `goroutineleak` voit les primitives inaccessibles (notes Go 1.26/1.27) | Manque le mutex de 8 octets | **infirmée** |
+| H-014 | Successeur de H-009, résidu net du coût d'expiration | 275 à 319 octets retenus, rendus après l'échéance | confirmée |
+
+### 8.4 Lecture
+
+Le livre recommande deux outils qui ne voient pas les fuites, le test et `-race`, et le seul détecteur dynamique qui les a toutes vues est le plus rudimentaire, le compte de goroutines d'un scénario répété. Les infirmations suivent le motif d'EscapeBench : le livre décrit un cas particulier sans le dire. `synctest` ne panique que si la goroutine est *durablement* bloquée, ce qui exclut les mutex et le réseau. L'interblocage est fatal pour un programme, pas sous `go test`, dont la minuterie d'alarme empêche le runtime de le déclarer (`checkdead`). Oublier `cancel()` coûte de la mémoire, et des goroutines seulement avec un parent que `context` ne reconnaît pas. Le conseil sur `time.After` date d'avant Go 1.23. Le rapport en tire une recommandation pour l'intégration continue : `go vet` explicite, dont `go test` omet l'analyseur `lostcancel` ; contrôle de goroutines dans les tests ; `-timeout` court.
+
+### 8.5 Ce que le banc a appris sur lui-même
+
+La première campagne, `R-2026-09-13-1`, a produit un verdict faux (H-008) et une infirmation tirée d'une sonde défectueuse (H-009). Relus avant la rédaction du rapport, les résultats contraires à l'attente ont révélé deux défauts de construction. Le banc lançait les binaires de test sans le délai que `go test` leur transmet : sans alarme, le runtime déclarait les interblocages, H-008 était confirmée à tort, et `synctest` semblait voir deux fuites qu'il ne voit pas. La sonde de H-009 comptait, comme mémoire retenue par les contextes, ce que le runtime garde après l'expiration de toute minuterie. Le premier défaut a été corrigé et la campagne refaite ; le second a donné une hypothèse successeur, H-014, sans retouche du critère gelé. Contrairement à H-006 dans EscapeBench, aucun verdict faux n'a atteint le rapport : la campagne fautive est archivée comme telle, et quatre contre-épreuves hors campagne ont tranché les doutes restants. Cela montre que l'agent peut appliquer la leçon d'un projet au suivant, pas qu'il n'a plus besoin de vérification extérieure : le banc n'a eu aucune revue humaine (D-01).
+
+Limites propres à LeakLab : corpus synthétique, un seul poste Windows, pas de campagne sous Linux, et une vérité terrain que l'oracle ne vérifie pas pour les courses ni pour l'accessibilité des primitives. Détails : [`Doc/RAPPORT-FINAL_LeakLab.md`](Doc/RAPPORT-FINAL_LeakLab.md), décisions D-01 à D-17 : [`Doc/DECISION_LeakLab.md`](Doc/DECISION_LeakLab.md).
+
+## 9. Reproduire les résultats
+
+### 9.1 EscapeBench
 
 Prérequis : Go 1.25 ou plus récent; aucune dépendance hors bibliothèque standard. Chaîne complète, depuis `EscapeBench/` :
 
@@ -171,14 +220,33 @@ go test -race -shuffle=on -count=1 -tags=integration_test ./...
 
 H-012 exige une matrice à cinq réplicats et une campagne qui nomme ses hypothèses (`--hypotheses`). Les classifications d'échappement, les mesures de campagne et les verdicts publiés sont archivés dans [`EscapeBench/results/`](EscapeBench/results/); la procédure détaillée est dans [`EscapeBench/LANCEMENT.md`](EscapeBench/LANCEMENT.md).
 
-## 9. Organisation du dépôt
+### 9.2 LeakLab
+
+Prérequis : Go 1.27.0 ou plus récent, sans dépendance hors bibliothèque standard. Depuis `LeakLab/`, les tests, puis une campagne (environ 9 minutes), puis ses verdicts :
+
+```bash
+go vet ./... && go test -race -shuffle=on -count=1 ./...
+```
+
+```bash
+go run ./cmd/leaklab run
+```
+
+```bash
+go run ./cmd/leaklab verdict -run <runId>
+```
+
+Le binaire refuse la campagne si le catalogue du corpus diverge de la spécification, si l'oracle contredit la vérité terrain ou si un pilote ne compile pas. Les campagnes et les verdicts, matrice comprise, sont archivés dans [`LeakLab/results/`](LeakLab/results/).
+
+## 10. Organisation du dépôt
 
 ```
 Prospection/
-├── Doc/           cadrage, méthode, décisions, audit du code et rapport final
-├── Campagnes/     rapports des campagnes de mesure intermédiaires
+├── Doc/           cadrage, méthode, décisions, audit du code et rapports finaux
+├── Campagnes/     rapports des campagnes de mesure intermédiaires d'EscapeBench
 ├── Revue/         revues du dépôt et revues contradictoires
-└── EscapeBench/   le banc (P1) : spécification, code Go, réglages de l'agent, résultats
+├── EscapeBench/   le premier banc (P1) : spécification, code Go, réglages de l'agent, résultats
+└── LeakLab/       le second banc (P3) : spécification, corpus, code Go, réglages de l'agent, résultats
 ```
 
 | Document | Rôle |
@@ -195,10 +263,13 @@ Prospection/
 | [`Revue/REVUE-PRELANCEMENT_2026-09-10.md`](Revue/REVUE-PRELANCEMENT_2026-09-10.md) | Revue du cadrage avant le développement |
 | [`Revue/REVUE-C008_2026-09-10.md`](Revue/REVUE-C008_2026-09-10.md) | Revue contradictoire des capacités ajoutées pour la seconde génération d'hypothèses |
 | [`EscapeBench/`](EscapeBench/) | Le banc : spécification (`docs/`), code Go (`cmd/`, `internal/`), réglages de l'agent (`CLAUDE.md`, `.claude/`), résultats (`results/`), procédure (`LANCEMENT.md`) |
+| [`Doc/RAPPORT-FINAL_LeakLab.md`](Doc/RAPPORT-FINAL_LeakLab.md) | LeakLab : verdicts des quatorze hypothèses, matrice de détectabilité, recommandation pour l'intégration continue, défauts de construction |
+| [`Doc/DECISION_LeakLab.md`](Doc/DECISION_LeakLab.md) | Journal des décisions de LeakLab, D-01 à D-17 : gel, architecture, oracle, détecteurs, décisions prises après la première campagne |
+| [`LeakLab/`](LeakLab/) | Le second banc : spécification (`docs/`), corpus et pilotes (`lab/`), code Go (`cmd/`, `internal/`), réglages de l'agent (`CLAUDE.md`, `.claude/`), résultats (`results/`) |
 
-Les campagnes finales `C-2026-09-10-11` et `C-2026-09-10-12`, dont viennent les treize verdicts, n'ont pas de rapport propre : elles sont consolidées dans le rapport final.
+Les campagnes finales `C-2026-09-10-11` et `C-2026-09-10-12`, dont viennent les treize verdicts d'EscapeBench, n'ont pas de rapport propre : elles sont consolidées dans le rapport final.
 
-Ordre de lecture suggéré : le rapport final, puis [`EscapeBench/docs/`](EscapeBench/docs/) dans l'ordre AIUP (vision, exigences, modèle d'entités, cas d'utilisation). Pour cadrer un nouveau projet : `Doc/Projets-candidats…` §1–5 et §7, puis `Doc/Guide-implementation…` §1–7.
+Ordre de lecture suggéré : le rapport final d'EscapeBench, puis [`EscapeBench/docs/`](EscapeBench/docs/) dans l'ordre AIUP (vision, exigences, modèle d'entités, cas d'utilisation) ; ensuite le rapport final de LeakLab et [`LeakLab/docs/`](LeakLab/docs/). Pour cadrer un nouveau projet : `Doc/Projets-candidats…` §1–5 et §7, puis `Doc/Guide-implementation…` §1–7.
 
 Conventions : prose en français, identifiants et code en anglais; pages citées = folios imprimés; marqueurs épistémiques *Confirmé*, *Probable*, *Hypothèse*, *À vérifier* et *Adaptation* dans les documents de cadrage.
 

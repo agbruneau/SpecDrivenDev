@@ -162,6 +162,8 @@ Chaque fiche suit le même plan : concepts du livre, question de recherche, affi
 
 ### P3 — LeakLab : détectabilité des anti-patrons de concurrence
 
+**Statut (2026-09-13) : réalisé**, voir `LeakLab/` et `RAPPORT-FINAL_LeakLab.md`. Écarts au cadrage ci-dessous : `goleak` et `go/analysis` sont écartés par la contrainte de bibliothèque standard, et l'analyseur `ctxvet` est syntaxique. Le profil `goroutineleak` (disponible depuis Go 1.27) et l'exécution comme programme s'ajoutent aux détecteurs. L'affirmation (d) de la p. 217 est éprouvée (H-002, infirmée), de même que le coût de `time.After` en boucle (p. 276, H-011) et celui d'un `cancel()` oublié (p. 567, H-009, H-010, H-014). La condition de renversement sur `goleak` n'a pas été évaluée.
+
 **Concepts du livre.** Ch. 7 (Parallel Tests et suivi des goroutines fuitées en Go 1.25, p. 216–217 ; Testing Concurrency Safely, p. 227 ; Race Detector, p. 231), ch. 9 (Deadlocks and Livelocks, p. 272 ; `testing/synctest`, p. 289 ; Monitoring Goroutines, p. 292), ch. 20 (Context Pattern, p. 539 ; Anti-patterns : Goroutine Leaks p. 560, Channel Deadlocks p. 563, Forgetting to Cancel a Context p. 566, Ignoring Context in I/O p. 568).
 
 **Question de recherche.** Pour chacun des quatre anti-patrons du ch. 20 (et leurs variantes), quel mécanisme de détection — bulle `synctest`, `-race`, surveillance de `runtime.NumGoroutine()`, analyse statique — le révèle, avec quel taux de faux négatifs et à quel coût en temps d'exécution ?
