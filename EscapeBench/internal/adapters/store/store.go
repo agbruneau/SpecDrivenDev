@@ -111,7 +111,7 @@ func (s *Store) Load(_ context.Context, matrixID string) (models.Matrix, error) 
 
 // List rend les identifiants des matrices présentes, triés.
 func (s *Store) List(_ context.Context) ([]string, error) {
-	entries, err := os.ReadDir(s.matricesDir())
+	entries, err := readDir(s.matricesDir())
 	if errors.Is(err, os.ErrNotExist) {
 		return nil, nil
 	}
@@ -220,7 +220,7 @@ func (s *Store) WriteEscapeReport(_ context.Context, report models.EscapeReport,
 // ListEscapeReports rend les chemins des fichiers de verdicts d'une Matrix, du plus ancien au plus
 // récent.
 func (s *Store) ListEscapeReports(_ context.Context, matrixID string) ([]string, error) {
-	entries, err := os.ReadDir(s.escapeDir(matrixID))
+	entries, err := readDir(s.escapeDir(matrixID))
 	if errors.Is(err, os.ErrNotExist) {
 		return nil, nil
 	}
@@ -264,7 +264,7 @@ func (s *Store) MeasurementPath(campaignID, subjectID string) string {
 // NextCampaignID rend un identifiant nouveau de la forme C-<date>-<n> pour le jour donné.
 func (s *Store) NextCampaignID(_ context.Context, day time.Time) (string, error) {
 	prefix := "C-" + day.UTC().Format("2006-01-02") + "-"
-	entries, err := os.ReadDir(filepath.Join(s.resultsDir(), "campaigns"))
+	entries, err := readDir(filepath.Join(s.resultsDir(), "campaigns"))
 	if err != nil && !errors.Is(err, os.ErrNotExist) {
 		return "", fmt.Errorf("lecture de results/campaigns : %w", err)
 	}
@@ -358,7 +358,7 @@ func (s *Store) WriteMeasurement(_ context.Context, m models.Measurement) error 
 // LoadMeasurements lit toutes les mesures d'une campagne, triées par identifiant de sujet.
 func (s *Store) LoadMeasurements(_ context.Context, campaignID string) ([]models.Measurement, error) {
 	dir := filepath.Join(s.campaignDir(campaignID), "measurements")
-	entries, err := os.ReadDir(dir)
+	entries, err := readDir(dir)
 	if errors.Is(err, os.ErrNotExist) {
 		return nil, nil
 	}
@@ -403,7 +403,7 @@ func (s *Store) WriteComparisonSet(_ context.Context, set models.ComparisonSet) 
 
 // LatestComparisonSet rend le fichier de comparaison le plus récent d'une campagne.
 func (s *Store) LatestComparisonSet(_ context.Context, campaignID string) (models.ComparisonSet, string, error) {
-	entries, err := os.ReadDir(s.campaignDir(campaignID))
+	entries, err := readDir(s.campaignDir(campaignID))
 	if errors.Is(err, os.ErrNotExist) {
 		return models.ComparisonSet{}, "", fmt.Errorf("%w : campagne %s", ErrNotFound, campaignID)
 	}
@@ -560,7 +560,7 @@ func (s *Store) requireCampaign(campaignID, what string) error {
 // VerdictReports rend tous les rapports de verdicts, du plus ancien au plus récent (UC-005).
 func (s *Store) VerdictReports(_ context.Context) ([]models.VerdictReport, error) {
 	dir := filepath.Join(s.resultsDir(), "verdicts")
-	entries, err := os.ReadDir(dir)
+	entries, err := readDir(dir)
 	if errors.Is(err, os.ErrNotExist) {
 		return nil, nil
 	}
@@ -660,6 +660,21 @@ func readJSON(path string, target any) error {
 		return err
 	}
 	return json.Unmarshal(content, target)
+}
+
+// readDir lit un répertoire sans confondre un fichier ordinaire avec une absence.
+//
+// Révision du 2026-09-13 (A-124) : sous Windows, lire un fichier comme un répertoire rend « chemin
+// introuvable », qu'`errors.Is` range sous `os.ErrNotExist`. Un fichier à la place d'un répertoire
+// passait donc pour une absence sur le poste de référence, alors que Linux rend `ENOTDIR`.
+func readDir(path string) ([]os.DirEntry, error) {
+	entries, err := os.ReadDir(path)
+	if errors.Is(err, os.ErrNotExist) {
+		if _, statErr := os.Stat(path); statErr == nil {
+			return nil, fmt.Errorf("lecture de %s : ce n'est pas un répertoire", path)
+		}
+	}
+	return entries, err
 }
 
 // exists indique si un chemin existe.
