@@ -3,6 +3,7 @@ package campaign
 import (
 	"context"
 	"fmt"
+	"path"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -18,12 +19,13 @@ var vetDiagnostic = regexp.MustCompile(`^(?:vet: )?(.+?\.go):\d+:\d+: (.+)$`)
 // finding est un diagnostic statique réduit à son fichier et à son message.
 type finding struct{ file, message string }
 
-// parseVet extrait les diagnostics de la sortie de go vet.
+// parseVet extrait les diagnostics de la sortie de go vet. Le nom de fichier se lit avec les deux
+// séparateurs quel que soit le système : filepath.Base ignore « \ » hors Windows.
 func parseVet(output string) []finding {
 	var fs []finding
 	for _, l := range strings.Split(normalize(output), "\n") {
 		if m := vetDiagnostic.FindStringSubmatch(strings.TrimSpace(l)); m != nil {
-			fs = append(fs, finding{file: filepath.Base(m[1]), message: m[2]})
+			fs = append(fs, finding{file: path.Base(strings.ReplaceAll(m[1], `\`, "/")), message: m[2]})
 		}
 	}
 	return fs
