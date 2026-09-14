@@ -397,6 +397,62 @@ func TestUC005_H004(t *testing.T) {
 	}
 }
 
+// TestUC005_A2_CorpusPartiel verrouille A-036 : une paire RETURNED ou une sonde de parcours
+// ≥ 32 MiB FAILED rendait un verdict tranché sur ce qui restait. A2 exige INCONCLUSIVE avec les
+// sujets manquants. Mutation : rétablir le « continue » silencieux ⇒ échec attendu.
+func TestUC005_A2_CorpusPartiel(t *testing.T) {
+	t.Parallel()
+	failed := func(t *testing.T, f *verdictFixture, subjectID string) {
+		t.Helper()
+		if err := f.store.WriteMeasurement(context.Background(), models.Measurement{CampaignID: f.campaign.ID,
+			SubjectID: subjectID, Status: models.MeasurementFailed, FailureReason: "panic"}); err != nil {
+			t.Fatalf("WriteMeasurement : %v", err)
+		}
+	}
+	t.Run("H-003 paire RETURNED FAILED", func(t *testing.T) {
+		t.Parallel()
+		f := newVerdictFixture(t)
+		var fautif string
+		for _, pair := range f.matrix.ValuePointerPairs() {
+			if pair[0].Profile != models.ProfileReturned {
+				continue
+			}
+			f.measure(t, pair[0].ID(), 10, 8, 2)
+			if fautif == "" {
+				fautif = pair[1].ID()
+				failed(t, f, fautif)
+				continue
+			}
+			f.measure(t, pair[1].ID(), 10, 8, 3)
+		}
+		summary, err := f.service.Produce(context.Background(), f.campaign.ID, "")
+		if err != nil {
+			t.Fatalf("Produce : %v", err)
+		}
+		verdict := verdictsByID(summary.Report)["H-003"]
+		if verdict.Outcome != models.OutcomeInconclusive || !strings.Contains(verdict.Rationale, fautif) {
+			t.Fatalf("verdict = %s — %s ; INCONCLUSIVE nommant %s attendu", verdict.Outcome, verdict.Rationale, fautif)
+		}
+	})
+	t.Run("H-004 sonde FAILED", func(t *testing.T) {
+		t.Parallel()
+		f := newVerdictFixture(t)
+		f.measure(t, models.Probe{Kind: models.ProbeSequentialScan, Parameter: L2Threshold}.ID(), 100, 8, 0)
+		f.measure(t, models.Probe{Kind: models.ProbeScatteredScan, Parameter: L2Threshold}.ID(), 500, 8, 0)
+		fautif := models.Probe{Kind: models.ProbeSequentialScan, Parameter: 2 * L2Threshold}.ID()
+		failed(t, f, fautif)
+		f.measure(t, models.Probe{Kind: models.ProbeScatteredScan, Parameter: 2 * L2Threshold}.ID(), 500, 8, 0)
+		summary, err := f.service.Produce(context.Background(), f.campaign.ID, "")
+		if err != nil {
+			t.Fatalf("Produce : %v", err)
+		}
+		verdict := verdictsByID(summary.Report)["H-004"]
+		if verdict.Outcome != models.OutcomeInconclusive || !strings.Contains(verdict.Rationale, fautif) {
+			t.Fatalf("verdict = %s — %s ; INCONCLUSIVE nommant %s attendu", verdict.Outcome, verdict.Rationale, fautif)
+		}
+	})
+}
+
 func TestUC005_H004_IgnoreLesPetitsJeuxDeTravail(t *testing.T) {
 	t.Parallel()
 	// Le critère ne porte que sur les jeux de travail ≥ 32 MiB : une paire plus petite ne suffit

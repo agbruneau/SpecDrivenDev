@@ -2,6 +2,8 @@ package service
 
 import (
 	"fmt"
+	"maps"
+	"slices"
 	"sort"
 
 	"github.com/agbruneau/escapebench/internal/models"
@@ -134,10 +136,10 @@ func evaluateH002(e Evidence) evaluation {
 // evaluateH003 — le passage au pointeur double les allocations en profil RETURNED.
 // Infirmée si le rapport des médianes allocsPerOp pointeur / valeur reste < 2 pour toutes les
 // tailles. Une paire dont la médiane valeur est 0 compte comme rapport ≥ 2 si la médiane pointeur
-// est ≥ 1.
+// est ≥ 1. Le critère porte sur « toutes les tailles » : une paire incomplète rend INCONCLUSIVE
+// en nommant ses sujets (UC-005 A2, A-036), au lieu d'être écartée en silence.
 func evaluateH003(e Evidence) evaluation {
-	var files []string
-	var details []string
+	var files, details, missing []string
 	confirming := 0
 	pairs := 0
 	for _, pair := range e.Matrix.ValuePointerPairs() {
@@ -147,6 +149,12 @@ func evaluateH003(e Evidence) evaluation {
 		}
 		valueM, okValue := completeMeasurement(e, value.ID())
 		pointerM, okPointer := completeMeasurement(e, pointer.ID())
+		if !okValue {
+			missing = append(missing, value.ID())
+		}
+		if !okPointer {
+			missing = append(missing, pointer.ID())
+		}
 		if !okValue || !okPointer {
 			continue
 		}
@@ -166,6 +174,9 @@ func evaluateH003(e Evidence) evaluation {
 		if doubled {
 			confirming++
 		}
+	}
+	if len(missing) > 0 {
+		return inconclusive("%d sujet(s) RETURNED manquant(s) ou FAILED : %s", len(missing), join(missing))
 	}
 	if pairs == 0 {
 		return inconclusive("aucune paire RETURNED complète dans la campagne %s", e.Campaign.ID)
@@ -190,25 +201,34 @@ const L2Threshold = 32 * 1024 * 1024
 
 // evaluateH004 — le rapport dispersé/séquentiel se situe dans [10, 200] au-delà du cache L2.
 // Infirmée si, pour toutes les Probe de jeu de travail ≥ 32 MiB, le rapport est hors de [10, 200].
+// Une sonde de parcours ≥ 32 MiB FAILED ou sans sa jumelle rend INCONCLUSIVE en la nommant
+// (UC-005 A2, A-036), au lieu d'être écartée en silence.
 func evaluateH004(e Evidence) evaluation {
 	sequential := probeMedians(e, models.ProbeSequentialScan)
 	scattered := probeMedians(e, models.ProbeScatteredScan)
-	var files, details []string
+	var files, details, missing []string
 	inRange, total := 0, 0
-	var parameters []int
-	for parameter := range sequential {
-		if parameter >= L2Threshold {
-			parameters = append(parameters, parameter)
+	parameters := map[int]bool{}
+	for _, subjectID := range sortedSubjectIDs(e.Measurements) {
+		kind, parameter, ok := models.ParseProbeID(subjectID)
+		if ok && parameter >= L2Threshold && (kind == models.ProbeSequentialScan || kind == models.ProbeScatteredScan) {
+			parameters[parameter] = true
 		}
 	}
-	sort.Ints(parameters)
-	for _, parameter := range parameters {
-		scatteredNs, ok := scattered[parameter]
-		if !ok || sequential[parameter] == 0 {
+	for _, parameter := range slices.Sorted(maps.Keys(parameters)) {
+		sequentialNs, okSequential := sequential[parameter]
+		scatteredNs, okScattered := scattered[parameter]
+		if !okSequential {
+			missing = append(missing, models.Probe{Kind: models.ProbeSequentialScan, Parameter: parameter}.ID())
+		}
+		if !okScattered {
+			missing = append(missing, models.Probe{Kind: models.ProbeScatteredScan, Parameter: parameter}.ID())
+		}
+		if !okSequential || !okScattered || sequentialNs == 0 {
 			continue
 		}
 		total++
-		ratio := scatteredNs / sequential[parameter]
+		ratio := scatteredNs / sequentialNs
 		details = append(details, fmt.Sprintf("%d MiB : ×%.1f", parameter/(1024*1024), ratio))
 		if ratio >= 10 && ratio <= 200 {
 			inRange++
@@ -216,6 +236,10 @@ func evaluateH004(e Evidence) evaluation {
 		files = append(files,
 			e.MeasurementPaths[models.Probe{Kind: models.ProbeSequentialScan, Parameter: parameter}.ID()],
 			e.MeasurementPaths[models.Probe{Kind: models.ProbeScatteredScan, Parameter: parameter}.ID()])
+	}
+	if len(missing) > 0 {
+		return inconclusive("%d sonde(s) de parcours ≥ %d MiB manquante(s) ou FAILED : %s",
+			len(missing), L2Threshold/(1024*1024), join(missing))
 	}
 	if total == 0 {
 		return inconclusive("aucune paire de sondes de parcours ≥ %d MiB complète dans la campagne %s",
