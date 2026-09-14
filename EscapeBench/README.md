@@ -24,8 +24,8 @@ Le projet est conduit selon l'*AI Unified Process* (Martinelli, *Spec-Driven Dev
 | [`results/`](results/) | Sorties versionnées du binaire, en écriture seule : verdicts d'échappement, campagnes, verdicts par hypothèse (voir [`results/README.md`](results/README.md)) |
 | `matrices/`, `bin/` | Sources générées et binaire compilé, ignorés par Git ; une matrice se régénère depuis son `matrix.json` et le harnais |
 | [`LANCEMENT.md`](LANCEMENT.md) | Procédure de lancement du développement, session par session, et commandes qui rejouent les campagnes de clôture |
-| [`../Doc/DECISION.md`](../Doc/DECISION.md) | Décisions D-01 à D-49 : écarts assumés, conception du harnais, statistiques, clôture, correctifs de l'audit |
-| [`../Doc/AUDIT.md`](../Doc/AUDIT.md) | Audit du code du 2026-09-12 : constats, lots de correctifs, points laissés au chercheur |
+| [`../Doc/DECISION.md`](../Doc/DECISION.md) | Décisions D-01 à D-52 : écarts assumés, conception du harnais, statistiques, clôture, correctifs de l'audit, dépôt final |
+| [`../Doc/AUDIT.md`](../Doc/AUDIT.md) | Audit du code du 2026-09-12 : constats, lots de correctifs, décisions sur les points restants |
 | [`../Campagnes/`](../Campagnes/), [`../Revue/`](../Revue/) | Rapports des campagnes intermédiaires et revues contradictoires |
 
 ## Rejouer une campagne

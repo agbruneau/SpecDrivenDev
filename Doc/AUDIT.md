@@ -30,7 +30,7 @@ Une contre-vérification indépendante a été menée le 2026-09-12 pour finalis
 Ce qui n'a pas été fait :
 
 - `staticcheck` est installé sur le poste mais ne lit pas les données d'export de `go1.27` ; aucune analyse statique tierce n'a donc tourné.
-- Le lot 9 (gabarits du harnais et couverture de `harnessDigest`) est soumis à un arbitrage préalable du chercheur.
+- Le lot 9 (gabarits du harnais et couverture de `harnessDigest`) est soumis à un arbitrage préalable du chercheur. *Tranché le 2026-09-14 : dette assumée, à solder avant la première campagne arm64 (D-50).*
 
 ## Ce qui tient
 
@@ -50,12 +50,12 @@ Deux marqueurs accompagnent les constats dont le correctif a un coût de process
 
 ## État d'implantation au 2026-09-12
 
-Les lots 0 à 8 et 10 sont implantés sur la branche `claude/audit-md-implementation-cctjkk`, depuis fusionnée dans `main`. Ce qui suit reste ouvert, et rien d'autre.
+Les lots 0 à 8 et 10 sont implantés sur la branche `claude/audit-md-implementation-cctjkk`, depuis fusionnée dans `main`. Les trois points laissés hors des lots ont été tranchés le 2026-09-14 ; ce qui suit ne contient plus aucune décision en attente.
 
-| Ce qui reste | Pourquoi | Qui décide |
+| Point | Pourquoi | Décision |
 |---|---|---|
-| Lot 9, volet code (A-073, A-081, et A-246 si l'on étend l'empreinte) | Change `Campaign.harnessDigest` : toute matrice et toute campagne antérieures deviennent incomparables | Chercheur |
-| A-036 (verdicts de H-003 et H-004 sur corpus partiel) | Changerait des verdicts publiés ; exige une révision du texte de UC-005 A2 avant tout code | Chercheur |
+| Lot 9, volet code (A-073, A-081, et A-246 si l'on étend l'empreinte) | Change `Campaign.harnessDigest` : toute matrice et toute campagne antérieures deviennent incomparables | Dette assumée, à solder avant la première campagne arm64 (D-50) |
+| A-036 (verdicts de H-003 et H-004 sur corpus partiel) | Le code s'écartait de UC-005 A2 ; la lecture stricte ne change aucun des 67 verdicts archivés | Corrigé le 2026-09-14 (D-51) |
 | A-038 (indicateur de dégénérescence d'un IC à variance nulle) | Ajoute un champ au fichier de comparaison pour un cas qu'aucun critère ne lit | Dette assumée |
 
 Le volet documentaire de A-246 est fait : `C-005` et le modèle d'entités consignent désormais que l'empreinte ne couvre que les gabarits embarqués, et non `harness.go`. Il ne change aucune empreinte.
@@ -217,7 +217,7 @@ Pour chaque lot, une session neuve, un workflow, un commit.
 
 **Règle d'arrêt.** Un lot s'arrête quand la barre de sortie est verte et que le harnais de non-régression montre les verdicts archivés inchangés — sauf au lot 1, où le changement de H-006 est précisément le but et doit être constaté explicitement.
 
-**Ordre recommandé.** Lot 0, puis lot 7 qui protège les suivants, puis le lot 1 qui porte le résultat faux, puis les lots 2 à 6 en parallèle, puis 8 et 10. Le lot 9 attend une décision.
+**Ordre recommandé.** Lot 0, puis lot 7 qui protège les suivants, puis le lot 1 qui porte le résultat faux, puis les lots 2 à 6 en parallèle, puis 8 et 10. Le lot 9 attend une décision (tranchée le 2026-09-14 : D-50).
 
 ## Inventaire des constats
 

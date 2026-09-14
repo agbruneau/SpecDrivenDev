@@ -1,6 +1,6 @@
 # Décisions de construction — EscapeBench (P1)
 
-**Date :** 2026-09-10, complété le 2026-09-12 (D-39 à D-49, implantation de l'audit) · **Portée :** implémentation complète de UC-001 à UC-005 dans `EscapeBench/`, à partir du noyau de spécification revu le même jour ([`Revue/REVUE-PRELANCEMENT_2026-09-10.md`](../Revue/REVUE-PRELANCEMENT_2026-09-10.md)).
+**Date :** 2026-09-10, complété le 2026-09-12 (D-39 à D-49, implantation de l'audit) et le 2026-09-14 (D-50 à D-52, dépôt final) · **Portée :** implémentation complète de UC-001 à UC-005 dans `EscapeBench/`, à partir du noyau de spécification revu le même jour ([`Revue/REVUE-PRELANCEMENT_2026-09-10.md`](../Revue/REVUE-PRELANCEMENT_2026-09-10.md)).
 
 Ce document consigne les décisions prises pendant la construction, en particulier celles qui s'écartent de la lettre du processus ou qui figent un choix que la spécification laissait ouvert. Il ne répète pas ce que le code et les cas d'utilisation disent déjà.
 
@@ -129,6 +129,14 @@ Ce qui rend la désignation légitime n'est pas la commodité mais un fait mesur
 L'alternative — attendre le poste Windows — laissait un verdict faux publié au tableau de bord pour une durée indéterminée. Le compromis retenu publie le verdict juste en consignant précisément ce sur quoi il repose, plutôt que de laisser le faux en place au nom d'une rigueur de provenance que la mesure elle-même rend sans objet ici.
 
 **D-49 — Le harnais de non-régression rejoue le rapport d'échappement que chaque verdict cite.** Il choisissait le rapport par la règle de provenance de UC-005, ce qui le faisait diverger des deux verdicts rejoués — produits, eux, sur un rapport désigné. Un verdict cite les fichiers dont il est tiré (BR-005-2) : c'est cette citation qui fait foi, et le harnais la suit désormais. Il couvre ainsi les douze rapports, dont les deux nouveaux, et rejoue 67 verdicts.
+
+## 4 sexies. Décisions du dépôt final, 2026-09-14
+
+**D-50 — Le lot 9 de l'audit n'est pas appliqué : il est consigné comme dette assumée, à solder avant la première campagne arm64.** Ses trois constats touchent les gabarits embarqués ou l'empreinte du harnais : les appliquer rendrait les dix campagnes archivées incomparables à toute campagne future, pour un gain nul sur les résultats publiés. A-073 est inerte aujourd'hui, puisque `layoutOf` produit exactement la taille demandée et que les 304 cellules vérifiées par l'audit compilent : la garde manquante ne protège que d'une régression future. A-081 ne bloque que le rejeu sur arm64. Le volet documentaire de A-246 est fait, et C-005 dit désormais ce que l'empreinte couvre. Le moment où ce coût ne coûte plus rien est connu : une campagne arm64 ouvre de toute façon une nouvelle série de comparaison. Le lot 9 s'applique alors en une fois, avant elle.
+
+**D-51 — A-036 est corrigé sans révision de la spécification, et aucun verdict archivé ne change.** L'audit prévoyait l'inverse sur les deux points. UC-005 A2 prescrit déjà `INCONCLUSIVE` « avec la liste des sujets manquants » quand des paires ou des sondes nécessaires manquent : c'est le code qui s'en écartait, en écartant en silence les paires RETURNED et les sondes de parcours incomplètes avant de trancher. La mesure a précédé la décision : la lecture stricte, appliquée aux 67 verdicts archivés par le harnais de non-régression, n'en change aucun, verdict ni motif, parce qu'aucune des 2 003 mesures archivées n'est `FAILED`. H-003 et H-004 rendent désormais `INCONCLUSIVE` en nommant les sujets manquants ; `TestUC005_A2_CorpusPartiel` verrouille le comportement. Une sonde séquentielle de médiane nulle reste écartée : ce n'est pas une donnée manquante mais un rapport indéfini.
+
+**D-52 — La CI compile avec go1.27.0, pas avec la version minimale déclarée.** Le workflow n'avait jamais tourné : il vivait sous `EscapeBench/.github/`, que GitHub ne lit pas. Déplacé à la racine, il doit d'abord garder le code qui a produit les résultats archivés, et ceux-ci l'ont été sous `go1.27.0`. La version minimale de `go.mod` et de `CLAUDE.md`, Go 1.25, reste déclarée mais n'est pas exercée. Sa première exécution a d'ailleurs trouvé un défaut de LeakLab que le poste Windows ne pouvait pas voir.
 
 ## 5. Ce qui est délibérément absent
 

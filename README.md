@@ -119,7 +119,7 @@ Une confirmation vaut ce que valait la possibilité d'infirmer. H-008 et H-013 n
 
 Les revues contradictoires ont trouvé quatre défauts de construction. Le gabarit de H-010 rendait le doublement inévitable, jusqu'à ce que le nombre de charges allouées devienne une dimension mesurée. Le témoin nul de H-007 comparait deux bras au code machine identique et sous-estimait donc le bruit d'une vraie paire; les réplicats de H-012 le mesurent sur la paire réelle. La branche du rapport de H-008 ne se distinguait pas d'une mémoire encombrée par d'autres processus; l'attestation de quiétude de H-013 y répond. Les trois ont été corrigés par des hypothèses successeurs, jamais par la retouche d'un critère gelé. Le quatrième, une confusion du classificateur entre stockage dans un conteneur et retour d'adresse par le champ d'une structure, n'influe sur aucun verdict et reste épinglé par un test.
 
-Le défaut le plus grave n'a été trouvé qu'après la clôture, par l'audit du code : l'erreur du classificateur qui a produit le verdict faux de H-006 (voir 4.3). L'audit a retenu trois défauts bloquants, dont deux empêchaient de reprendre une campagne interrompue, et vingt majeurs. Tous les lots de correctifs ont été appliqués sauf un, laissé à la décision du chercheur (section 7), et le harnais de non-régression établit que les douze autres verdicts publiés n'ont pas bougé.
+Le défaut le plus grave n'a été trouvé qu'après la clôture, par l'audit du code : l'erreur du classificateur qui a produit le verdict faux de H-006 (voir 4.3). L'audit a retenu trois défauts bloquants, dont deux empêchaient de reprendre une campagne interrompue, et vingt majeurs. Tous les lots de correctifs ont été appliqués sauf un, le lot 9, consigné comme dette assumée parce qu'il rendrait les campagnes archivées incomparables (D-50), et le harnais de non-régression établit que les douze autres verdicts publiés n'ont pas bougé.
 
 ### 5.3 Le développement assisté par IA (QR2)
 
@@ -148,7 +148,7 @@ Le dépôt n'offre pas de groupe témoin : les observations suivantes décrivent
 - Désassembler les deux bras d'une paire pour expliquer pourquoi, à 8 octets avec champ pointeur, le bras pointeur exécute une lecture de plus et va pourtant plus vite.
 - Borner directement l'encombrement de la mémoire par les compteurs de performance du processeur.
 - Rejouer la classification d'échappement de H-006 sur le poste de référence Windows.
-- Trancher les points de l'audit laissés au chercheur : le lot 9, qui touche les gabarits du harnais et rendrait les campagnes antérieures incomparables, et le constat A-036, qui changerait les verdicts de H-003 et H-004 rendus sur un corpus partiel.
+- Appliquer le lot 9 de l'audit, qui touche les gabarits du harnais, avant la première campagne arm64, qui ouvrira de toute façon une nouvelle série de comparaison (D-50).
 - LeakLab : rejouer la campagne sous Linux et sur arm64; vérifier dans le runtime l'angle mort du profil `goroutineleak` sur les petits mutex, et l'étendre à `sync.RWMutex`; mesurer le compte de goroutines dans une suite réelle, sous `t.Parallel`.
 - Conduire le projet suivant de la séquence recommandée, P4 (HexaGuard, règle de dépendance hexagonale exécutable), P3 étant réalisé (section 8).
 
@@ -259,8 +259,8 @@ Prospection/
 | [`Doc/RAPPORT-FINAL_EscapeBench.md`](Doc/RAPPORT-FINAL_EscapeBench.md) | Verdicts consolidés, portée des confirmations, défauts de construction, questions ouvertes. **À lire en premier.** |
 | [`Doc/Projets-candidats_Building-Enterprise-Projects-with-Go.md`](Doc/Projets-candidats_Building-Enterprise-Projects-with-Go.md) | Cartographie des affirmations réfutables, grille d'évaluation, fiches P1 à P8, séquence recommandée |
 | [`Doc/Guide-implementation_AIUP-Claude-Code.md`](Doc/Guide-implementation_AIUP-Claude-Code.md) | Méthode : AIUP adapté aux bancs de réfutation, réglages Claude Code, cycle de travail par cas d'utilisation |
-| [`Doc/DECISION.md`](Doc/DECISION.md) | Journal des décisions D-01 à D-49 : écarts assumés, conception du harnais, statistiques, clôture, correctifs de l'audit |
-| [`Doc/AUDIT.md`](Doc/AUDIT.md) | Audit du code du 2026-09-12 : constats vérifiés, lots de correctifs, état d'implantation et points laissés au chercheur |
+| [`Doc/DECISION.md`](Doc/DECISION.md) | Journal des décisions D-01 à D-52 : écarts assumés, conception du harnais, statistiques, clôture, correctifs de l'audit, dépôt final |
+| [`Doc/AUDIT.md`](Doc/AUDIT.md) | Audit du code du 2026-09-12 : constats vérifiés, lots de correctifs, état d'implantation et décisions sur les points restants |
 | [`Campagnes/RAPPORT-CAMPAGNE_C-2026-09-10-1.md`](Campagnes/RAPPORT-CAMPAGNE_C-2026-09-10-1.md) | Campagne de référence : premiers verdicts (H-001 à H-006) et audit contradictoire |
 | [`Campagnes/RAPPORT-CAMPAGNE_C-2026-09-10-3.md`](Campagnes/RAPPORT-CAMPAGNE_C-2026-09-10-3.md) | Première épreuve de la seconde génération (H-007 à H-013) |
 | [`Campagnes/RAPPORT-CAMPAGNE_C-2026-09-10-4.md`](Campagnes/RAPPORT-CAMPAGNE_C-2026-09-10-4.md) | Première épreuve de H-012 sur une matrice à réplicats |
@@ -277,6 +277,10 @@ Les campagnes finales `C-2026-09-10-11` et `C-2026-09-10-12`, dont viennent les 
 Ordre de lecture suggéré : le rapport final d'EscapeBench, puis [`EscapeBench/docs/`](EscapeBench/docs/) dans l'ordre AIUP (vision, exigences, modèle d'entités, cas d'utilisation) ; ensuite le rapport final de LeakLab et [`LeakLab/docs/`](LeakLab/docs/). Pour cadrer un nouveau projet : `Doc/Projets-candidats…` §1–5 et §7, puis `Doc/Guide-implementation…` §1–7.
 
 Conventions : prose en français, identifiants et code en anglais; pages citées = folios imprimés; marqueurs épistémiques *Confirmé*, *Probable*, *Hypothèse*, *À vérifier* et *Adaptation* dans les documents de cadrage.
+
+## Licence
+
+Le code Go, les scripts et la configuration sont distribués sous licence MIT ([`LICENSE`](LICENSE)). La prose (spécifications, rapports, décisions, revues) et les résultats de mesure sont distribués sous licence [Creative Commons Attribution 4.0 International](https://creativecommons.org/licenses/by/4.0/deed.fr) (CC BY 4.0). Les extraits cités des ouvrages restent la propriété de leurs auteurs et éditeurs.
 
 ## Références
 
