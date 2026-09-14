@@ -1,4 +1,4 @@
-# EscapeBench — contrat exécutable (BEPG ch. 11, p. 324-325) : le Makefile dit QUOI, le CI dit OÙ.
+# EscapeBench — contrat exécutable (BEPG ch. 11, p. 324-325) : le Makefile dit QUOI exécuter.
 # A-115 : sans cette ligne, `make` sans argument exécute la première cible, fmt, et réécrit les
 # sources. La cible par défaut est le contrôle, jamais une modification.
 .DEFAULT_GOAL := check

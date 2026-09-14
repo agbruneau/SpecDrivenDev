@@ -66,7 +66,7 @@ Le volet documentaire de A-246 est fait : `C-005` et le modèle d'entités consi
 
 **Vérifié sur le poste de référence (2026-09-13).** Sous `go1.27.0 windows/amd64`, la suite unitaire échouait sur `TestUC004_ErreurDeLectureNestPasUneAbsence`, qui verrouille A-124. Windows rend « chemin introuvable » quand on lit un fichier comme un répertoire, de sorte que les six lectures de répertoire de `internal/adapters/store` confondaient encore un fichier avec une absence. Un helper `readDir` réexamine le chemin avant de conclure à l'absence ; `go vet`, la suite unitaire et la suite d'intégration passent sous `-race -shuffle=on`.
 
-**Correctif de la CI (2026-09-14).** Les correctifs A-101, A-106 et A-107 du lot 7 étaient restés sans effet : le workflow vivait sous `EscapeBench/.github/workflows/`, que GitHub ne lit pas, et aucune exécution n'avait jamais eu lieu. Il est déplacé à la racine du dépôt (`.github/workflows/ci.yml`), s'exécute dans `EscapeBench/`, compile avec `go1.27.0`, la toolchain des campagnes, plutôt qu'avec la dernière 1.25.x que rendait `go-version-file`, et vérifie aussi LeakLab.
+**Correctif de la CI (2026-09-14).** Les correctifs A-101, A-106 et A-107 du lot 7 étaient restés sans effet : le workflow vivait sous `EscapeBench/.github/workflows/`, que GitHub ne lit pas, et aucune exécution n'avait jamais eu lieu. Il est déplacé à la racine du dépôt (`.github/workflows/ci.yml`), s'exécute dans `EscapeBench/`, compile avec `go1.27.0`, la toolchain des campagnes, plutôt qu'avec la dernière 1.25.x que rendait `go-version-file`, et vérifie aussi LeakLab. **Le même jour, la CI est retirée du dépôt à la demande du chercheur (D-53)** : A-106 et A-107 n'ont plus d'objet.
 
 ## Planification d'exécution des correctifs
 

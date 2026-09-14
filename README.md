@@ -246,7 +246,6 @@ Le binaire refuse la campagne si le catalogue du corpus diverge de la spécifica
 
 ```
 Prospection/
-├── .github/       intégration continue des deux bancs (Linux et Windows, Go 1.27.0)
 ├── Doc/           cadrage, méthode, décisions, audit du code et rapports finaux
 ├── Campagnes/     rapports des campagnes de mesure intermédiaires d'EscapeBench
 ├── Revue/         revues du dépôt et revues contradictoires
@@ -259,7 +258,7 @@ Prospection/
 | [`Doc/RAPPORT-FINAL_EscapeBench.md`](Doc/RAPPORT-FINAL_EscapeBench.md) | Verdicts consolidés, portée des confirmations, défauts de construction, questions ouvertes. **À lire en premier.** |
 | [`Doc/Projets-candidats_Building-Enterprise-Projects-with-Go.md`](Doc/Projets-candidats_Building-Enterprise-Projects-with-Go.md) | Cartographie des affirmations réfutables, grille d'évaluation, fiches P1 à P8, séquence recommandée |
 | [`Doc/Guide-implementation_AIUP-Claude-Code.md`](Doc/Guide-implementation_AIUP-Claude-Code.md) | Méthode : AIUP adapté aux bancs de réfutation, réglages Claude Code, cycle de travail par cas d'utilisation |
-| [`Doc/DECISION.md`](Doc/DECISION.md) | Journal des décisions D-01 à D-52 : écarts assumés, conception du harnais, statistiques, clôture, correctifs de l'audit, dépôt final |
+| [`Doc/DECISION.md`](Doc/DECISION.md) | Journal des décisions D-01 à D-53 : écarts assumés, conception du harnais, statistiques, clôture, correctifs de l'audit, dépôt final |
 | [`Doc/AUDIT.md`](Doc/AUDIT.md) | Audit du code du 2026-09-12 : constats vérifiés, lots de correctifs, état d'implantation et décisions sur les points restants |
 | [`Campagnes/RAPPORT-CAMPAGNE_C-2026-09-10-1.md`](Campagnes/RAPPORT-CAMPAGNE_C-2026-09-10-1.md) | Campagne de référence : premiers verdicts (H-001 à H-006) et audit contradictoire |
 | [`Campagnes/RAPPORT-CAMPAGNE_C-2026-09-10-3.md`](Campagnes/RAPPORT-CAMPAGNE_C-2026-09-10-3.md) | Première épreuve de la seconde génération (H-007 à H-013) |

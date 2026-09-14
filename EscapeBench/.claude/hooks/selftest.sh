@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Contrôle des hooks : chemins POSIX et Windows, cas bloquants et cas passants.
-# Lancé par la CI et à la main : bash .claude/hooks/selftest.sh
+# Lancé à la main : bash .claude/hooks/selftest.sh
 set -uo pipefail
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 TMP="$(mktemp -d)"; trap 'rm -rf "$TMP"' EXIT
