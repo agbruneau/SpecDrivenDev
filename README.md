@@ -20,10 +20,10 @@ Un agent de codage abaisse assez ce coût pour rendre la vérification systémat
 
 ### 1.3 Questions de recherche
 
-- **QR1**. Les affirmations chiffrées du livre sur la mémoire en Go résistent-elles à une mesure dont le critère de jugement est fixé d'avance?
+- **QR1**. Les affirmations du livre sur la mémoire et la concurrence en Go résistent-elles à une mesure dont le critère de jugement est fixé d'avance?
 - **QR2**. Un processus piloté par la spécification permet-il de conduire une telle étude avec un agent de codage sans rompre la traçabilité entre l'affirmation, le critère, le code et le verdict?
 
-La section 4 répond à QR1 par des mesures. QR2 n'est pas mesurée : le dépôt en fournit un cas documenté, discuté à la section 5.
+Les sections 4 (EscapeBench, la mémoire) et 8 (LeakLab, la concurrence) répondent à QR1 par des mesures. QR2 n'est pas mesurée : le dépôt en fournit deux cas documentés, discutés aux sections 5.3 et 8.5.
 
 ## 2. Notions préalables
 
@@ -107,7 +107,7 @@ Les treize verdicts viennent de deux campagnes menées en série sur la même ma
 
 **La marge décide, pas la mesure (H-005, H-011).** La préallocation tient deux des trois chiffres de la page 114 : un cinquième de la mémoire et une seule allocation au lieu de 27. Le gain en temps, ×4,45, passe la tolérance large de H-005 mais manque celle que le livre s'accorde lui-même (×4,8).
 
-**Réponse à QR1.** Partielle. Les règles du livre tiennent dans les conditions où il les illustre; ses chiffres et ses généralisations tombent dès qu'on sort de ces conditions ou qu'on les lit à la lettre.
+**Réponse à QR1 (mémoire).** Partielle. Les règles du livre tiennent dans les conditions où il les illustre; ses chiffres et ses généralisations tombent dès qu'on sort de ces conditions ou qu'on les lit à la lettre.
 
 ## 5. Discussion
 
@@ -140,6 +140,7 @@ Le dépôt n'offre pas de groupe témoin : les observations suivantes décrivent
 - **Validité interne.** L'attestation de quiétude mesure l'occupation des processeurs, indicateur nécessaire mais non suffisant de l'encombrement de la mémoire. Mesurer la bande passante demanderait les compteurs de performance du processeur, hors de la bibliothèque standard à laquelle le banc se limite.
 - **Provenance du rejeu de H-006.** La classification corrigée a été refaite sous linux/amd64, alors que les campagnes l'avaient été sous windows/amd64, avec la même version de Go. Sur 532 cellules, 412 rendent la même catégorie sur les deux systèmes et les 120 autres sont exactement celles que vise le correctif (D-48); un rejeu sur le poste de référence lèverait la réserve.
 - **Revue humaine.** Voir l'écart au processus décrit en 5.3.
+- **LeakLab.** Ses limites propres (corpus synthétique, poste Windows unique, oracle muet sur les courses et l'accessibilité des primitives) sont décrites en 8.5.
 
 ## 7. Travaux futurs
 
@@ -148,6 +149,7 @@ Le dépôt n'offre pas de groupe témoin : les observations suivantes décrivent
 - Borner directement l'encombrement de la mémoire par les compteurs de performance du processeur.
 - Rejouer la classification d'échappement de H-006 sur le poste de référence Windows.
 - Trancher les points de l'audit laissés au chercheur : le lot 9, qui touche les gabarits du harnais et rendrait les campagnes antérieures incomparables, et le constat A-036, qui changerait les verdicts de H-003 et H-004 rendus sur un corpus partiel.
+- LeakLab : rejouer la campagne sous Linux et sur arm64; vérifier dans le runtime l'angle mort du profil `goroutineleak` sur les petits mutex, et l'étendre à `sync.RWMutex`; mesurer le compte de goroutines dans une suite réelle, sous `t.Parallel`.
 - Conduire le projet suivant de la séquence recommandée, P4 (HexaGuard, règle de dépendance hexagonale exécutable), P3 étant réalisé (section 8).
 
 ## 8. Second projet : LeakLab (P3)
@@ -190,6 +192,8 @@ Campagne de référence `R-2026-09-13-2` : go1.27.0, windows/amd64, 1 099 mesure
 ### 8.4 Lecture
 
 Le livre recommande deux outils qui ne voient pas les fuites, le test et `-race`, et le seul détecteur dynamique qui les a toutes vues est le plus rudimentaire, le compte de goroutines d'un scénario répété. Les infirmations suivent le motif d'EscapeBench : le livre décrit un cas particulier sans le dire. `synctest` ne panique que si la goroutine est *durablement* bloquée, ce qui exclut les mutex et le réseau. L'interblocage est fatal pour un programme, pas sous `go test`, dont la minuterie d'alarme empêche le runtime de le déclarer (`checkdead`). Oublier `cancel()` coûte de la mémoire, et des goroutines seulement avec un parent que `context` ne reconnaît pas. Le conseil sur `time.After` date d'avant Go 1.23. Le rapport en tire une recommandation pour l'intégration continue : `go vet` explicite, dont `go test` omet l'analyseur `lostcancel` ; contrôle de goroutines dans les tests ; `-timeout` court.
+
+**Réponse à QR1 (concurrence).** Partielle aussi : huit infirmations sur quatorze, dont cinq portent sur ce que le livre prête aux mécanismes de détection (H-002, H-004, H-005, H-008, H-013).
 
 ### 8.5 Ce que le banc a appris sur lui-même
 
@@ -242,6 +246,7 @@ Le binaire refuse la campagne si le catalogue du corpus diverge de la spécifica
 
 ```
 Prospection/
+├── .github/       intégration continue des deux bancs (Linux et Windows, Go 1.27.0)
 ├── Doc/           cadrage, méthode, décisions, audit du code et rapports finaux
 ├── Campagnes/     rapports des campagnes de mesure intermédiaires d'EscapeBench
 ├── Revue/         revues du dépôt et revues contradictoires
