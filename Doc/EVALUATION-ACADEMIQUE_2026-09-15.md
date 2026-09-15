@@ -1,6 +1,6 @@
 # Évaluation académique du dépôt Prospection
 
-**Objet évalué** : dépôt `agbruneau/Prospection`, branche `main`, commit `1aeaa50` (2026-09-14), arbre de travail propre.
+**Objet évalué** : dépôt `agbruneau/Prospection`, branche `main`, commit `2be7fee` (2026-09-14), arbre de travail propre.
 **Date** : 2026-09-15.
 **Évaluateur** : Claude Fable 5.1, agent de codage, sur mandat de l'auteur du dépôt. L'évaluation repose sur la lecture intégrale de la documentation (README, `Doc/`, `Revue/`, `Campagnes/`, `docs/` des deux bancs), la lecture partielle du code et l'exécution locale des contrôles de l'annexe A (poste Windows 11, go1.27.0). Elle tient lieu d'évaluation à blanc : elle ne remplace pas un jury, et l'évaluateur n'est pas indépendant de l'objet, puisque les bancs ont été construits par un agent de la même famille de modèles.
 **Régime** : production. Chaque fait est marqué *vérifié* (lu ou exécuté pendant l'évaluation) ou *supposé* (déduit, ou cité de mémoire).
@@ -111,7 +111,7 @@ Le contraste est net : le travail est méthodologiquement au niveau de cette lit
 
 **Établi (vérifié).**
 
-- *Gel des critères.* L'empreinte SHA-256 du texte des critères est enregistrée à la création de chaque campagne et revérifiée à chaque production de verdicts (EscapeBench BR-003-5, LeakLab C-008). Un test d'intégration recalcule l'empreinte de chaque campagne archivée contre le catalogue courant (D-47); il passe. Dans LeakLab, le gel est daté par un commit antérieur au code (`6ad40aa` puis `4ff35fd`).
+- *Gel des critères.* L'empreinte SHA-256 du texte des critères est enregistrée à la création de chaque campagne et revérifiée à chaque production de verdicts (EscapeBench BR-003-5, LeakLab C-008). Un test d'intégration recalcule l'empreinte de chaque campagne archivée contre le catalogue courant (D-47); il passe. Dans LeakLab, le gel est daté par un commit antérieur au code (`44b910a` puis `139c35c`).
 - *Successeurs.* Sept hypothèses successeurs dans EscapeBench (H-007 à H-013), une dans LeakLab (H-014); aucun critère gelé n'a été retouché.
 - *Témoins.* Témoin nul et témoin de sensibilité (H-007, H-012), témoin d'ordonnancement des bandes de cache (H-013), témoin qui échoue et bras témoins par sonde (LeakLab, D-11).
 - *Contrôle de l'environnement.* Un processus `go test` par sujet; attestation de quiétude sur l'arbre de processus (C-010), démontrée par une campagne délibérément contaminée puis par une contamination accidentelle détectée (D-33, D-36); réplicats séparés par une passe complète de la matrice (C-009); délai `-test.timeout` transmis aux binaires après le défaut de la première campagne LeakLab (D-13).
@@ -249,7 +249,7 @@ Tous les constats, y compris mineurs. Gravité : **M** majeur (pèse sur la note
 | # | G | Critère | Constat |
 |---|---|---|---|
 | E-01 | M | C2 | Aucune référence scientifique; contribution non positionnée par rapport aux travaux sur la métrologie des benchmarks, la détection de fuites et le développement par agents. |
-| E-02 | M | C10 | Trois ouvrages sous droit d'auteur committés en PDF dans le dépôt public (commits `22b73ac`, `00a8d21`, `a144f68`, `5c559e3`), retirés de l'arbre (`f83f1f6`, `4c025f3`), présents dans l'historique. Le README affirme qu'ils ne sont pas distribués. |
+| E-02 | M | C10 | Trois ouvrages sous droit d'auteur committés en PDF dans le dépôt public, retirés de l'arbre (`01dccff`, `81bf4bd`), présents dans l'historique. Le README affirme qu'ils ne sont pas distribués. **Corrigé le 2026-09-15 (D-54)** : historique réécrit sans les trois PDF. |
 | E-03 | M | C3, C6 | Une seule machine (portable à cœurs hybrides, sans affinité), un système (Windows), une soirée; aucun rejeu sous Linux ni arm64 malgré la contrainte C-006. |
 | E-04 | M | C3, C8 | Revues, audit et vérificateurs sont des agents de modèle de langage; leur méthode n'est pas décrite et le README ne le dit pas explicitement. |
 | E-05 | M | C8 | QR2 sans aucune mesure (sessions, durée, jetons, coût); transcriptions et prompts non archivés. |
@@ -312,7 +312,7 @@ Par ordre de gain sur la note.
 
 ## Annexe A. Contrôles exécutés pendant l'évaluation
 
-Tous exécutés le 2026-09-15 sur le commit `1aeaa50`, poste Windows 11, `go1.27.0 windows/amd64`, `jq-1.8.2`.
+Tous exécutés le 2026-09-15 sur le commit `2be7fee`, poste Windows 11, `go1.27.0 windows/amd64`, `jq-1.8.2`.
 
 | Contrôle | Résultat |
 |---|---|

@@ -2,7 +2,7 @@
 
 Clôture du 2026-09-13. Le banc a éprouvé douze affirmations de *Building Enterprise Projects with Go* (Shahsavan, Apress 2026) sur les anti-patrons de concurrence et les outils qui les révèlent, une affirmation des notes de version de Go et une hypothèse successeur. Les critères ont été gelés par un commit avant la première ligne de code ; chaque verdict est produit par un évaluateur qui applique leur texte à la lettre.
 
-**Campagne de référence : `R-2026-09-13-2`** (commit `d22b7f9`, 9 min 01). go1.27.0, windows/amd64, 24 cœurs logiques (identifiant Intel64 Family 6 Model 198), 32 cas × 6 détecteurs dynamiques × 5 répétitions en processus isolés, 2 analyseurs statiques, 15 bras de sonde × 5 répétitions. Aucune cellule instable : les cinq répétitions de chaque cellule ont rendu la même issue. La campagne `R-2026-09-13-1` est archivée mais non conforme à C-004 (voir *Ce que le banc a appris sur lui-même*).
+**Campagne de référence : `R-2026-09-13-2`** (commit `eb5e942`, 9 min 01). go1.27.0, windows/amd64, 24 cœurs logiques (identifiant Intel64 Family 6 Model 198), 32 cas × 6 détecteurs dynamiques × 5 répétitions en processus isolés, 2 analyseurs statiques, 15 bras de sonde × 5 répétitions. Aucune cellule instable : les cinq répétitions de chaque cellule ont rendu la même issue. La campagne `R-2026-09-13-1` est archivée mais non conforme à C-004 (voir *Ce que le banc a appris sur lui-même*).
 
 ## Les quatorze verdicts
 

@@ -1,6 +1,6 @@
 # Audit du code — EscapeBench
 
-**Date :** 2026-09-12 · **Portée :** `EscapeBench/` (74 fichiers Go, 16 402 lignes), gabarits du harnais, hooks, `Makefile`, CI, et la conformité du code aux cinq cas d'utilisation et au catalogue d'exigences. **État du dépôt audité :** `main`, commit `9833da0`, arbre propre. **Toolchain :** `go1.27.0 windows/amd64`.
+**Date :** 2026-09-12 · **Portée :** `EscapeBench/` (74 fichiers Go, 16 402 lignes), gabarits du harnais, hooks, `Makefile`, CI, et la conformité du code aux cinq cas d'utilisation et au catalogue d'exigences. **État du dépôt audité :** `main`, commit `156c7e7`, arbre propre. **Toolchain :** `go1.27.0 windows/amd64`.
 
 L'audit ne juge pas la clôture du projet ni les verdicts eux-mêmes. Il cherche les écarts entre ce que le code fait et ce que `docs/` prescrit, et les défauts qui peuvent produire une mesure fausse, un verdict faux ou une perte de résultat.
 
