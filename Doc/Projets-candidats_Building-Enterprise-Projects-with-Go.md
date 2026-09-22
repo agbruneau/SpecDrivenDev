@@ -324,7 +324,7 @@ Chaque fiche suit le même plan : concepts du livre, question de recherche, affi
 **Conditions qui renversent la recommandation.**
 
 - Absence de Docker fonctionnel sur le poste : retirer P6 et P8, réduire P2 et P5 ; la séquence devient P1 → P3 → P4 (sans MySQL) → P7 (HTTP seul).
-- Objectif de publication : P5 et P3 ont la meilleure originalité ; P1 réplique surtout des résultats connus de la littérature Go.
+- Objectif de publication : P5 et P3 ont la meilleure originalité ; P1 réplique surtout des résultats connus : la dépendance du passage en registres à la forme de la structure est écrite dans la spécification de l'ABI interne de Go, l'écart entre débit et latence mémoire remonte à *lmbench* (McVoy et Staelin, 1996) et à Drepper (2007), et le biais de disposition des micro-mesures à Mytkowicz et coll. (2009). Positionnement complet et références (vérifiées par agent, lecture du chercheur à faire) : [`ETAT-DE-L-ART.md`](ETAT-DE-L-ART.md) *(ajout du 2026-09-22, écrit après les mesures, D-57)*.
 - Contrainte de temps totale < 10 jours : P1 + P3 uniquement.
 
 ## 10. Références
