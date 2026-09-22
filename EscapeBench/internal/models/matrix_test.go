@@ -342,15 +342,17 @@ func TestUC001_A1_ReplicatsSansSerieARepliquer(t *testing.T) {
 	if err := params.Validate(); err == nil {
 		t.Fatal("des réplicats sans profil LOCAL doivent être refusés")
 	}
-	params.Layouts = []Layout{LayoutArrayFill}
+	params.Layouts = []Layout{LayoutNamedFieldsSham}
 	params.Profiles = []LifetimeProfile{ProfileLocal}
 	if err := params.Validate(); err == nil {
-		t.Fatal("des réplicats sans disposition NAMED_FIELDS doivent être refusés")
+		t.Fatal("des réplicats sans disposition répliquée doivent être refusés")
 	}
-	// La série que H-012 lit est demandée : les réplicats sont admis.
-	params.Layouts = []Layout{LayoutNamedFields}
-	if err := params.Validate(); err != nil {
-		t.Fatalf("Validate : %v", err)
+	// La série que H-012 lit, puis celle que H-014 et H-015 lisent (C-011) : les réplicats sont admis.
+	for _, layout := range []Layout{LayoutNamedFields, LayoutArrayFill} {
+		params.Layouts = []Layout{layout}
+		if err := params.Validate(); err != nil {
+			t.Fatalf("Validate %s : %v", layout, err)
+		}
 	}
 }
 

@@ -161,12 +161,13 @@ func TestUC005_ToutesLesHypothesesOntUnEvaluateur(t *testing.T) {
 	// ce qui reste le comportement voulu pour les hypothèses à venir.
 	// Mutation : retirer une entrée du registre ⇒ échec attendu.
 	for _, id := range []string{"H-001", "H-002", "H-003", "H-004", "H-005", "H-006",
-		"H-007", "H-008", "H-009", "H-010", "H-011", "H-012", "H-013"} {
+		"H-007", "H-008", "H-009", "H-010", "H-011", "H-012", "H-013", "H-014", "H-015", "H-016"} {
 		if _, ok := evaluators[id]; !ok {
 			t.Fatalf("%s doit avoir un évaluateur", id)
 		}
 	}
-	if len(evaluators) != 13 {
-		t.Fatalf("%d évaluateurs, 13 attendus", len(evaluators))
+	// H-014 à H-016 (D-63) s'ajoutent aux treize.
+	if len(evaluators) != 16 {
+		t.Fatalf("%d évaluateurs, 16 attendus", len(evaluators))
 	}
 }

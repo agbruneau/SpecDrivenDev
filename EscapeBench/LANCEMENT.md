@@ -86,7 +86,7 @@ Exécutions déterministes du binaire, sans agent. `make` étant absent du poste
 2. Campagne de fumée sur la plus petite hypothèse : `/bench H-005` (préallocation, deux Probe) ; vérifier la Provenance et la durée.
 3. Campagne complète : `go run ./cmd/escapebench campaign --matrix <id> --count 20 --hypotheses <H-###,…>` en terminal (NFR-005 : 7,6 à 7,8 s par sujet sur le poste de référence, soit 29 min pour la matrice de référence), ou en exécution non surveillée `claude -p "/bench H-001 H-002 H-003 H-004"` (*À vérifier* : invocation d'un skill en mode `-p`, ACC p. 269 ne montre que des prompts libres). Sans `--hypotheses`, la campagne gèle tout le catalogue. Pendant la campagne, `results/.campaign-lock` fige `internal/harness/`.
 4. `go run ./cmd/escapebench compare --campaign <id>` puis `/refute <id>` (ou `go run ./cmd/escapebench verdict --campaign <id>`, qui retrouve seul les verdicts d'échappement de la matrice ; `--escape <fichier>` en désigne un précis) ; lire `docs/dashboard.md` ; commit `H-00x: verdict <CONFIRMED|REFUTED|INCONCLUSIVE>` avec les fichiers de `results/`.
-5. Répéter sur `arm64` si disponible (C-006) : nouvelle campagne, mêmes critères. **Reste ouvert à la clôture.**
+5. Répéter sur `arm64` si disponible (C-006) : nouvelle campagne, mêmes critères. **Reste ouvert à la clôture.** Préparé le 2026-09-22 sur la branche `lot-9-arm64` (D-63) : voir « Série arm64 » ci-dessous.
 
 ### Rejouer les campagnes de clôture
 
@@ -118,6 +118,51 @@ Ces deux campagnes de la seconde génération (H-007 à H-011) emploient `M-8f03
 ```bash
 go run ./cmd/escapebench matrix --params "sizes=8,16,24,128,1024;pointer=false,true;profiles=LOCAL,STORED_IN_MAP,STORED_IN_SLICE,STORED_IN_STRUCT,RETURNED_ALLOCATING;modes=VALUE,POINTER;layouts=NAMED_FIELDS,NAMED_FIELDS_SHAM;repeats=1,2,4,16;payloads=1,2;probes=APPEND_PREALLOC:100000,APPEND_GROW:100000,POINTER_CHASE:16384,POINTER_CHASE:268435456"
 ```
+
+### Série arm64 (branche `lot-9-arm64`, D-63)
+
+Préparée le 2026-09-22, **aucune campagne lancée** : le catalogue ne dispose d'aucune machine arm64 (décision Q6 du plan d'implantation de l'évaluation). La branche n'est pas fusionnée dans `main` : les campagnes Linux du lot 8 se lancent sur `main` et gardent l'empreinte `551ce66b…`.
+
+**Ce qui distingue la série.** Le harnais y porte l'empreinte `fd4a470c1fea2dc1a366d5ffb26921cf5c14f8a40540c67a2fcf91a962d06100` (C-005, lot 9 de l'audit) : ses campagnes ne se comparent qu'entre elles. Le type de 8 octets en `ARRAY_FILL` y fait réellement 8 octets, là où la série `551ce66b…` en mesurait 16. `go test ./internal/harness -run D63` vérifie l'empreinte avant de lancer ; un échec signifie que le harnais a changé depuis D-63.
+
+**Avant la première campagne.**
+
+1. Choisir la machine. Linux arm64 de préférence : sous macOS, la Provenance ne relève ni les tailles de cache ni la ligne, et l'attestation de quiétude n'existe pas (C-010), si bien que H-008 et H-013 y sont non concluantes par construction et que la garde de ligne de cache (C-006) ne s'y exerce pas. H-013 exige aussi un dernier niveau de cache d'au moins 64 fois le L1 de données.
+2. Lire la ligne de cache : `cat /sys/devices/system/cpu/cpu0/cache/index0/coherency_line_size` sous Linux, `sysctl hw.cachelinesize` sous macOS. À 64, les commandes ci-dessous s'emploient telles quelles ; à 128, ajouter `;cacheline=128` aux deux matrices qui portent des sondes de parcours ou de chaîne (référence et clôture). La matrice des successeurs n'en porte aucune. UC-003 refuse une matrice dont la ligne diffère de celle qu'il relève.
+3. Machine au repos, aucun processus de contre-épreuve, campagnes en série.
+
+**Matrices et campagnes, dans cet ordre.** Chaque identifiant est vérifié par `TestUC001_D63_MatricesDeLaSerieArm64`.
+
+| Ordre | Campagne | Hypothèses | Matrice (ligne de 64 / de 128) | Sujets | Durée au rythme du poste du catalogue |
+|---|---|---|---|---|---|
+| 1 | Référence (BR-001-4) | H-001 à H-006 | `M-823d8b5af441` / `M-9face550a02e` | 230 (220 Cell, 10 Probe) | 29 min |
+| 2 | Clôture | H-001 à H-011, H-013 | `M-b44a93baae51` / `M-13da29cdebb6` | 541 (532 Cell, 9 Probe) | 1 h 08 |
+| 3 | Successeurs | H-012, H-014, H-015, H-016 | `M-ebbb95f809c8` (sans sonde de parcours) | 162 (160 Cell, 2 Probe) | 21 min |
+
+La troisième campagne est **la première à nommer H-014, H-015 et H-016** : elle gèle leurs critères (BR-003-5). Aucune campagne amd64 ne doit les nommer avant elle. Elle ne gèle ni H-001 ni H-002, que UC-003 refuse sur une matrice qui réplique `ARRAY_FILL` (C-011), ni H-007, refusée sur toute matrice à réplicats (C-009).
+
+```bash
+# 1. Référence (ligne de 64 ; à 128, --params "<paramètres de la référence>;cacheline=128", voir TestUC001_D63_…)
+go run ./cmd/escapebench matrix --reference
+go run ./cmd/escapebench escape --matrix M-823d8b5af441
+go run ./cmd/escapebench campaign --matrix M-823d8b5af441 --count 20 --hypotheses H-001,H-002,H-003,H-004,H-005,H-006
+
+# 2. Clôture (paramètres de « Rejouer les campagnes de clôture » ; ajouter ;cacheline=128 si besoin)
+go run ./cmd/escapebench matrix --params "sizes=8,16,24,128,1024;pointer=false,true;profiles=LOCAL,RETURNED,CAPTURED_BY_CLOSURE,SENT_ON_CHANNEL,STORED_IN_MAP,STORED_IN_SLICE,STORED_IN_STRUCT,RETURNED_ALLOCATING;modes=VALUE,POINTER;layouts=ARRAY_FILL,NAMED_FIELDS,NAMED_FIELDS_SHAM;repeats=1,4,16;payloads=1,2;probes=SEQUENTIAL_SCAN:33554432,SEQUENTIAL_SCAN:134217728,SCATTERED_SCAN:33554432,SCATTERED_SCAN:134217728,APPEND_PREALLOC:100000,APPEND_GROW:100000,POINTER_CHASE:16384,POINTER_CHASE:262144,POINTER_CHASE:268435456"
+go run ./cmd/escapebench escape --matrix M-b44a93baae51
+go run ./cmd/escapebench campaign --matrix M-b44a93baae51 --count 20 --hypotheses H-001,H-002,H-003,H-004,H-005,H-006,H-007,H-008,H-009,H-010,H-011,H-013
+
+# 3. Successeurs : NAMED_FIELDS pour H-012 et H-016, ARRAY_FILL pour H-014 et H-015 (C-009, C-011)
+go run ./cmd/escapebench matrix --params "sizes=8,16,24,128;pointer=false,true;profiles=LOCAL;modes=VALUE,POINTER;layouts=ARRAY_FILL,NAMED_FIELDS;replicates=5;probes=APPEND_PREALLOC:100000,APPEND_GROW:100000"
+go run ./cmd/escapebench escape --matrix M-ebbb95f809c8
+go run ./cmd/escapebench campaign --matrix M-ebbb95f809c8 --count 20 --hypotheses H-012,H-014,H-015,H-016
+```
+
+Puis `compare` et `verdict` pour chaque campagne. Sur un poste qui garde des matrices de la série `551ce66b…` sous `matrices/`, UC-001 refuse de régénérer un même identifiant sous le nouveau harnais (`ErrHarnessChanged`) : travailler dans un clone neuf plutôt que de supprimer ces répertoires.
+
+**Ce que la matrice des successeurs exige, et pourquoi.** Quatre tailles, dont 8, 16 et 24 octets pour les cellules jugées et 128 octets pour le témoin de sensibilité de chaque série ; les deux séries, avec et sans champ pointeur ; le seul profil `LOCAL` ; `ARRAY_FILL` pour H-014 et H-015, `NAMED_FIELDS` pour H-012 et H-016 ; cinq réplicats, la matrice ne déclarant que des combinaisons répliquées, de sorte qu'une passe est la matrice entière et que deux réplicats d'une même paire sont séparés d'environ quatre minutes. Les deux sondes `APPEND_*` n'y servent aucun critère ; elles reprennent celles de `M-57477f022103`.
+
+**Rapports.** Comme au lot 8 : `Campagnes/RAPPORT-CAMPAGNE_C-<date>-arm64.md`, verdicts par architecture. H-008 et H-013 deviennent infirmables si la mémoire de la machine sert un accès dépendant sous 100 ns : le dire dans un sens ou dans l'autre. H-014 à H-016 se lisent contre l'attente amd64 que leurs critères consignent.
 
 ## 6. Définition de « terminé »
 

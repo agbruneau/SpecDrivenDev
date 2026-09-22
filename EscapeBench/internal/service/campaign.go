@@ -135,6 +135,18 @@ func (s *CampaignService) start(ctx context.Context, opts CampaignOptions) (repo
 			"%w : la matrice %s porte %d réplicats et H-007 n'en lit qu'un, arbitrairement ; retirer H-007 de --hypotheses ou employer une matrice sans réplicat (C-009)",
 			ErrPrecondition, matrix.ID, matrix.Parameters.Replicates)
 	}
+	// C-011 : sur une série ARRAY_FILL × LOCAL répliquée, H-001 compterait deux réplicats d'une
+	// même taille comme deux tailles, et le point de bascule que lit H-002 n'est pas calculable.
+	// H-014 et H-015 lisent cette série.
+	if matrix.Parameters.ReplicatesInLocal(models.LayoutArrayFill) {
+		for _, id := range []string{"H-001", "H-002"} {
+			if slices.Contains(hypothesisIDs, id) {
+				return CampaignReport{}, fmt.Errorf(
+					"%w : la matrice %s réplique %s en profil %s et %s n'y lit qu'un réplicat par taille ; retirer %s de --hypotheses (C-011)",
+					ErrPrecondition, matrix.ID, models.LayoutArrayFill, models.ProfileLocal, id, id)
+			}
+		}
+	}
 
 	// Le verrou est posé avant la dérivation de l'identifiant, et non à l'entrée de la boucle de
 	// mesure : sinon deux lancements simultanés obtiennent le même identifiant de NextCampaignID,

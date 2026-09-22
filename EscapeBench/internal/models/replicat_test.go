@@ -118,11 +118,14 @@ func TestC009_ReplicatSeulementEnNamedFieldsLocal(t *testing.T) {
 	for _, c := range cells {
 		compte[string(c.TypeSpec.Layout)+"/"+string(c.Profile)]++
 	}
-	// Seule la combinaison que H-012 lit se décline : 2 modes × 5 réplicats.
-	if compte["NAMED_FIELDS/LOCAL"] != 10 {
-		t.Fatalf("NAMED_FIELDS/LOCAL = %d, 10 attendues", compte["NAMED_FIELDS/LOCAL"])
+	// Seules les combinaisons que H-012 (C-009), H-014 et H-015 (C-011) lisent se déclinent :
+	// 2 modes × 5 réplicats.
+	for _, repliquee := range []string{"NAMED_FIELDS/LOCAL", "ARRAY_FILL/LOCAL"} {
+		if compte[repliquee] != 10 {
+			t.Fatalf("%s = %d, 10 attendues", repliquee, compte[repliquee])
+		}
 	}
-	for _, autre := range []string{"NAMED_FIELDS/STORED_IN_MAP", "ARRAY_FILL/LOCAL", "ARRAY_FILL/STORED_IN_MAP"} {
+	for _, autre := range []string{"NAMED_FIELDS/STORED_IN_MAP", "ARRAY_FILL/STORED_IN_MAP"} {
 		if compte[autre] != 2 {
 			t.Fatalf("%s = %d, 2 attendues : le réplicat ne doit s'y décliner que la première passe", autre, compte[autre])
 		}

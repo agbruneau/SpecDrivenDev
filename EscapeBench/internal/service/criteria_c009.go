@@ -174,9 +174,15 @@ func (c h012Cell) describe() string {
 // h012CellsOf regroupe les Comparison NAMED_FIELDS en profil LOCAL par couple taille-série et
 // calcule leurs grandeurs. Le seuil d'une cellule ne dépend que d'elle-même.
 func h012CellsOf(e Evidence) map[h012Key]h012Cell {
+	return replicatedCells(e, models.LayoutNamedFields)
+}
+
+// replicatedCells fait de même pour une disposition quelconque ; H-014 et H-015 la lisent sur
+// ARRAY_FILL (C-011), avec les mêmes grandeurs que H-012.
+func replicatedCells(e Evidence, layout models.Layout) map[h012Key]h012Cell {
 	grouped := map[h012Key][]models.Comparison{}
 	for _, c := range e.ComparisonSet.Comparisons {
-		if c.Profile != models.ProfileLocal || c.EffectiveLayout() != models.LayoutNamedFields {
+		if c.Profile != models.ProfileLocal || c.EffectiveLayout() != layout {
 			continue
 		}
 		key := h012Key{c.SizeBytes, c.HasPointerField}

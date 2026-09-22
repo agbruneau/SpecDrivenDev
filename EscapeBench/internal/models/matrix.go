@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -268,8 +269,8 @@ func (p MatrixParameters) Validate() error {
 	// et deux campagnes réputées porter des matrices différentes mesuraient les mêmes sujets.
 	if p.Replicates == ReplicateCount && !replicableSeriesRequested(p) {
 		problems = append(problems, fmt.Sprintf(
-			"%d réplicats demandés sans série à répliquer : ils ne se déclinent que sur la disposition %s en profil %s (C-009)",
-			ReplicateCount, LayoutNamedFields, ProfileLocal))
+			"%d réplicats demandés sans série à répliquer : ils ne se déclinent que sur les dispositions %s et %s en profil %s (C-009, C-011)",
+			ReplicateCount, LayoutNamedFields, LayoutArrayFill, ProfileLocal))
 	}
 	cacheLine := p.CacheLineBytes
 	if cacheLine == 0 {
@@ -299,29 +300,28 @@ func (p MatrixParameters) Validate() error {
 	return nil
 }
 
-// replicableSeriesRequested indique si la demande contient la série que le réplicat décline :
-// disposition NAMED_FIELDS en profil LOCAL (C-009).
+// ReplicatedLayout indique si une disposition se décline en réplicats : NAMED_FIELDS pour H-012
+// (C-009), ARRAY_FILL pour H-014 et H-015 (C-011).
+func ReplicatedLayout(layout Layout) bool {
+	return layout == LayoutNamedFields || layout == LayoutArrayFill
+}
+
+// replicableSeriesRequested indique si la demande contient une série que le réplicat décline :
+// une disposition répliquée en profil LOCAL (C-009, C-011).
 func replicableSeriesRequested(p MatrixParameters) bool {
 	layouts := p.Layouts
 	if len(layouts) == 0 {
 		layouts = DefaultLayouts()
 	}
-	hasLayout := false
-	for _, layout := range layouts {
-		if layout == LayoutNamedFields {
-			hasLayout = true
-			break
-		}
-	}
-	if !hasLayout {
-		return false
-	}
-	for _, profile := range p.Profiles {
-		if profile == ProfileLocal {
-			return true
-		}
-	}
-	return false
+	return slices.ContainsFunc(layouts, ReplicatedLayout) && slices.Contains(p.Profiles, ProfileLocal)
+}
+
+// ReplicatesInLocal indique si la Matrix décline en réplicats la disposition donnée en profil
+// LOCAL (C-009, C-011).
+func (p MatrixParameters) ReplicatesInLocal(layout Layout) bool {
+	n := p.Normalize()
+	return n.Replicates > DefaultReplicates() && ReplicatedLayout(layout) &&
+		slices.Contains(n.Layouts, layout) && slices.Contains(n.Profiles, ProfileLocal)
 }
 
 // Canonical rend la représentation stable des paramètres normalisés, base de l'identifiant.
@@ -466,7 +466,8 @@ func (p MatrixParameters) Expand() ([]Cell, []Probe, error) {
 								//
 								// A-013 : ce saut ne dépend ni du mode de passage ni de la cellule
 								// construite ; il était évalué une fois par mode, après construction.
-								if replicate > 1 && (layout != LayoutNamedFields || profile != ProfileLocal) {
+								// C-011 (2026-09-22) : ARRAY_FILL se réplique aussi, pour H-014 et H-015.
+								if replicate > 1 && (!ReplicatedLayout(layout) || profile != ProfileLocal) {
 									continue
 								}
 								for _, mode := range n.PassingModes {
