@@ -344,3 +344,48 @@ Références externes : citées de mémoire, non consultées pendant l'évaluati
 - Nosek, B. A. et coll. (2018). *The Preregistration Revolution*. PNAS.
 - Saioc, G.-V. et coll. (vers 2024 et 2025). Travaux sur la détection de fuites de goroutines par analyse dynamique et par le ramasse-miettes, à l'origine du profil `goroutineleak`.
 - ACM. *Artifact Review and Badging*, version 1.1.
+
+## Suivi
+
+Ajouté le 2026-09-22, après l'exécution de [`PLAN-IMPLANTATION_EVALUATION_2026-09-15.md`](PLAN-IMPLANTATION_EVALUATION_2026-09-15.md). Il dit l'état de chaque constat et ce qui l'a changé; il ne recalcule pas la note, ce qui revient à une seconde évaluation indépendante. Les lots ont été exécutés par des agents : les critiques à l'aveugle qui ont comparé l'état évalué à l'état modifié selon la grille du §1 sont eux aussi des agents (journal `gauntlet-log.md` à la racine). Aucune lecture humaine n'a eu lieu.
+
+États : **clos**, **clos sous réserve** (fait, mais une vérification humaine reste à faire), **partiel**, **ouvert**, **accepté** (consigné sans correctif).
+
+| Constat | État | Par |
+|---|---|---|
+| E-01 | clos sous réserve | Lot 3 : [`ETAT-DE-L-ART.md`](ETAT-DE-L-ART.md), README §1.4, D-57. Les références sont vérifiées par agent; leur lecture par le chercheur reste à faire (règle 6 du plan). |
+| E-02 | partiel | Lot 0, D-55 : historique réécrit, sauvegardes et reflog purgés, branche distante supprimée, clone neuf vérifié sans aucun objet des ouvrages. Reste `refs/pull/1/head` chez GitHub, que seul son soutien peut supprimer. |
+| E-03 | partiel | Lot 8 : suite des deux bancs rejouée sous Linux (WSL2) sans échec ([`VERIFICATION-HORS-POSTE.md`](VERIFICATION-HORS-POSTE.md)); les campagnes de mesure sous Linux restent à lancer par le chercheur. Lot 9 : série arm64 préparée sur la branche `lot-9-arm64` (D-63), non mesurée faute de matériel. |
+| E-04 | clos | Lot 2 (« revues par agents », README §3.5, guide §7) et lot 4 ([`PROMPTS-REVUES_2026-09-10.md`](../Revue/PROMPTS-REVUES_2026-09-10.md), D-58). |
+| E-05 | clos, trous nommés | Lot 4 : [`QR2-MESURES.md`](QR2-MESURES.md), script `outils/qr2-sessions.sh`, D-58. Sessions en nuage du 2026-09-12 hors mesure. |
+| E-06 | clos | Lot 2 : décompte par portée au résumé, colonne « Portée » aux tableaux. |
+| E-07 | clos | Lot 2, même mécanisme. |
+| E-08 | partiel | Lot 2 : limite écrite (README §6). Lot 9 : successeur H-014 et H-015 sur réplicats de processus, écrits, non mesurés. |
+| E-09 | partiel | Lot 2 : limite écrite. Lot 9 : H-016 à règle de multiplicité, écrite, non mesurée. |
+| E-10 | clos | Lot 2 : « préenregistrement séquentiel informé » nommé, avec ce que chaque successeur savait à son gel. |
+| E-11 | clos | Lot 5 : chaque paquet de LeakLab à 79 % ou plus, 91,8 % au total (D-19). |
+| E-12 | clos | Lot 5 : règle amendée, dernier `time.Sleep` passé sous `synctest` (D-59). |
+| E-13 | clos | Lot 8 : journal de vérification hors poste (décision Q2 du chercheur, conforme à D-53). |
+| E-14 | partiel | Lot 6 : `osVersion`, `powerPlan`, `cpuAffinity`, `coreTypes` consignés (D-60). L'état du turbo n'est pas relevé (aucune API standard sous Windows). |
+| E-15 | clos | Lot 2 : limite écrite, confirmation H-012 de LeakLab classée « restreinte ». |
+| E-16 | ouvert | Lot 1 : dossier de revue prêt pour un tiers ([`DOSSIER-REVUE-UC_2026-09-22.md`](../Revue/DOSSIER-REVUE-UC_2026-09-22.md)); la revue n'a pas eu lieu. D-56 et D-18 sont réservées. |
+| E-17 | clos | Lot 7 : paramètres retrouvés, harnais porté de 67 à 71 verdicts (D-61). |
+| E-18 | partiel | Lot 7 : désassemblage fait ([`CONTRE-EPREUVE_H-012-8-octets.md`](../Campagnes/CONTRE-EPREUVE_H-012-8-octets.md)); le chargement de plus et l'alignement sont écartés, le mécanisme reste inexpliqué. |
+| E-19 | clos pour les campagnes futures | Lot 6 : `iterations` et sortie brute archivées (D-60). |
+| E-20 | clos | Lot 10 : colonne source ramenée à sa citation, énoncés et critères inchangés à l'octet. |
+| E-21 | clos | Lot 10 : notes de clôture ramenées à une ligne (D-64). |
+| E-22 | accepté pour le passé | Lot 5 : convention de commit au README; l'historique n'est pas réécrit pour elle. |
+| E-23 | clos | Les répertoires vides ne sont pas suivis par Git et n'existent pas dans le dépôt publié (D-55). |
+| E-24 | clos | Lot 0 : branche distante supprimée. |
+| E-25 | partiel | Lots 0 et 11 : étiquettes `v1.0` et `v1.1`, `CITATION.cff`, section « Citer ce dépôt ». La release GitHub et le DOI restent au chercheur. |
+| E-26 | clos | Lot 10 : sommaire, état des 75 constats, erratum des décomptes (D-65). |
+| E-27 | clos | Lot 4 : 9 auditeurs, 162 vérificateurs, 1 critique (D-58). |
+| E-28 | accepté | Gardes à échec fermé, documentées; confirmé sous WSL2 sans `jq`. |
+| E-29 | clos | Lot 5 : nom commercial du processeur (D-19). |
+| E-30 | clos | Lot 2 : limite écrite. |
+| E-31 | clos | Lot 0 : commits sans rapport retirés (décision Q1, D-55). |
+| E-32 | clos | Lot 5 : conventions écrites dans chaque `CLAUDE.md`, sans renommage. |
+| E-33 | clos | Lot 2. |
+| E-34 | clos | Lot 2. |
+
+**Constat nouveau, trouvé pendant l'implantation.** N-01 (C5, C7) : dans toute la série d'empreinte `551ce66b…`, en disposition `ARRAY_FILL`, les types « 8 octets » occupaient 16 octets. Le compilateur complète en effet un champ final de taille nulle. La garde de taille bilatérale du lot 9 l'a révélé (D-63). Les verdicts ne changent pas, et un erratum daté figure au README et au rapport final d'EscapeBench.

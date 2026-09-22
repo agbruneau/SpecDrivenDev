@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+message: "Pour citer ce dépôt, utilisez les métadonnées ci-dessous."
+title: "Prospection : bancs de réfutation EscapeBench et LeakLab, développés selon l'AI Unified Process avec Claude Code"
+type: software
+authors:
+  - family-names: Bruneau
+    given-names: André-Guy
+version: "v1.1"
+date-released: "2026-09-22"
+license: MIT
+repository-code: "https://github.com/agbruneau/Prospection"
+keywords:
+  - Go
+  - escape analysis
+  - goroutine leak
+  - benchmarking
+  - preregistration
+  - spec-driven development
+  - AI-assisted development
