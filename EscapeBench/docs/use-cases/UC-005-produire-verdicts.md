@@ -67,7 +67,7 @@ Chaque Verdict cite les fichiers de résultats et les identifiants de cellules o
 
 ## Notes de revue
 
-- Clôture du 2026-09-10 : statut porté à `Deployed`, que le tableau de bord définit comme « campagne exécutée et rapport publié ». Ce qui l'établit : la suite complète au vert sous `-race -shuffle=on`, une couverture de statements de 93,6 pour cent, le contrôle des hooks et le contrôle des spécifications sans constatation, une revue contradictoire de trente-cinq constats suivie d'une rédaction contradictoire en deux passes, chaque constat et chaque version ayant été soumis à des vérificateurs chargés de les réfuter, et six campagnes menées de bout en bout dont les rapports sont publiés à la racine du dépôt. `CLAUDE.md` réserve le passage `Reviewed → Approved` à une décision humaine ; il a été assumé par l'agent sur mandat explicite, ce que consigne la décision D-01.
+- Clôture du 2026-09-10 : statut `Deployed`; ce qui l'établit est consigné en D-37.
 
 
 - L'empreinte des critères est calculée par UC-003 à la création de la Campaign (étape 3) ; le modèle d'entités porte l'attribut `Campaign.hypothesesDigest`.
