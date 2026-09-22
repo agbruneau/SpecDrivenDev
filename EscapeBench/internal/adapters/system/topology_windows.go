@@ -43,12 +43,14 @@ func parseWindowsCaches(buffer []byte) []CacheLevel {
 		}
 		// CACHE_DESCRIPTOR occupe l'union : niveau, associativité, taille de ligne, taille, type.
 		level := int(record[unionOffset])
+		line := int64(binary.LittleEndian.Uint16(record[unionOffset+2 : unionOffset+4]))
 		size := int64(binary.LittleEndian.Uint32(record[unionOffset+4 : unionOffset+8]))
 		kind := binary.LittleEndian.Uint32(record[unionOffset+8 : unionOffset+12])
 		out = append(out, CacheLevel{
 			Level:     level,
 			Data:      kind == cacheTypeData || kind == cacheTypeUnified,
 			SizeBytes: size,
+			LineBytes: line,
 		})
 	}
 	return out

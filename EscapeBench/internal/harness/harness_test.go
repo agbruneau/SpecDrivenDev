@@ -126,9 +126,10 @@ func TestRenderCellDisposeLeRemplissage(t *testing.T) {
 		t.Fatalf("RenderCell : %v", err)
 	}
 	source := requireFile(t, files, cell8.SourceFile)
-	assertContains(t, source, "Fill [0]uint64")
-	if strings.Contains(source, "t.Fill[") {
-		t.Fatal("un type d'un seul mot ne doit pas indexer Fill")
+	// Lot 9 de l'audit (A-073) : un tableau vide en dernier champ est rempli jusqu'au mot suivant,
+	// et le type d'un mot en faisait deux. Il n'a donc plus de champ Fill.
+	if strings.Contains(source, "Fill [") {
+		t.Fatalf("un type d'un seul mot ne doit pas déclarer Fill :\n%s", source)
 	}
 	spec24, _ := models.NewTypeSpec(24, false, models.LayoutArrayFill)
 	cell24 := models.Cell{TypeSpec: spec24, Profile: models.ProfileLocal, PassingMode: models.PassingValue}
@@ -159,7 +160,7 @@ func TestRenderProbe(t *testing.T) {
 		probe.SourceFile = models.SourcePath(probe.ID())
 		t.Run(probe.ID(), func(t *testing.T) {
 			t.Parallel()
-			files, err := renderer.RenderProbe(probe)
+			files, err := renderer.RenderProbe(probe, models.DefaultCacheLineBytes)
 			if err != nil {
 				t.Fatalf("RenderProbe : %v", err)
 			}
@@ -179,13 +180,13 @@ func TestRenderRefuseLesEntreesInvalides(t *testing.T) {
 	if _, err := renderer.RenderCell(models.Cell{}); err == nil {
 		t.Fatal("une Cell invalide doit être refusée")
 	}
-	if _, err := renderer.RenderProbe(models.Probe{}); err == nil {
+	if _, err := renderer.RenderProbe(models.Probe{}, models.DefaultCacheLineBytes); err == nil {
 		t.Fatal("une Probe invalide doit être refusée")
 	}
 	// Un jeu de travail qui n'est pas un multiple de la taille d'un élément produirait un
 	// parcours dont le nombre d'éléments ne correspond pas au paramètre annoncé.
 	probe := models.Probe{Kind: models.ProbeSequentialScan, Parameter: 100, SourceFile: "x"}
-	if _, err := renderer.RenderProbe(probe); err == nil {
+	if _, err := renderer.RenderProbe(probe, models.DefaultCacheLineBytes); err == nil {
 		t.Fatal("un jeu de travail non multiple de 64 octets doit être refusé")
 	}
 }

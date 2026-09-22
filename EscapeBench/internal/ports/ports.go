@@ -37,7 +37,7 @@ type ProvenanceProbe interface {
 // SubjectSource rend le contenu des fichiers d'un sujet, relatifs au répertoire de la Matrix.
 type SubjectSource interface {
 	RenderCell(cell models.Cell) (map[string]string, error)
-	RenderProbe(probe models.Probe) (map[string]string, error)
+	RenderProbe(probe models.Probe, cacheLineBytes int) (map[string]string, error)
 	RenderModule(matrixID string) (map[string]string, error)
 }
 

@@ -483,7 +483,11 @@ type Provenance struct {
 	PowerPlan   string
 	CPUAffinity string
 	CoreTypes   CoreTypes
-	CapturedAt  time.Time
+	// CacheLineBytes est la ligne du cache de données de niveau 1, relevée sur la machine (lot 9 de
+	// l'audit, A-081). Facultative, comme les champs de D-60 : zéro si la plateforme ne l'expose
+	// pas. UC-003 la compare à celle de la Matrix ; aucun critère ne la lit.
+	CacheLineBytes int64
+	CapturedAt     time.Time
 }
 
 // CoreTypes compte les cœurs physiques d'un processeur hybride par classe. La valeur nulle signifie

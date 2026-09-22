@@ -9,6 +9,8 @@ type CacheLevel struct {
 	// l'hypothèse qui compare des accès mémoire.
 	Data      bool
 	SizeBytes int64
+	// LineBytes est la taille de ligne de l'instance ; zéro si la plateforme ne la donne pas.
+	LineBytes int64
 }
 
 // Topology rassemble ce que le banc doit connaître de la hiérarchie mémoire pour interpréter une
@@ -17,11 +19,15 @@ type CacheLevel struct {
 type Topology struct {
 	L1DataCacheBytes    int64
 	LastLevelCacheBytes int64
+	// CacheLineBytes est la ligne de la plus grande instance de L1 de données (A-081) ; zéro si
+	// elle n'est pas relevée.
+	CacheLineBytes int64
 }
 
 // topologyFrom réduit les instances relevées aux deux tailles retenues : la plus grande instance
 // de cache de données de niveau 1, qui est celle qu'un cœur voit, et la plus grande instance du
-// niveau le plus élevé, qui est le dernier niveau avant la mémoire.
+// niveau le plus élevé, qui est le dernier niveau avant la mémoire. La ligne retenue est celle de
+// l'instance de L1 retenue.
 func topologyFrom(levels []CacheLevel) Topology {
 	var t Topology
 	highest := 0
@@ -31,6 +37,7 @@ func topologyFrom(levels []CacheLevel) Topology {
 		}
 		if c.Level == 1 && c.SizeBytes > t.L1DataCacheBytes {
 			t.L1DataCacheBytes = c.SizeBytes
+			t.CacheLineBytes = c.LineBytes
 		}
 		if c.Level > highest {
 			highest = c.Level

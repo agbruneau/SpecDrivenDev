@@ -60,7 +60,7 @@ func (s *fakeSource) RenderCell(cell models.Cell) (map[string]string, error) {
 	return map[string]string{cell.SourceFile: "package subject // " + cell.ID()}, nil
 }
 
-func (s *fakeSource) RenderProbe(probe models.Probe) (map[string]string, error) {
+func (s *fakeSource) RenderProbe(probe models.Probe, _ int) (map[string]string, error) {
 	if s.err != nil {
 		return nil, s.err
 	}

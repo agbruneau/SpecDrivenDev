@@ -99,6 +99,9 @@ func (s *CampaignService) start(ctx context.Context, opts CampaignOptions) (repo
 	if err != nil {
 		return CampaignReport{}, err
 	}
+	if err := checkCacheLine(matrix, provenance); err != nil {
+		return CampaignReport{}, err
+	}
 
 	// Précondition : les verdicts d'échappement existent pour la toolchain courante, dès lors que
 	// la matrice contient au moins une Cell (les Probe ne sont jamais classées par UC-002).
@@ -378,6 +381,26 @@ func (s *CampaignService) requireEscapeVerdicts(ctx context.Context, matrixID st
 	}
 	return fmt.Errorf("%w : aucun verdict d'échappement de %s pour %s %s/%s ; exécuter `escapebench escape --matrix %s`",
 		ErrPrecondition, matrixID, provenance.GoVersion, provenance.GOOS, provenance.GOARCH, matrixID)
+}
+
+// checkCacheLine refuse de mesurer des sondes dont les nœuds ne font pas une ligne de cache de la
+// machine (lot 9 de l'audit, A-081, C-006) : un anneau de nœuds de 64 octets sur une ligne de 128
+// ferait servir deux nœuds par ligne, et les bandes de résidence de H-008 et H-013 ne décriraient
+// plus ce qu'elles mesurent. Une ligne non détectée, ou une Matrix sans sonde qui en dépend, ne
+// refuse rien.
+func checkCacheLine(matrix models.Matrix, provenance models.Provenance) error {
+	if provenance.CacheLineBytes == 0 || !matrix.Parameters.UsesCacheLine() {
+		return nil
+	}
+	line := matrix.Parameters.CacheLineBytes
+	if line == 0 {
+		line = models.DefaultCacheLineBytes
+	}
+	if int64(line) != provenance.CacheLineBytes {
+		return fmt.Errorf("%w : les sondes de la matrice %s ont des nœuds de %d octets, la machine a une ligne de cache de %d ; générer la matrice avec cacheline=%d (C-006)",
+			ErrPrecondition, matrix.ID, line, provenance.CacheLineBytes, provenance.CacheLineBytes)
+	}
+	return nil
 }
 
 // freezeCriteria rend les hypothèses retenues et l'empreinte de leurs critères (BR-003-5).

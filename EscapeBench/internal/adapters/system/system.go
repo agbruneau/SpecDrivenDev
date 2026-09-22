@@ -88,6 +88,7 @@ func (p *Prober) Capture(ctx context.Context) (models.Provenance, error) {
 		PowerPlan:           host.PowerPlan,
 		CPUAffinity:         host.CPUAffinity,
 		CoreTypes:           host.CoreTypes,
+		CacheLineBytes:      topology.CacheLineBytes,
 		CapturedAt:          p.clock.Now().UTC(),
 	}
 	return provenance, provenance.Validate()

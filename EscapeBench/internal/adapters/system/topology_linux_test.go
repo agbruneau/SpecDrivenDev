@@ -38,7 +38,7 @@ func TestReadLinuxCaches(t *testing.T) {
 		if err := os.MkdirAll(dir, 0o755); err != nil {
 			t.Fatalf("mkdir : %v", err)
 		}
-		for name, content := range map[string]string{"level": level, "type": kind, "size": size} {
+		for name, content := range map[string]string{"level": level, "type": kind, "size": size, "coherency_line_size": "64"} {
 			if err := os.WriteFile(filepath.Join(dir, name), []byte(content+"\n"), 0o644); err != nil {
 				t.Fatalf("écriture : %v", err)
 			}
@@ -57,7 +57,7 @@ func TestReadLinuxCaches(t *testing.T) {
 		t.Fatalf("%d instances, 3 attendues : %+v", len(caches), caches)
 	}
 	topology := topologyFrom(caches)
-	if topology.L1DataCacheBytes != 49152 || topology.LastLevelCacheBytes != 36<<20 {
+	if topology.L1DataCacheBytes != 49152 || topology.LastLevelCacheBytes != 36<<20 || topology.CacheLineBytes != 64 {
 		t.Fatalf("topologie = %+v", topology)
 	}
 	if got := readLinuxCaches(filepath.Join(root, "absent")); got != nil {

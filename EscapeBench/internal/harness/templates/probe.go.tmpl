@@ -5,10 +5,10 @@ package subject
 {{if .IsChase}}
 import "unsafe"
 
-// Le jeu de travail fait exactement {{.Parameter}} octets, en nœuds d'une ligne de cache.
+// Le jeu de travail fait exactement {{.Parameter}} octets, en nœuds d'une ligne de cache de {{.LineBytes}} octets.
 const (
 	workBytes = {{.Parameter}}
-	nodeBytes = 64
+	nodeBytes = {{.LineBytes}}
 	nodeCount = workBytes / nodeBytes
 )
 
@@ -17,10 +17,12 @@ const (
 type node struct {
 	V    uint64
 	next *node
-	_    [48]byte
+	_    [{{.NodePadBytes}}]byte
 }
 
+// Un nœud trop petit ou trop grand rend l'une des deux constantes négative (A-073).
 const _ = uint(unsafe.Sizeof(node{}) - nodeBytes)
+const _ = uint(nodeBytes - unsafe.Sizeof(node{}))
 
 var (
 	nodes  []node
@@ -65,18 +67,24 @@ func Run(n int) uint64 {
 	return p.V
 }
 {{else if .IsScan}}
-// Le jeu de travail fait exactement {{.Parameter}} octets, réparti en éléments d'une ligne de cache.
+import "unsafe"
+
+// Le jeu de travail fait exactement {{.Parameter}} octets, réparti en éléments d'une ligne de cache de {{.LineBytes}} octets.
 const (
 	workBytes = {{.Parameter}}
-	elemBytes = 64
+	elemBytes = {{.LineBytes}}
 	elemCount = workBytes / elemBytes
 )
 
 // elem occupe une ligne de cache : un parcours dispersé provoque un défaut par élément.
 type elem struct {
 	V   uint64
-	Pad [7]uint64
+	Pad [{{.ElemPadWords}}]uint64
 }
+
+// Un élément trop petit ou trop grand rend l'une des deux constantes négative (A-073).
+const _ = uint(unsafe.Sizeof(elem{}) - elemBytes)
+const _ = uint(elemBytes - unsafe.Sizeof(elem{}))
 
 var (
 	data []elem

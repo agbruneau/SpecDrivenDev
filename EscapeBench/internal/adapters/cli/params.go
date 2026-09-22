@@ -94,6 +94,12 @@ func ParseParameters(spec string) (models.MatrixParameters, error) {
 				return models.MatrixParameters{}, fmt.Errorf("%w : replicates attend un seul entier (%q)", ErrUsage, value)
 			}
 			params.Replicates = replicates[0]
+		case "cacheline":
+			line, err := parseInts(value)
+			if err != nil || len(line) != 1 {
+				return models.MatrixParameters{}, fmt.Errorf("%w : cacheline attend un seul entier (%q)", ErrUsage, value)
+			}
+			params.CacheLineBytes = line[0]
 		case "probes":
 			probes, err := parseProbes(value)
 			if err != nil {
@@ -101,7 +107,7 @@ func ParseParameters(spec string) (models.MatrixParameters, error) {
 			}
 			params.Probes = probes
 		default:
-			return models.MatrixParameters{}, fmt.Errorf("%w : clé %q inconnue (sizes, pointer, profiles, modes, layouts, repeats, payloads, replicates, probes)", ErrUsage, key)
+			return models.MatrixParameters{}, fmt.Errorf("%w : clé %q inconnue (sizes, pointer, profiles, modes, layouts, repeats, payloads, replicates, cacheline, probes)", ErrUsage, key)
 		}
 	}
 	if len(params.Sizes) == 0 {

@@ -159,7 +159,7 @@ func TestRenderSondeAChaineDependante(t *testing.T) {
 	renderer := newRenderer(t)
 	probe := models.Probe{Kind: models.ProbePointerChase, Parameter: 16384}
 	probe.SourceFile = models.SourcePath(probe.ID())
-	files, err := renderer.RenderProbe(probe)
+	files, err := renderer.RenderProbe(probe, models.DefaultCacheLineBytes)
 	if err != nil {
 		t.Fatalf("RenderProbe : %v", err)
 	}
@@ -179,7 +179,7 @@ func TestRenderSondeRefuseUnJeuDeTravailTropPetit(t *testing.T) {
 	renderer := newRenderer(t)
 	for _, kind := range []models.ProbeKind{models.ProbePointerChase, models.ProbeSequentialScan} {
 		probe := models.Probe{Kind: kind, Parameter: 64, SourceFile: "x"}
-		if _, err := renderer.RenderProbe(probe); err == nil {
+		if _, err := renderer.RenderProbe(probe, models.DefaultCacheLineBytes); err == nil {
 			t.Fatalf("un jeu de travail d'un seul nœud doit être refusé pour %s", kind)
 		}
 	}

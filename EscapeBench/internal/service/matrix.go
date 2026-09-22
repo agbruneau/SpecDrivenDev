@@ -172,7 +172,7 @@ func (g *MatrixGenerator) renderAll(matrix models.Matrix) (map[string]string, er
 		merge(files, rendered)
 	}
 	for _, probe := range matrix.Probes {
-		rendered, err := g.source.RenderProbe(probe)
+		rendered, err := g.source.RenderProbe(probe, matrix.Parameters.CacheLineBytes)
 		if err != nil {
 			return nil, err
 		}

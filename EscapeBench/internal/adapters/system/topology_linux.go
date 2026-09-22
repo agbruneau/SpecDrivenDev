@@ -59,6 +59,7 @@ func readLinuxCaches(cpuDir string) []CacheLevel {
 			Level:     level,
 			Data:      kind == "Data" || kind == "Unified",
 			SizeBytes: parseLinuxCacheSize(read(dir, "size")),
+			LineBytes: parseLinuxCacheSize(read(dir, "coherency_line_size")),
 		})
 	}
 	return out

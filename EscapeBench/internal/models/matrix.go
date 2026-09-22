@@ -32,7 +32,39 @@ type MatrixParameters struct {
 	// une campagne. Il vaut 1 ou 5 et rien d'autre, de sorte que la composition de la matrice ne
 	// reprenne pas le pouvoir sur le plancher de bruit que la fixation à cinq lui retire (H-012).
 	Replicates int
-	Probes     []ProbeSpec
+	// CacheLineBytes est la ligne de cache sur laquelle les sondes qui parcourent la mémoire
+	// dimensionnent leurs nœuds (A-081, C-006) : 64 octets par défaut, 128 sur les processeurs
+	// arm64 qui l'exigent. Canonical ne l'écrit que hors de sa valeur par défaut.
+	CacheLineBytes int
+	Probes         []ProbeSpec
+}
+
+// DefaultCacheLineBytes est la ligne de cache d'avant le lot 9 de l'audit, figée à 64 octets.
+const DefaultCacheLineBytes = 64
+
+// ValidateCacheLine n'accepte que les deux lignes de cache connues des architectures de C-006 :
+// 64 octets (amd64, la plupart des arm64) et 128 (arm64 d'Apple).
+func ValidateCacheLine(bytes int) error {
+	if bytes != DefaultCacheLineBytes && bytes != 128 {
+		return invalid("ligne de cache de %d octets : 64 ou 128 attendus (C-006)", bytes)
+	}
+	return nil
+}
+
+// ProbeUsesCacheLine indique si une sonde dimensionne ses nœuds sur la ligne de cache.
+func ProbeUsesCacheLine(kind ProbeKind) bool {
+	return kind == ProbeSequentialScan || kind == ProbeScatteredScan || kind == ProbePointerChase
+}
+
+// UsesCacheLine indique si la demande contient au moins une sonde qui dimensionne ses nœuds sur
+// la ligne de cache ; seule une telle Matrix dépend de la ligne de la machine mesurée.
+func (p MatrixParameters) UsesCacheLine() bool {
+	for _, spec := range p.Probes {
+		if ProbeUsesCacheLine(spec.Kind) {
+			return true
+		}
+	}
+	return false
 }
 
 // DefaultLayouts rend la dimension de disposition par défaut : celle d'avant C-008.
@@ -104,6 +136,10 @@ func (p MatrixParameters) Normalize() MatrixParameters {
 	if replicates == 0 {
 		replicates = DefaultReplicates()
 	}
+	cacheLine := p.CacheLineBytes
+	if cacheLine == 0 {
+		cacheLine = DefaultCacheLineBytes
+	}
 	out := MatrixParameters{
 		Sizes:                dedupeSorted(p.Sizes, func(a, b int) bool { return a < b }),
 		PointerFieldVariants: dedupeSorted(p.PointerFieldVariants, func(a, b bool) bool { return !a && b }),
@@ -113,6 +149,7 @@ func (p MatrixParameters) Normalize() MatrixParameters {
 		Repeats:              dedupeSorted(repeats, func(a, b int) bool { return a < b }),
 		Payloads:             dedupeSorted(payloads, func(a, b int) bool { return a < b }),
 		Replicates:           replicates,
+		CacheLineBytes:       cacheLine,
 	}
 	seen := make(map[ProbeSpec]bool, len(p.Probes))
 	for _, spec := range p.Probes {
@@ -234,6 +271,14 @@ func (p MatrixParameters) Validate() error {
 			"%d réplicats demandés sans série à répliquer : ils ne se déclinent que sur la disposition %s en profil %s (C-009)",
 			ReplicateCount, LayoutNamedFields, ProfileLocal))
 	}
+	cacheLine := p.CacheLineBytes
+	if cacheLine == 0 {
+		cacheLine = DefaultCacheLineBytes
+	}
+	if err := ValidateCacheLine(cacheLine); err != nil {
+		problems = append(problems, err.Error())
+		cacheLine = DefaultCacheLineBytes
+	}
 	// A-010 : le commentaire qui tenait ici annonçait un refus du témoin nul hors du profil LOCAL,
 	// retiré par D-22 — le générateur saute désormais la combinaison au lieu de refuser la matrice.
 	for _, spec := range p.Probes {
@@ -244,8 +289,8 @@ func (p MatrixParameters) Validate() error {
 			problems = append(problems, fmt.Sprintf("paramètre de Probe %s doit être > 0 (%d)", spec.Kind, spec.Parameter))
 		}
 		// Une sonde qui parcourt la mémoire travaille par nœuds d'une ligne de cache.
-		if (spec.Kind == ProbeSequentialScan || spec.Kind == ProbeScatteredScan || spec.Kind == ProbePointerChase) && spec.Parameter%64 != 0 {
-			problems = append(problems, fmt.Sprintf("le jeu de travail d'une sonde %s doit être un multiple de 64 octets (%d)", spec.Kind, spec.Parameter))
+		if ProbeUsesCacheLine(spec.Kind) && spec.Parameter%cacheLine != 0 {
+			problems = append(problems, fmt.Sprintf("le jeu de travail d'une sonde %s doit être un multiple de %d octets (%d)", spec.Kind, cacheLine, spec.Parameter))
 		}
 	}
 	if len(problems) > 0 {
@@ -302,6 +347,10 @@ func (p MatrixParameters) Canonical() string {
 	}
 	if n.Replicates != DefaultReplicates() {
 		fmt.Fprintf(&b, "replicates=%d\n", n.Replicates)
+	}
+	// A-081 : même règle, une demande antérieure garde son identifiant.
+	if n.CacheLineBytes != DefaultCacheLineBytes {
+		fmt.Fprintf(&b, "cacheLine=%d\n", n.CacheLineBytes)
 	}
 	b.WriteString("probes=")
 	for _, spec := range n.Probes {

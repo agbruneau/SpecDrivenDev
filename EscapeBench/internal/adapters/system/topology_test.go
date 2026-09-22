@@ -5,10 +5,10 @@ import "testing"
 func TestTopologyFrom(t *testing.T) {
 	t.Parallel()
 	levels := []CacheLevel{
-		{Level: 1, Data: false, SizeBytes: 32768},  // cache d'instructions : ignoré
-		{Level: 1, Data: true, SizeBytes: 49152},   // L1 de données d'un cœur performance
-		{Level: 1, Data: true, SizeBytes: 32768},   // L1 de données d'un cœur efficacité
-		{Level: 2, Data: true, SizeBytes: 3 << 20}, // L2 par cluster
+		{Level: 1, Data: false, SizeBytes: 32768},                // cache d'instructions : ignoré
+		{Level: 1, Data: true, SizeBytes: 49152, LineBytes: 64},  // L1 de données d'un cœur performance
+		{Level: 1, Data: true, SizeBytes: 32768, LineBytes: 128}, // L1 de données d'un cœur efficacité (ligne fictive)
+		{Level: 2, Data: true, SizeBytes: 3 << 20},               // L2 par cluster
 		{Level: 3, Data: true, SizeBytes: 36 << 20},
 		{Level: 3, Data: true, SizeBytes: 36 << 20},
 		{Level: 3, Data: true, SizeBytes: 0}, // instance sans taille : ignorée
@@ -21,6 +21,10 @@ func TestTopologyFrom(t *testing.T) {
 	}
 	if got.LastLevelCacheBytes != 36<<20 {
 		t.Fatalf("dernier niveau = %d", got.LastLevelCacheBytes)
+	}
+	// A-081 : la ligne retenue est celle du L1 retenu. Mutation : retenir la dernière lue ⇒ échec.
+	if got.CacheLineBytes != 64 {
+		t.Fatalf("ligne de cache = %d", got.CacheLineBytes)
 	}
 }
 

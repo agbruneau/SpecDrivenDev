@@ -4,7 +4,10 @@
 // une campagne (hook guard-paths, results/.campaign-lock).
 //
 // Les gabarits sont embarqués dans le binaire : l'empreinte porte donc exactement le code de
-// mesure qui a produit les sujets, indépendamment du répertoire d'exécution.
+// mesure qui a produit les sujets, indépendamment du répertoire d'exécution. Depuis le lot 9 de
+// l'audit (A-246, D-63), ce fichier-ci est embarqué et haché avec eux : il dérive les champs, le
+// remplissage et les aides émises, et une modification de cette dérivation change le code
+// généré. Elle change désormais aussi l'empreinte.
 package harness
 
 import (
@@ -21,7 +24,10 @@ import (
 	"github.com/agbruneau/escapebench/internal/models"
 )
 
-//go:embed templates/*.tmpl
+// harnessSource est le nom de ce fichier dans templatesFS : il entre dans l'empreinte (A-246).
+const harnessSource = "harness.go"
+
+//go:embed harness.go templates/*.tmpl
 var templatesFS embed.FS
 
 // Renderer rend les fichiers source d'un sujet à partir des gabarits embarqués.
@@ -46,12 +52,18 @@ func NewRenderer() (*Renderer, error) {
 // Digest rend l'empreinte SHA-256 du harnais (BR-003-1).
 func (r *Renderer) Digest() string { return r.digest }
 
-// computeDigest calcule l'empreinte des gabarits : noms triés, taille et contenu de chacun.
+// computeDigest calcule l'empreinte des gabarits et de harness.go : noms triés, taille et contenu
+// de chacun (C-005, A-246).
 func computeDigest() (string, error) {
 	entries, err := fs.Glob(templatesFS, "templates/*.tmpl")
 	if err != nil {
 		return "", fmt.Errorf("lecture des gabarits du harnais : %w", err)
 	}
+	return digestFiles(append(entries, harnessSource))
+}
+
+// digestFiles hache les fichiers embarqués nommés, dans l'ordre de leurs noms.
+func digestFiles(entries []string) (string, error) {
 	sort.Strings(entries)
 	h := sha256.New()
 	for _, name := range entries {
@@ -238,28 +250,41 @@ type probeData struct {
 	IsScattered bool
 	IsChase     bool
 	IsPrealloc  bool
+	// LineBytes est la ligne de cache de la Matrix (A-081) : un nœud et un élément en occupent une.
+	// NodePadBytes et ElemPadWords en dérivent : un nœud porte un mot et un pointeur (seize octets
+	// sur 64 bits), un élément un mot.
+	LineBytes    int
+	NodePadBytes int
+	ElemPadWords int
 }
 
-// RenderProbe rend les fichiers du paquet d'une Probe.
-func (r *Renderer) RenderProbe(probe models.Probe) (map[string]string, error) {
+// RenderProbe rend les fichiers du paquet d'une Probe, dont les nœuds et les éléments occupent
+// une ligne de cache de cacheLineBytes octets (A-081, C-006).
+func (r *Renderer) RenderProbe(probe models.Probe, cacheLineBytes int) (map[string]string, error) {
 	if err := probe.Validate(); err != nil {
 		return nil, err
 	}
+	if err := models.ValidateCacheLine(cacheLineBytes); err != nil {
+		return nil, err
+	}
 	data := probeData{
-		SubjectID:   probe.ID(),
-		Kind:        probe.Kind,
-		Parameter:   probe.Parameter,
-		IsScan:      probe.Kind == models.ProbeSequentialScan || probe.Kind == models.ProbeScatteredScan,
-		IsScattered: probe.Kind == models.ProbeScatteredScan,
-		IsChase:     probe.Kind == models.ProbePointerChase,
-		IsPrealloc:  probe.Kind == models.ProbeAppendPrealloc,
+		SubjectID:    probe.ID(),
+		Kind:         probe.Kind,
+		Parameter:    probe.Parameter,
+		IsScan:       probe.Kind == models.ProbeSequentialScan || probe.Kind == models.ProbeScatteredScan,
+		IsScattered:  probe.Kind == models.ProbeScatteredScan,
+		IsChase:      probe.Kind == models.ProbePointerChase,
+		IsPrealloc:   probe.Kind == models.ProbeAppendPrealloc,
+		LineBytes:    cacheLineBytes,
+		NodePadBytes: cacheLineBytes - 16,
+		ElemPadWords: cacheLineBytes/8 - 1,
 	}
 	if data.IsScan || data.IsChase {
-		if probe.Parameter%64 != 0 {
-			return nil, fmt.Errorf("%w : le jeu de travail d'une sonde %s doit être un multiple de 64 octets (%d)",
-				models.ErrValidation, probe.Kind, probe.Parameter)
+		if probe.Parameter%cacheLineBytes != 0 {
+			return nil, fmt.Errorf("%w : le jeu de travail d'une sonde %s doit être un multiple de %d octets (%d)",
+				models.ErrValidation, probe.Kind, cacheLineBytes, probe.Parameter)
 		}
-		if probe.Parameter < 128 {
+		if probe.Parameter < 2*cacheLineBytes {
 			return nil, fmt.Errorf("%w : le jeu de travail d'une sonde %s doit compter au moins deux nœuds (%d octets)",
 				models.ErrValidation, probe.Kind, probe.Parameter)
 		}

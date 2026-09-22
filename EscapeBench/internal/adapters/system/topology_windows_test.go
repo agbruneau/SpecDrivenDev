@@ -13,6 +13,7 @@ func record(relationship uint32, level byte, size uint32, kind uint32) []byte {
 	binary.LittleEndian.PutUint64(buffer[0:8], 0xFF) // masque de processeurs
 	binary.LittleEndian.PutUint32(buffer[8:12], relationship)
 	buffer[16] = level
+	binary.LittleEndian.PutUint16(buffer[18:20], 64) // taille de ligne (A-081)
 	binary.LittleEndian.PutUint32(buffer[20:24], size)
 	binary.LittleEndian.PutUint32(buffer[24:28], kind)
 	return buffer
@@ -43,7 +44,7 @@ func TestParseWindowsCaches(t *testing.T) {
 		t.Fatalf("troisième instance = %+v", caches[2])
 	}
 	topology := topologyFrom(caches)
-	if topology.L1DataCacheBytes != 49152 || topology.LastLevelCacheBytes != 36<<20 {
+	if topology.L1DataCacheBytes != 49152 || topology.LastLevelCacheBytes != 36<<20 || topology.CacheLineBytes != 64 {
 		t.Fatalf("topologie = %+v", topology)
 	}
 }

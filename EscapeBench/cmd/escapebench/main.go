@@ -50,9 +50,11 @@ Option commune : --root <répertoire du projet> (par défaut, remonte depuis le 
 
 Spécification de matrice (--params) :
   sizes=8,16,24;pointer=false,true;profiles=LOCAL,RETURNED;modes=VALUE,POINTER;probes=SEQUENTIAL_SCAN:65536
-  Clés reconnues : sizes, pointer, profiles, modes, layouts, repeats, payloads, replicates, probes.
-  sizes est obligatoire ; probes, layouts, repeats, payloads et replicates absents valent leur
-  défaut du modèle (une disposition, une instance, une charge, aucun réplicat, aucune sonde).
+  Clés reconnues : sizes, pointer, profiles, modes, layouts, repeats, payloads, replicates,
+  cacheline, probes.
+  sizes est obligatoire ; probes, layouts, repeats, payloads, replicates et cacheline absents
+  valent leur défaut du modèle (une disposition, une instance, une charge, aucun réplicat, une
+  ligne de cache de 64 octets, aucune sonde).
   pointer, profiles et modes absents prennent la valeur de la matrice de référence (BR-001-4).
 `
 

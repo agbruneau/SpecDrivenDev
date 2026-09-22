@@ -17,20 +17,25 @@ type {{.TypeName}} struct {
 }
 {{- else}}
 // Le remplissage est un tableau : au-delà d'un élément, le type n'est plus assignable aux
-// registres et le passage par valeur emprunte la mémoire (C-008).
+// registres et le passage par valeur emprunte la mémoire (C-008). À un mot, il est omis : un
+// tableau vide en dernier champ reçoit un remplissage qui porterait le type à deux mots (A-073).
 type {{.TypeName}} struct {
 {{- if .HasPointerField}}
 	P *byte
 {{- else}}
 	Tag uint64
 {{- end}}
+{{- if .FillLen}}
 	Fill [{{.FillLen}}]uint64
+{{- end}}
 }
 {{- end}}
 
 // Contrôle à la compilation : la disposition dérivée par le générateur donne bien {{.SizeBytes}} octets.
-// Une taille différente rend la constante négative et le paquet ne compile pas.
+// Un type trop petit rend la première constante négative, un type trop grand la seconde, et le
+// paquet ne compile pas (A-073).
 const _ = uint(unsafe.Sizeof({{.TypeName}}{}) - {{.SizeBytes}})
+const _ = uint({{.SizeBytes}} - unsafe.Sizeof({{.TypeName}}{}))
 
 // anchor est la cible du champ pointeur : elle ne fait jamais échapper la valeur qui la référence.
 var anchor {{if .NamedFields}}uint64{{else}}byte{{end}}

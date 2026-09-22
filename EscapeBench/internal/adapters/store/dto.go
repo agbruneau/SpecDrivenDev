@@ -23,7 +23,9 @@ type provenanceDTO struct {
 	PowerPlan   string        `json:"powerPlan,omitempty"`
 	CPUAffinity string        `json:"cpuAffinity,omitempty"`
 	CoreTypes   *coreTypesDTO `json:"coreTypes,omitempty"`
-	CapturedAt  time.Time     `json:"capturedAt"`
+	// Lot 9 de l'audit (A-081) : facultatif, absent des fichiers antérieurs.
+	CacheLineBytes int64     `json:"cacheLineBytes,omitempty"`
+	CapturedAt     time.Time `json:"capturedAt"`
 }
 
 type coreTypesDTO struct {
@@ -37,6 +39,7 @@ func toProvenanceDTO(p models.Provenance) provenanceDTO {
 		L1DataCacheBytes: p.L1DataCacheBytes, LastLevelCacheBytes: p.LastLevelCacheBytes,
 		PageSizeBytes: p.PageSizeBytes, GOMAXPROCS: p.GOMAXPROCS, CapturedAt: p.CapturedAt.UTC(),
 		OSVersion: p.OSVersion, PowerPlan: p.PowerPlan, CPUAffinity: p.CPUAffinity,
+		CacheLineBytes: p.CacheLineBytes,
 	}
 	if p.CoreTypes.Distinguished() {
 		dto.CoreTypes = &coreTypesDTO{Performance: p.CoreTypes.Performance, Efficiency: p.CoreTypes.Efficiency}
@@ -50,6 +53,7 @@ func (d provenanceDTO) toModel() models.Provenance {
 		L1DataCacheBytes: d.L1DataCacheBytes, LastLevelCacheBytes: d.LastLevelCacheBytes,
 		PageSizeBytes: d.PageSizeBytes, GOMAXPROCS: d.GOMAXPROCS, CapturedAt: d.CapturedAt,
 		OSVersion: d.OSVersion, PowerPlan: d.PowerPlan, CPUAffinity: d.CPUAffinity,
+		CacheLineBytes: d.CacheLineBytes,
 	}
 	if d.CoreTypes != nil {
 		p.CoreTypes = models.CoreTypes{Performance: d.CoreTypes.Performance, Efficiency: d.CoreTypes.Efficiency}
@@ -159,15 +163,17 @@ type probeSpecDTO struct {
 }
 
 type matrixParametersDTO struct {
-	Sizes                []int          `json:"sizes"`
-	PointerFieldVariants []bool         `json:"pointerFieldVariants"`
-	Profiles             []string       `json:"lifetimeProfiles"`
-	PassingModes         []string       `json:"passingModes"`
-	Layouts              []string       `json:"layouts,omitempty"`
-	Repeats              []int          `json:"repeats,omitempty"`
-	Payloads             []int          `json:"payloads,omitempty"`
-	Replicates           int            `json:"replicates,omitempty"`
-	Probes               []probeSpecDTO `json:"probes"`
+	Sizes                []int    `json:"sizes"`
+	PointerFieldVariants []bool   `json:"pointerFieldVariants"`
+	Profiles             []string `json:"lifetimeProfiles"`
+	PassingModes         []string `json:"passingModes"`
+	Layouts              []string `json:"layouts,omitempty"`
+	Repeats              []int    `json:"repeats,omitempty"`
+	Payloads             []int    `json:"payloads,omitempty"`
+	Replicates           int      `json:"replicates,omitempty"`
+	// Lot 9 de l'audit (A-081) : écrit seulement hors de la valeur par défaut de 64 octets.
+	CacheLineBytes int            `json:"cacheLineBytes,omitempty"`
+	Probes         []probeSpecDTO `json:"probes"`
 }
 
 func toParametersDTO(p models.MatrixParameters) matrixParametersDTO {
@@ -189,6 +195,9 @@ func toParametersDTO(p models.MatrixParameters) matrixParametersDTO {
 	d.Payloads = p.Payloads
 	if p.Replicates > 1 {
 		d.Replicates = p.Replicates
+	}
+	if p.CacheLineBytes != 0 && p.CacheLineBytes != models.DefaultCacheLineBytes {
+		d.CacheLineBytes = p.CacheLineBytes
 	}
 	for _, spec := range p.Probes {
 		d.Probes = append(d.Probes, probeSpecDTO{Kind: string(spec.Kind), Parameter: spec.Parameter})
@@ -212,6 +221,10 @@ func (d matrixParametersDTO) toModel() models.MatrixParameters {
 	p.Replicates = d.Replicates
 	if p.Replicates < 1 {
 		p.Replicates = models.DefaultReplicates()
+	}
+	p.CacheLineBytes = d.CacheLineBytes
+	if p.CacheLineBytes == 0 {
+		p.CacheLineBytes = models.DefaultCacheLineBytes
 	}
 	for _, spec := range d.Probes {
 		p.Probes = append(p.Probes, models.ProbeSpec{Kind: models.ProbeKind(spec.Kind), Parameter: spec.Parameter})
