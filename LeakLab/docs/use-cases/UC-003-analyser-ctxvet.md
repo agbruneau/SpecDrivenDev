@@ -53,4 +53,5 @@ L'analyse est syntaxique : les méthodes (`db.Query`, `conn.Read`) ne sont pas v
 
 ## Notes de revue
 
+- Précision du 2026-09-22 (constat E-13 de l'évaluation académique) : l'acteur secondaire « Pipeline CI » désigne un usage prévu de `ctxvet`, pas une configuration du dépôt. Depuis le retrait de l'intégration continue (D-53 du journal d'EscapeBench), la vérification hors du poste de référence est tenue par le journal manuel [`Doc/VERIFICATION-HORS-POSTE.md`](../../../Doc/VERIFICATION-HORS-POSTE.md).
 - Clôture du 2026-09-13 : statut porté à `Deployed`. Ce qui l'établit : `ctxvet` a diagnostiqué dans la campagne de référence le seul cas `CTX_IO` du corpus et aucun autre ; ses règles BR-003-1 à BR-003-3 sont couvertes par `TestUC003_*`.

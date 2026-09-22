@@ -14,6 +14,7 @@ Banc de détectabilité des anti-patrons de concurrence Go (bibliothèque standa
 - Le corpus est fautif par construction : ne jamais « corriger » un cas `faulty`, ne jamais lancer `go vet` ou `-race` sur `lab/` hors campagne.
 - Erreurs enveloppées avec `%w` ; jamais de `panic` hors pilotes et corpus.
 - Tests table-driven, sous-tests nommés d'après le UC ou l'hypothèse (`TestUC001_...`, `TestH005_...`). Commande de référence, depuis `LeakLab/` : `go vet ./... && go test -race -shuffle=on -count=1 ./...`. Oracle du corpus : `cd lab && go test -count=1 ./corpus`.
+- Les tests d'un évaluateur d'hypothèse se nomment `TestH###` ou `TestH###_<slug>`, sans préfixe de UC (un test qui juge deux hypothèses les juxtapose : `TestH007H008`) ; EscapeBench nomme les siens `TestUC005_H###_<slug>`. Un test qui verrouille une exigence ou une contrainte hors UC porte son identifiant (`TestNFR004_…`, `TestC008_…`). Aucun test existant n'est renommé (E-32).
 - `results/` n'est jamais écrit par un agent (hook `guard-paths`) : seul le binaire le produit.
 - Préfixer les commits par `UC-###:` ou `H-###:` (ou `LeakLab:` pour ce qui touche tout le projet).
 

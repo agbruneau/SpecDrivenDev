@@ -59,8 +59,11 @@ Une campagne : l'exécution complète de la matrice et des sondes (UC-001).
 |---|---|---|
 | goVersion | string | `runtime.Version()` du binaire de mesure |
 | goos, goarch | string | Plateforme |
-| cpu | string | Identifiant du processeur tel que le système le rapporte |
+| cpu | string | Nom commercial du processeur (registre `ProcessorNameString` sous Windows, champ `model name` de `/proc/cpuinfo` sous Linux) ; repli sur l'identifiant que le système expose (`PROCESSOR_IDENTIFIER`), vide si rien n'est lisible |
 | numCPU | int | Cœurs logiques |
+| osVersion | string | Facultatif. Version et build du système : sous Windows, `Windows <majeure>.<mineure>.<build>.<UBR>` suivi de la version affichée (`DisplayVersion`) ; sous Linux, `PRETTY_NAME` de `/etc/os-release` et version du noyau ; vide si rien n'est lisible ou ailleurs |
+
+**Révision du 2026-09-22** (évaluation académique, constats E-29 et E-14 ; plan d'implantation, lots 5 et 6). `cpu` consignait la signature CPUID (« Intel64 Family 6 Model 198 Stepping 2, GenuineIntel »), commune à tous les modèles d'une génération ; il porte désormais le nom commercial, comme la provenance d'EscapeBench depuis A-065. `osVersion` est ajouté. Les deux campagnes archivées, `R-2026-09-13-1` et `R-2026-09-13-2`, restent valides telles quelles : aucun critère ni aucun verdict ne lit `cpu` ni `osVersion`, et un fichier sans `osVersion` se relit avec une valeur vide.
 
 ## Observation
 
