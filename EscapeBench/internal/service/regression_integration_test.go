@@ -13,8 +13,9 @@
 // BR-001-1, C-007). Les matrices citées par les campagnes archivées sont donc reconstruites à
 // partir des spécifications de paramètres consignées dans LANCEMENT.md, et retenues seulement si
 // leur identifiant canonique est bien celui que la campagne nomme — la reconstruction se prouve
-// elle-même. Les trois évaluateurs qui lisent la Matrix sont sautés, en le disant, pour les deux
-// matrices dont les paramètres ne sont consignés nulle part.
+// elle-même. Les trois évaluateurs qui lisent la Matrix sont sautés, en le disant, pour toute
+// matrice dont les paramètres ne figurent pas ci-dessous ; depuis D-61, aucune campagne archivée
+// n'est dans ce cas.
 package service
 
 import (
@@ -94,6 +95,26 @@ func archivedParameters() []models.MatrixParameters {
 			Probes: []models.ProbeSpec{
 				{Kind: models.ProbeAppendPrealloc, Parameter: 100000},
 				{Kind: models.ProbeAppendGrow, Parameter: 100000},
+			},
+		},
+		// M-8f03757ac206 (C-2026-09-10-2 et -3), retrouvée au lot 7 (D-61).
+		{
+			Sizes:                []int{8, 16, 24, 128, 1024},
+			PointerFieldVariants: []bool{false, true},
+			Profiles: []models.LifetimeProfile{
+				models.ProfileLocal, models.ProfileStoredInMap, models.ProfileStoredInSlice,
+				models.ProfileStoredInStruct, models.ProfileReturnedAlloc,
+			},
+			PassingModes: models.PassingModes(),
+			Layouts:      []models.Layout{models.LayoutNamedFields, models.LayoutNamedFieldsSham},
+			Repeats:      []int{1, 2, 4, 16},
+			Payloads:     []int{1, 2},
+			Replicates:   models.DefaultReplicates(),
+			Probes: []models.ProbeSpec{
+				{Kind: models.ProbeAppendPrealloc, Parameter: 100000},
+				{Kind: models.ProbeAppendGrow, Parameter: 100000},
+				{Kind: models.ProbePointerChase, Parameter: 16384},
+				{Kind: models.ProbePointerChase, Parameter: 268435456},
 			},
 		},
 	}
@@ -194,7 +215,7 @@ func TestUC005_NonRegressionVerdictsArchives(t *testing.T) {
 				continue
 			}
 			if matrixDependent[archived.HypothesisID] && !matrixKnown {
-				t.Logf("%s / %s : sauté, les paramètres de la matrice %s ne sont consignés nulle part",
+				t.Logf("%s / %s : sauté, les paramètres de la matrice %s ne figurent pas dans archivedParameters",
 					campaign.ID, archived.HypothesisID, campaign.MatrixID)
 				skipped++
 				continue
@@ -335,4 +356,54 @@ func TestUC005_BR5_EmpreintesGeleesInchangees(t *testing.T) {
 	if len(seen) == 0 {
 		t.Fatal("aucune campagne archivée : la garde ne prouve rien")
 	}
+}
+
+// TestUC003_CampagnesArchiveesSansLesChampsDeD60 relit chaque campagne archivée, sa Provenance et
+// toutes ses Measurement, et exige qu'elles restent valides alors qu'elles ne portent aucun des
+// champs ajoutés le 2026-09-22 (D-60) : osVersion, powerPlan, cpuAffinity, coreTypes, iterations,
+// rawOutputFile. C'est la preuve que ces champs sont facultatifs.
+// Mutation : exiger iterations dans Measurement.Validate ⇒ échec attendu sur chaque campagne.
+func TestUC003_CampagnesArchiveesSansLesChampsDeD60(t *testing.T) {
+	ctx := context.Background()
+	root := projectRoot(t)
+	disk := store.New(root)
+	entries, err := os.ReadDir(filepath.Join(root, "results", "campaigns"))
+	if err != nil {
+		t.Fatalf("lecture de results/campaigns : %v", err)
+	}
+	campaigns, measured := 0, 0
+	for _, entry := range entries {
+		if !entry.IsDir() {
+			continue
+		}
+		campaign, err := disk.LoadCampaign(ctx, entry.Name())
+		if err != nil {
+			t.Fatalf("campagne %s : %v", entry.Name(), err)
+		}
+		if err := campaign.Validate(); err != nil {
+			t.Errorf("campagne %s invalide : %v", campaign.ID, err)
+		}
+		p := campaign.Provenance
+		if p.OSVersion != "" || p.PowerPlan != "" || p.CPUAffinity != "" || p.CoreTypes != (models.CoreTypes{}) {
+			t.Errorf("campagne %s : un champ de D-60 est présent dans une archive antérieure", campaign.ID)
+		}
+		measurements, err := disk.LoadMeasurements(ctx, campaign.ID)
+		if err != nil {
+			t.Fatalf("mesures de %s : %v", campaign.ID, err)
+		}
+		for _, m := range measurements {
+			if err := m.Validate(campaign.Count); err != nil {
+				t.Errorf("%s : %v", campaign.ID, err)
+			}
+			if len(m.Iterations) != 0 || m.RawOutputFile != "" {
+				t.Errorf("%s / %s : un champ de D-60 est présent dans une archive antérieure", campaign.ID, m.SubjectID)
+			}
+		}
+		campaigns++
+		measured += len(measurements)
+	}
+	if campaigns == 0 {
+		t.Fatal("aucune campagne archivée relue : le test ne prouve rien")
+	}
+	t.Logf("%d campagnes archivées et %d Measurement relues sans les champs de D-60", campaigns, measured)
 }

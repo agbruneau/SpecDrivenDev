@@ -111,6 +111,14 @@ go run ./cmd/escapebench campaign --matrix M-57477f022103 --count 20 --hypothese
 
 Puis `compare` et `verdict` pour chaque campagne (étape 4). Vérifié le 2026-09-11 : ces paramètres redonnent exactement les deux identifiants de matrice, et l'empreinte de harnais `551ce66b…` des campagnes publiées. Mener les deux campagnes en série, jamais en parallèle, et arrêter tout processus de contre-épreuve avant de lancer : une charge concurrente rend H-013 non concluante (D-35, D-36).
 
+### Matrice des campagnes `C-2026-09-10-2` et `C-2026-09-10-3`
+
+Ces deux campagnes de la seconde génération (H-007 à H-011) emploient `M-8f03757ac206` : 252 cellules et 4 sondes, 256 sujets. Ses paramètres, longtemps tenus pour perdus (D-42), ont été retrouvés le 2026-09-22 dans le `matrix.json` resté sur le poste, `matrices/` n'étant pas versionné (D-61). Vérifié : ils redonnent l'identifiant, les 252 cellules et les 4 sondes, et des sources de sujets identiques octet pour octet à celles du poste.
+
+```bash
+go run ./cmd/escapebench matrix --params "sizes=8,16,24,128,1024;pointer=false,true;profiles=LOCAL,STORED_IN_MAP,STORED_IN_SLICE,STORED_IN_STRUCT,RETURNED_ALLOCATING;modes=VALUE,POINTER;layouts=NAMED_FIELDS,NAMED_FIELDS_SHAM;repeats=1,2,4,16;payloads=1,2;probes=APPEND_PREALLOC:100000,APPEND_GROW:100000,POINTER_CHASE:16384,POINTER_CHASE:268435456"
+```
+
 ## 6. Définition de « terminé »
 
 Un UC est terminé quand il est `Approved`, synchronisé avec le code et protégé par des tests couvrant scénario principal et flux alternatifs (SDD p. 142). Une hypothèse est terminée quand un verdict cite ses fichiers de résultats et que `docs/dashboard.md` le reflète. Le projet P1 est terminé quand H-001 à H-006 ont un verdict sur au moins une architecture. **Atteint le 2026-09-10, au-delà de la lettre** : H-001 à H-013 ont un verdict sur `windows/amd64` ; le rejeu sur `arm64` reste ouvert.
