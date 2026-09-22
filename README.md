@@ -1,10 +1,21 @@
 # Prospection : Cadrage et Développement IA avec Claude Code
 
-**Statut** : deux projets clos, EscapeBench (P1) le 2026-09-10, avec des verdicts révisés le 2026-09-12 après un audit du code, et LeakLab (P3) le 2026-09-13; six autres projets au stade du cadrage.
+**Statut** : deux projets clos, EscapeBench (P1) le 2026-09-10, avec des verdicts révisés le 2026-09-12 après un audit du code, et LeakLab (P3) le 2026-09-13; six autres projets dont seules les fiches de cadrage existent.
 
 ## Résumé
 
-Les ouvrages de génie logiciel transmettent des règles de performance chiffrées que l'on applique souvent sans les vérifier. Ce dépôt en fait des objets d'étude. Il repère dans *Building Enterprise Projects with Go* (Shahsavan, 2026) les affirmations assez précises pour qu'une mesure puisse les contredire, puis construit avec un agent de codage, Claude Code (Marco, 2026), des bancs d'essai qui les mettent à l'épreuve. Le développement suit le *Spec-Driven Development* (Martinelli, 2026) : chaque affirmation devient une hypothèse dont le critère de réfutation est écrit et gelé avant la première mesure. Le premier banc, EscapeBench, porte sur la gestion de la mémoire en Go. Sur treize hypothèses, cinq sont infirmées et huit confirmées. Les infirmations les plus instructives ne montrent pas que le livre se trompe, mais qu'il décrit un cas particulier sans le dire : la règle des « un à trois mots machine » dépend de la forme d'une structure autant que de sa taille; le rapport de 10 à 200 entre cache et mémoire vaut pour une latence, pas pour un débit; et le passage au pointeur ne double les allocations que si la fonction n'alloue rien d'autre. Un audit du code mené après la clôture a en outre montré qu'un verdict publié, l'infirmation de H-006, était un artefact du banc : corrigé et rejoué, il passe à *confirmée*. Le second banc, LeakLab, éprouve ce que le livre dit des fuites de goroutines, des interblocages et des outils censés les révéler. Sur quatorze hypothèses, huit sont infirmées : un test ordinaire et le détecteur de courses ne voient aucune des onze fuites du corpus, `testing/synctest` en manque trois, et deux interblocages que le livre dit fatals bloquent dix minutes sous `go test`.
+Les ouvrages de génie logiciel transmettent des règles de performance chiffrées que l'on applique souvent sans les vérifier. Ce dépôt en fait des objets d'étude. Il repère dans *Building Enterprise Projects with Go* (Shahsavan, 2026) les affirmations assez précises pour qu'une mesure puisse les contredire, puis construit avec un agent de codage, Claude Code (Marco, 2026), des bancs d'essai qui les mettent à l'épreuve. Le développement suit le *Spec-Driven Development* (Martinelli, 2026) : chaque affirmation devient une hypothèse dont le critère de réfutation est écrit et gelé avant la première mesure. Le premier banc, EscapeBench, porte sur la gestion de la mémoire en Go. Sur treize hypothèses, cinq sont infirmées et huit confirmées, mais ces nombres ne se lisent pas à égalité : trois des infirmations (H-001, H-004, H-011) ne contredisent qu'une lecture stricte ou une opérationnalisation de l'affirmation, et cinq des confirmations ne pouvaient pas être infirmées sur ce matériel ou étaient acquises d'avance par construction du corpus (tableau ci-dessous). Les infirmations les plus instructives ne montrent pas que le livre se trompe, mais qu'il décrit un cas particulier sans le dire : la règle des « un à trois mots machine » dépend de la forme d'une structure autant que de sa taille; le rapport de 10 à 200 entre cache et mémoire vaut pour une latence, pas pour un débit; et le passage au pointeur ne double les allocations que si la fonction n'alloue rien d'autre. Un audit du code mené après la clôture a en outre montré qu'un verdict publié, l'infirmation de H-006, était un artefact du banc : corrigé et rejoué, il passe à *confirmée*. Le second banc, LeakLab, éprouve ce que le livre dit des fuites de goroutines, des interblocages et des outils censés les révéler. Sur quatorze hypothèses, huit sont infirmées, dont une par un défaut de la sonde du banc (H-009) et deux sur une lecture stricte ou une opérationnalisation (H-004, H-008) : un test ordinaire et le détecteur de courses ne voient aucune des onze fuites du corpus, `testing/synctest` en manque trois, et deux interblocages que le livre dit fatals bloquent dix minutes sous `go test`. Des six confirmations, une (H-012) juge un détecteur construit par le banc plutôt qu'une pratique du livre.
+
+**Décompte par portée.** *Lecture ajoutée le 2026-09-22 (lot 2 du plan d'implantation de l'évaluation); aucun verdict ni rationale ne change.* Une infirmation est *de fond* si elle contredit l'affirmation telle que le livre l'énonce, *restreinte* si elle ne contredit qu'une lecture stricte ou une opérationnalisation choisie par le banc, *de banc* si elle vient d'un artefact de mesure. Une confirmation est *de fond* si la mesure pouvait l'infirmer sur ce matériel, *restreinte* si elle ne le pouvait pas ou si elle juge un outil construit par le banc, *de banc* si le corpus la rendait acquise d'avance. Les colonnes « Portée » des tableaux 4.2 et 8.3 donnent le classement hypothèse par hypothèse.
+
+| Verdict | Portée | EscapeBench (13) | LeakLab (14) |
+|---|---|---|---|
+| infirmée | de fond | 2 (H-002, H-010) | 5 (H-002, H-005, H-010, H-011, H-013) |
+| infirmée | restreinte | 3 (H-001, H-004, H-011) | 2 (H-004, H-008) |
+| infirmée | de banc | 0 | 1 (H-009) |
+| confirmée | de fond | 3 (H-005, H-009, H-012) | 5 (H-001, H-003, H-006, H-007, H-014) |
+| confirmée | restreinte | 3 (H-007, H-008, H-013) | 1 (H-012) |
+| confirmée | de banc | 2 (H-003, H-006) | 0 |
 
 **Mots-clés** : Go, analyse d'échappement, micro-benchmark, concurrence, fuites de goroutines, réfutabilité, *Spec-Driven Development*, agents de codage, Claude Code.
 
@@ -23,7 +34,11 @@ Un agent de codage abaisse assez ce coût pour rendre la vérification systémat
 - **QR1**. Les affirmations du livre sur la mémoire et la concurrence en Go résistent-elles à une mesure dont le critère de jugement est fixé d'avance?
 - **QR2**. Un processus piloté par la spécification permet-il de conduire une telle étude avec un agent de codage sans rompre la traçabilité entre l'affirmation, le critère, le code et le verdict?
 
-Les sections 4 (EscapeBench, la mémoire) et 8 (LeakLab, la concurrence) répondent à QR1 par des mesures. QR2 n'est pas mesurée : le dépôt en fournit deux cas documentés, discutés aux sections 5.3 et 8.5.
+Les sections 4 (EscapeBench, la mémoire) et 8 (LeakLab, la concurrence) répondent à QR1 par des mesures. QR2 est mesurée après coup, avec les limites de [`Doc/QR2-MESURES.md`](Doc/QR2-MESURES.md) : sessions, temps actif, jetons et agents par phase, tirés des transcriptions locales. Le dépôt en fournit deux cas documentés, discutés aux sections 5.3 et 8.5.
+
+### 1.4 Travaux connexes
+
+La plupart des résultats porteurs des deux bancs répliquent ou confirment des résultats connus. Sur la mesure, l'écart entre débit et latence mémoire remonte à *lmbench* (McVoy et Staelin, 1996) et à Drepper (2007). Le passage en registres selon la forme d'une structure est écrit dans l'ABI interne de Go. La métrologie des micro-mesures (Georges et coll., 2007; Mytkowicz et coll., 2009; Kalibera et Jones, 2013) exige des répétitions au niveau du processus et un ordre de mesure contrôlé; le banc ne les applique qu'en partie. Sur la concurrence, Tu et coll. (2019) montraient déjà la faiblesse du détecteur d'interblocage intégré et la portée limitée de `-race`. Saioc et coll. (2024) décrivent l'usage de `goleak` à Uber, Saioc et coll. (2025) la détection par le ramasse-miettes dont vient le profil `goroutineleak`, et l'*issue* golang/go n° 69188 (2024) documentait l'interblocage masqué par la minuterie de `go test`. Le gel des critères est un préenregistrement au sens de Nosek et coll. (2018), mais auto-déposé et sans revue du protocole par des pairs (Ernst et Baldassarre, 2023). Deux résultats restent sans source retrouvée : la dépendance mesurée de la règle « valeur ou pointeur » à la forme de la structure, et l'angle mort du profil `goroutineleak` sur un petit mutex. Cet état de l'art a été écrit après les mesures (D-57). Positionnement résultat par résultat et références (DOI ou URL, vérifiées par agent le 2026-09-22, lecture du chercheur à faire) : [`Doc/ETAT-DE-L-ART.md`](Doc/ETAT-DE-L-ART.md).
 
 ## 2. Notions préalables
 
@@ -47,7 +62,7 @@ Le document [`Doc/Projets-candidats…`](Doc/Projets-candidats_Building-Enterpri
 
 Le banc est construit selon l'*AI Unified Process* (AIUP) de Martinelli (2026). Le dossier `EscapeBench/docs/` fait autorité sur le code; il contient une vision, un catalogue d'exigences, un modèle d'entités et cinq cas d'utilisation : générer la matrice de sujets (UC-001), classer l'échappement (UC-002), exécuter une campagne de mesure (UC-003), comparer valeur et pointeur (UC-004), produire les verdicts (UC-005). Le dépôt ajoute au catalogue un quatrième type d'entrée, l'hypothèse `H-###`, qui relie une page du livre, un énoncé réfutable et son critère gelé. Tout changement de comportement commence dans la spécification. Chaque cas d'utilisation progresse de `Draft` à `Review`, `Approved`, `Implemented`, `Verified` puis `Deployed`, ce dernier statut signifiant ici « campagne exécutée et rapport publié ».
 
-L'agent est encadré selon Marco (2026). Un fichier `CLAUDE.md` court porte les règles de construction. Six *skills* (`/spec-review`, `/implement`, `/go-test`, `/spec-coverage`, `/bench`, `/refute`) et deux sous-agents de revue (spécification, code) découpent le travail. Quatre *hooks* le contrôlent : chemins protégés, `gofmt` et `go vet` après chaque édition, forme des cas d'utilisation, suite de tests en fin de tour. Toute demande à l'agent nomme un identifiant (`UC-###` ou `H-###`) : « améliore » ou « optimise » ne sont pas des instructions recevables.
+L'agent est encadré selon Marco (2026). Un fichier `CLAUDE.md` court porte les règles de construction. Six *skills* (`/spec-review`, `/implement`, `/go-test`, `/spec-coverage`, `/bench`, `/refute`) et deux sous-agents de revue (spécification, code) sont fournis pour découper le travail. Les transcriptions locales n'en montrent pourtant aucune invocation : les revues par agents sont passées par des scripts d'orchestration, et les sessions en nuage du 2026-09-12 ne sont pas vérifiables ([`Doc/QR2-MESURES.md`](Doc/QR2-MESURES.md)). Quatre *hooks* le contrôlent : chemins protégés, `gofmt` et `go vet` après chaque édition, forme des cas d'utilisation, suite de tests en fin de tour. Toute demande à l'agent nomme un identifiant (`UC-###` ou `H-###`) : « améliore » ou « optimise » ne sont pas des instructions recevables.
 
 ### 3.3 Dispositif expérimental
 
@@ -55,7 +70,7 @@ L'agent est encadré selon Marco (2026). Un fichier `CLAUDE.md` court porte les 
 - **Sondes.** Des programmes indépendants des types générés mesurent le parcours séquentiel ou dispersé d'un jeu de travail, une chaîne de pointeurs dépendante, et le remplissage d'une tranche avec ou sans préallocation.
 - **Isolement.** Chaque sujet forme un paquet Go distinct, mesuré par son propre processus `go test` : 20 répétitions de 250 ms (`-count 20 -benchtime 250ms`, `-cpu 1` pour les cellules).
 - **Classification.** Le banc lit la sortie de `-gcflags=-m` et analyse syntaxiquement (`go/ast`) l'usage réel de la variable. Il ne déduit jamais la cause du profil de la cellule, sans quoi l'hypothèse sur l'exhaustivité des causes (H-006) serait circulaire.
-- **Provenance.** Chaque résultat consigne la version de Go, le système, l'architecture, le processeur, la taille des caches et la date; un dossier de résultats n'est jamais réécrit.
+- **Provenance.** Chaque résultat consigne la version de Go, le système, l'architecture, le processeur, la taille des caches et la date; un dossier de résultats n'est jamais réécrit. Depuis le 2026-09-22 (D-60), une campagne consigne aussi la version et le build du système, le plan d'alimentation, l'affinité processeur et la répartition des cœurs de performance et d'efficacité d'un processeur hybride. Chaque mesure garde en plus le `b.N` de chaque répétition et la sortie brute de `go test`. Les dix campagnes archivées sont antérieures à ces champs et ne les portent pas.
 - **Harnais figé.** Une empreinte SHA-256 des gabarits de mesure accompagne chaque campagne; modifier le harnais invalide les campagnes antérieures.
 
 ### 3.4 Analyse statistique
@@ -68,8 +83,8 @@ Pour chaque paire valeur/pointeur, le banc calcule l'écart des médianes sur le
 - **Successeurs plutôt que retouches.** Un critère défectueux ne se corrige pas : on écrit une hypothèse successeur. H-007 à H-013 reprennent ainsi les affirmations de H-001 à H-006 sur des sujets de mesure corrigés.
 - **Témoins de sensibilité.** Un critère exige de montrer que le banc sait détecter un effet réel, faute de quoi il rend *non concluante*.
 - **Attestation de quiétude.** Autour de chaque mesure, le banc relève l'occupation des cœurs extérieurs au sujet mesuré; au-delà de 12 %, l'hypothèse de latence H-013 refuse de trancher.
-- **Revues contradictoires.** Des sous-agents sont chargés de réfuter chaque constat d'une revue. Celle des capacités ajoutées pour la seconde génération d'hypothèses a soumis trente-cinq constats à trois vérificateurs chacun et en a retenu sept.
-- **Audit du code et non-régression.** Après la clôture, un audit a confronté le code aux spécifications : dix-huit lectures parallèles, puis trois vérificateurs indépendants par constat ([`Doc/AUDIT.md`](Doc/AUDIT.md)). Un harnais de non-régression rejoue les évaluateurs sur 67 verdicts archivés, et un test vérifie que l'empreinte des critères gelés de chaque campagne n'a pas bougé.
+- **Revues contradictoires par agents.** Des sous-agents d'un modèle de langage, et non des relecteurs humains, sont chargés de réfuter chaque constat d'une revue. Celle des capacités ajoutées pour la seconde génération d'hypothèses a soumis trente-cinq constats à trois vérificateurs chacun et en a retenu sept. Un constat n'est retenu que si au moins deux votes valides le maintiennent. Les prompts, les rôles, le modèle et la règle d'accord des six revues et rédactions par agents sont archivés dans [`Revue/PROMPTS-REVUES_2026-09-10.md`](Revue/PROMPTS-REVUES_2026-09-10.md). Aucune revue humaine indépendante n'a eu lieu avant la clôture; une revue à froid des huit cas d'utilisation, après coup, est confiée à un tiers (section 5.3).
+- **Audit du code et non-régression.** Après la clôture, un audit par agents a confronté le code aux spécifications : dix-huit lectures parallèles, puis trois vérificateurs distincts par constat ([`Doc/AUDIT.md`](Doc/AUDIT.md)). L'audit a perdu 189 de ses 581 agents sur les limites d'usage du compte, et sa seconde ronde n'a pas eu lieu ([`Revue/PROMPTS-REVUES_2026-09-10.md`](Revue/PROMPTS-REVUES_2026-09-10.md), §6). Un harnais de non-régression rejoue les évaluateurs sur 71 verdicts archivés (67 jusqu'au 2026-09-22, quand les paramètres de `M-8f03757ac206` ont été retrouvés : D-61), et un test vérifie que l'empreinte des critères gelés de chaque campagne n'a pas bougé.
 
 ## 4. Résultats
 
@@ -79,21 +94,23 @@ Les treize verdicts viennent de deux campagnes menées en série sur la même ma
 
 ### 4.2 Verdicts
 
-| Hyp. | Affirmation du livre (page) | Mesure | Verdict |
-|---|---|---|---|
-| H-001 | Copier une petite structure peut coûter moins cher qu'un pointeur (245, 253) | Disposition en tableau : pointeur plus rapide à 8, 16 et 24 octets (écarts de 0,06, 0,05 et 0,67 ns) | **infirmée** |
-| H-002 | La valeur reste préférable d'un à trois mots machine (253) | Disposition en tableau : bascule vers le pointeur dès 8 octets sans champ pointeur, dès 24 octets avec | **infirmée** |
-| H-003 | Passer au pointeur double les allocations (256) | 0 → 1 allocation sur les 20 paires où la valeur n'alloue rien | confirmée |
-| H-004 | Un défaut de cache coûte de 10 à 200 fois un succès (254) | Parcours dispersé contre séquentiel : ×1,9 à 32 Mio, ×2,8 à 128 Mio | **infirmée** |
-| H-005 | Préallocation environ 6 fois plus rapide, un cinquième de la mémoire (114), avec une tolérance doublée | Temps ×0,225, mémoire ×0,196 | confirmée |
-| H-006 | Les quatre causes d'échappement couvrent les cas observés (238–242) | Les 380 cellules qui échappent se rangent toutes dans les quatre causes (verdict corrigé le 2026-09-12) | confirmée |
-| H-007 | Comme H-002, sur des champs nommés | Pointeur en avance, au-delà du bruit, sur au plus une des trois petites tailles par série | confirmée |
-| H-008 | Comme H-004, sur une chaîne de pointeurs dépendante | 0,81 ns en L1, 137 ns hors cache, rapport ×169,9 | confirmée |
-| H-009 | La règle du conteneur vaut pour la *map*, la tranche et la structure (241) | La locale échappe dans les trois conteneurs, à toutes les tailles mesurées | confirmée |
-| H-010 | Comme H-003, quand la valeur alloue déjà | 60 paires sur 120 ne doublent pas : 2 → 3, 8 → 12, 32 → 48 allocations | **infirmée** |
-| H-011 | Comme H-005, aux tolérances du livre (au moins ×4,8) | Temps ×4,45, mémoire ×5,11, allocations 27 → 1 | **infirmée** |
-| H-012 | Comme H-007, plancher de bruit mesuré sur cinq réplicats | Aucune des cinq cellules jugées ne donne l'avantage au pointeur | confirmée |
-| H-013 | Comme H-008, machine attestée au repos | 137 ns hors cache, rapport ×169,9, occupation sous le seuil de 12 % | confirmée |
+*Note du 2026-09-22.* La colonne « Portée » est une lecture ajoutée après coup (définitions sous le résumé); les verdicts, les mesures et les rationales sont ceux des fichiers de verdicts. H-001 est restreinte parce que deux de ses trois paires (0,06 et 0,05 ns) restent sous le plancher de bruit que H-007 mesure dans la même série (0,063 ns), alors que son critère en exige deux; seule la paire de 24 octets le franchit. H-007 est restreinte parce que sa tolérance d'une exception sur trois rendait l'infirmation inatteignable sur la convention d'appel de Go, comme le texte gelé de H-012 l'établit (D-24). H-003 et H-006 sont de banc : le gabarit rendait le passage de 0 à 1 allocation inévitable, et les profils du corpus reproduisent chacun l'une des quatre causes (section 5.1).
+
+| Hyp. | Affirmation du livre (page) | Mesure | Verdict | Portée |
+|---|---|---|---|---|
+| H-001 | Copier une petite structure peut coûter moins cher qu'un pointeur (245, 253) | Disposition en tableau : pointeur plus rapide à 8, 16 et 24 octets (écarts de 0,06, 0,05 et 0,67 ns) | **infirmée** | restreinte |
+| H-002 | La valeur reste préférable d'un à trois mots machine (253) | Disposition en tableau : bascule vers le pointeur dès 8 octets sans champ pointeur, dès 24 octets avec | **infirmée** | de fond |
+| H-003 | Passer au pointeur double les allocations (256) | 0 → 1 allocation sur les 20 paires où la valeur n'alloue rien | confirmée | de banc |
+| H-004 | Un défaut de cache coûte de 10 à 200 fois un succès (254) | Parcours dispersé contre séquentiel : ×1,9 à 32 Mio, ×2,8 à 128 Mio | **infirmée** | restreinte |
+| H-005 | Préallocation environ 6 fois plus rapide, un cinquième de la mémoire (114), avec une tolérance doublée | Temps ×0,225, mémoire ×0,196 | confirmée | de fond |
+| H-006 | Les quatre causes d'échappement couvrent les cas observés (238–242) | Les 380 cellules qui échappent se rangent toutes dans les quatre causes (verdict corrigé le 2026-09-12) | confirmée | de banc |
+| H-007 | Comme H-002, sur des champs nommés | Pointeur en avance, au-delà du bruit, sur au plus une des trois petites tailles par série | confirmée | restreinte |
+| H-008 | Comme H-004, sur une chaîne de pointeurs dépendante | 0,81 ns en L1, 137 ns hors cache, rapport ×169,9 | confirmée | restreinte |
+| H-009 | La règle du conteneur vaut pour la *map*, la tranche et la structure (241) | La locale échappe dans les trois conteneurs, à toutes les tailles mesurées | confirmée | de fond |
+| H-010 | Comme H-003, quand la valeur alloue déjà | 60 paires sur 120 ne doublent pas : 2 → 3, 8 → 12, 32 → 48 allocations | **infirmée** | de fond |
+| H-011 | Comme H-005, aux tolérances du livre (au moins ×4,8) | Temps ×4,45, mémoire ×5,11, allocations 27 → 1 | **infirmée** | restreinte |
+| H-012 | Comme H-007, plancher de bruit mesuré sur cinq réplicats | Aucune des cinq cellules jugées ne donne l'avantage au pointeur | confirmée | de fond |
+| H-013 | Comme H-008, machine attestée au repos | 137 ns hors cache, rapport ×169,9, occupation sous le seuil de 12 % | confirmée | restreinte |
 
 ### 4.3 Lecture
 
@@ -117,7 +134,7 @@ Une confirmation vaut ce que valait la possibilité d'infirmer. H-008 et H-013 n
 
 ### 5.2 Ce que le banc a appris sur lui-même
 
-Les revues contradictoires ont trouvé quatre défauts de construction. Le gabarit de H-010 rendait le doublement inévitable, jusqu'à ce que le nombre de charges allouées devienne une dimension mesurée. Le témoin nul de H-007 comparait deux bras au code machine identique et sous-estimait donc le bruit d'une vraie paire; les réplicats de H-012 le mesurent sur la paire réelle. La branche du rapport de H-008 ne se distinguait pas d'une mémoire encombrée par d'autres processus; l'attestation de quiétude de H-013 y répond. Les trois ont été corrigés par des hypothèses successeurs, jamais par la retouche d'un critère gelé. Le quatrième, une confusion du classificateur entre stockage dans un conteneur et retour d'adresse par le champ d'une structure, n'influe sur aucun verdict et reste épinglé par un test.
+Les revues contradictoires par agents ont trouvé quatre défauts de construction. Le gabarit de H-010 rendait le doublement inévitable, jusqu'à ce que le nombre de charges allouées devienne une dimension mesurée. Le témoin nul de H-007 comparait deux bras au code machine identique et sous-estimait donc le bruit d'une vraie paire; les réplicats de H-012 le mesurent sur la paire réelle. La branche du rapport de H-008 ne se distinguait pas d'une mémoire encombrée par d'autres processus; l'attestation de quiétude de H-013 y répond. Les trois ont été corrigés par des hypothèses successeurs, jamais par la retouche d'un critère gelé. Le quatrième, une confusion du classificateur entre stockage dans un conteneur et retour d'adresse par le champ d'une structure, n'influe sur aucun verdict et reste épinglé par un test.
 
 Le défaut le plus grave n'a été trouvé qu'après la clôture, par l'audit du code : l'erreur du classificateur qui a produit le verdict faux de H-006 (voir 4.3). L'audit a retenu trois défauts bloquants, dont deux empêchaient de reprendre une campagne interrompue, et vingt majeurs. Tous les lots de correctifs ont été appliqués sauf un, le lot 9, consigné comme dette assumée parce qu'il rendrait les campagnes archivées incomparables (D-50), et le harnais de non-régression établit que les douze autres verdicts publiés n'ont pas bougé.
 
@@ -125,19 +142,26 @@ Le défaut le plus grave n'a été trouvé qu'après la clôture, par l'audit du
 
 Le dépôt n'offre pas de groupe témoin : les observations suivantes décrivent un cas, elles ne mesurent pas un effet.
 
+- **Ce qu'a coûté le processus, mesuré après coup.** QR2 est mesurée après coup, avec les limites de [`Doc/QR2-MESURES.md`](Doc/QR2-MESURES.md). Les onze sessions locales du projet, du 2026-09-08 au 2026-09-14, comptent 55 tours humains, environ 620 minutes de travail actif de l'agent et 6,6 millions de jetons de sortie. De ces jetons, 61 % vont aux trois revues par agents, 11 % aux rédactions contradictoires d'hypothèses et 28 % à l'agent principal. Une hypothèse d'EscapeBench a demandé environ dix fois plus de temps et de jetons qu'une hypothèse de LeakLab, mais la comparaison est confondue : LeakLab a réutilisé l'outillage et n'a eu aucune revue par agents. Deux trous limitent ces chiffres : les sessions en nuage du 2026-09-12, où l'audit a été implanté, n'ont laissé aucune transcription locale, et les transcriptions ne sont pas publiées (D-58).
 - **Le gel a empêché la rationalisation après coup.** Les critères défectueux ont été remplacés par sept hypothèses successeurs plutôt que réécrits, et l'empreinte des critères bloque tout verdict si leur texte change.
 - **Les pouvoirs sont séparés.** Un *hook* interdit à l'agent d'écrire les résultats, les matrices et le tableau de bord : seul le binaire du banc les produit, et le harnais est verrouillé pendant une campagne.
 - **La garde a mordu contre son auteur.** Une campagne a été mesurée sous charge parce que des processus d'une contre-épreuve précédente n'avaient pas été arrêtés, une erreur de l'agent. Onze hypothèses ont rendu leur verdict sans rien voir; H-013 a rendu *non concluante* en nommant la cause. La campagne a été refaite, et la version contaminée conservée comme témoin.
-- **Un verdict faux a été publié, puis corrigé par erratum.** Ni les revues contradictoires ni les gardes du banc n'avaient vu l'erreur du classificateur à l'origine de l'infirmation de H-006; l'audit du code l'a trouvée deux jours après la publication. La correction est datée et motivée dans le rapport final plutôt que substituée en silence, et le rejeu, mené sous Linux alors que les campagnes l'avaient été sous Windows, consigne pourquoi cet écart de provenance est sans effet (décision D-48).
-- **Un écart au processus est assumé.** L'AIUP réserve le passage d'un cas d'utilisation au statut `Approved` à une décision humaine. L'agent l'a franchi lui-même, en vertu du mandat de construire sans intervention (décision D-01, [`Doc/DECISION.md`](Doc/DECISION.md)) : la revue humaine prévue par Martinelli (2026) n'a pas eu lieu.
+- **Un verdict faux a été publié, puis corrigé par erratum.** Ni les revues contradictoires par agents ni les gardes du banc n'avaient vu l'erreur du classificateur à l'origine de l'infirmation de H-006; l'audit du code l'a trouvée deux jours après la publication. La correction est datée et motivée dans le rapport final plutôt que substituée en silence, et le rejeu, mené sous Linux alors que les campagnes l'avaient été sous Windows, consigne pourquoi cet écart de provenance est sans effet (décision D-48).
+- **Un écart au processus est assumé.** L'AIUP réserve le passage d'un cas d'utilisation au statut `Approved` à une décision humaine. L'agent l'a franchi lui-même, en vertu du mandat de construire sans intervention (décision D-01, [`Doc/DECISION.md`](Doc/DECISION.md)) : la revue humaine prévue par Martinelli (2026) n'a pas eu lieu avant la clôture. Une revue humaine à froid des huit cas d'utilisation, faite après coup, est confiée à un tiers. Le dossier de revue est prêt ([`Revue/DOSSIER-REVUE-UC_2026-09-22.md`](Revue/DOSSIER-REVUE-UC_2026-09-22.md)); la revue elle-même n'a pas encore eu lieu.
 
-**Réponse à QR2.** Le cas montre qu'un agent peut conduire l'étude de bout en bout en gardant chaque verdict rattaché à un critère gelé, à une page du livre et à un code identifié. Il ne montre pas que l'agent aurait détecté seul ses défauts de construction : ce sont les revues contradictoires, les gardes du banc et un audit du code postérieur à la clôture qui les ont révélés. Pour H-006, la traçabilité a permis de corriger un verdict faux, pas d'éviter sa publication.
+**Réponse à QR2.** Le cas montre qu'un agent peut conduire l'étude de bout en bout en gardant chaque verdict rattaché à un critère gelé, à une page du livre et à un code identifié. Il ne montre pas que l'agent aurait détecté seul ses défauts de construction : ce sont les revues contradictoires par agents, les gardes du banc et un audit du code postérieur à la clôture, lui aussi mené par agents, qui les ont révélés. Pour H-006, la traçabilité a permis de corriger un verdict faux, pas d'éviter sa publication. Les mesures de `Doc/QR2-MESURES.md` décrivent ce cas ; elles ne mesurent pas un effet, faute de groupe témoin.
 
 ## 6. Limites et menaces à la validité
 
 - **Validité externe.** Micro-benchmarks sur des types synthétiques, une seule machine, une seule soirée, Windows sur amd64 et Go 1.27.0, alors que le livre se réfère à Go 1.25. L'analyse d'échappement varie d'une version du compilateur à l'autre (Shahsavan, 2026, p. 242) : les résultats sont datés par construction.
 - **Validité de construit.** Un verdict juge une opérationnalisation de l'affirmation, pas sa prose : H-004 et H-008 donnent deux verdicts opposés sur la même page du livre.
-- **Validité interne.** L'attestation de quiétude mesure l'occupation des processeurs, indicateur nécessaire mais non suffisant de l'encombrement de la mémoire. Mesurer la bande passante demanderait les compteurs de performance du processeur, hors de la bibliothèque standard à laquelle le banc se limite.
+- **Validité interne.** L'attestation de quiétude mesure l'occupation des processeurs, indicateur nécessaire mais non suffisant de l'encombrement de la mémoire (D-34). Mesurer la bande passante demanderait les compteurs de performance du processeur, hors de la bibliothèque standard à laquelle le banc se limite.
+- **État de la machine non contrôlé ni consigné pour les campagnes publiées.** Le poste a un processeur hybride (cœurs de performance et d'efficacité); les sujets n'y ont été épinglés sur aucun type de cœur, et ni le plan d'alimentation ni le turbo n'ont été contrôlés. Les dix campagnes archivées ne disent ni la version du système, ni le plan d'alimentation, ni l'affinité, ni la répartition des cœurs, et elles n'ont gardé ni le `b.N` ni la sortie brute de `go test`, réserve relevée dès la première campagne ([`Campagnes/RAPPORT-CAMPAGNE_C-2026-09-10-1.md`](Campagnes/RAPPORT-CAMPAGNE_C-2026-09-10-1.md), dernière section). Ces champs existent depuis le 2026-09-22 (D-60) et ne valent que pour les campagnes futures. L'état du turbo et le mode d'alimentation de Windows 11 ne sont toujours pas relevés.
+- **Variance intra-processus.** Chaque bras d'une paire est mesuré par un seul processus `go test`; l'intervalle de confiance rééchantillonne ses vingt répétitions (D-13) et ignore donc la variance entre binaires et entre exécutions. Seule H-012 la capte, par cinq réplicats de la paire séparés chacun par une passe complète de la matrice; le témoin nul de H-007 la sous-estime (D-21). Les autres verdicts d'EscapeBench qui reposent sur un intervalle n'en tiennent pas compte.
+- **Comparaisons multiples.** Aucun critère ne corrige le niveau de l'intervalle pour le nombre de paires examinées : chaque intervalle à 95 % est lu seul, sur des dizaines de paires par campagne. Ce qui l'atténue : H-001 exige deux tailles concordantes, H-007 deux tailles sur trois, H-004 toutes les sondes au-delà de 32 Mio, et le point de bascule de H-002 exige que toutes les tailles supérieures donnent aussi l'avantage au pointeur (D-15); H-010 ne juge que des comptes d'allocations constants sur les répétitions, donc sans aléa; H-012 exige de franchir un seuil mesuré sur cinq réplicats. Ce qui ne l'atténue pas : une seule cellule suffit à infirmer H-012, une seule paire sur cent vingt à infirmer H-010, et les deux paires de H-001 sous le plancher de bruit comptent comme concordantes (note du tableau 4.2).
+- **Préenregistrement séquentiel informé.** Les critères de H-001 à H-006 d'EscapeBench et de H-001 à H-013 de LeakLab ont été gelés avant toute mesure. Les successeurs l'ont été en connaissant des résultats antérieurs : H-007 à H-011 (gel du 2026-09-10, commit `51ba5c8`) connaissaient les six verdicts et les mesures de `C-2026-09-10-1`, raison pour laquelle le critère de H-011 refuse de conclure sur cette campagne; H-012 et H-013 (commit `07d1f9c`) connaissaient les mesures de `C-2026-09-10-2`, dont l'avantage de la valeur à 24 octets en champs nommés et la cellule de 8 octets à champ pointeur qui infirmait (D-24, D-30), et la rédaction savait que H-013 ne pourrait que confirmer ou ne pas conclure sur ce poste (D-23); H-014 de LeakLab connaissait l'ordre de grandeur de son témoin (D-14 de LeakLab). Le gel protège donc contre la retouche d'un seuil après la mesure qu'il juge, pas contre un critère écrit en connaissant les mesures précédentes. Chaque retrait ou tolérance qui en découle est écrit dans le critère lui-même.
+- **NUMGOROUTINE est une construction du banc.** Le seul détecteur dynamique qui a vu les onze fuites de LeakLab n'est pas un outil du livre ni de la bibliothèque standard, mais un pilote écrit pour le banc : dix exécutions du scénario, une fuite signalée si le compte de goroutines dépasse le compte initial d'au moins cinq après au plus une seconde d'attente (contrainte C-006 de LeakLab). H-012 de LeakLab juge ce pilote plus que la surveillance « lente et continue » que décrit le livre, et le banc ne l'a pas mesuré dans une vraie suite de tests (section 7).
+- **Résolution de l'horloge Windows.** Le bras `synctest` de H-006 de LeakLab vaut exactement 0 ns : c'est la résolution de l'horloge monotone du poste, environ 5 µs par bulle en contre-épreuve. La sonde borne la durée d'une bulle, elle ne la mesure pas (D-15 de LeakLab).
 - **Provenance du rejeu de H-006.** La classification corrigée a été refaite sous linux/amd64, alors que les campagnes l'avaient été sous windows/amd64, avec la même version de Go. Sur 532 cellules, 412 rendent la même catégorie sur les deux systèmes et les 120 autres sont exactement celles que vise le correctif (D-48); un rejeu sur le poste de référence lèverait la réserve.
 - **Revue humaine.** Voir l'écart au processus décrit en 5.3.
 - **LeakLab.** Ses limites propres (corpus synthétique, poste Windows unique, oracle muet sur les courses et l'accessibilité des primitives) sont décrites en 8.5.
@@ -145,7 +169,7 @@ Le dépôt n'offre pas de groupe témoin : les observations suivantes décrivent
 ## 7. Travaux futurs
 
 - Rejouer H-008 et H-013 sur une machine dont la mémoire sert un accès dépendant en moins de 100 ns, par exemple arm64.
-- Désassembler les deux bras d'une paire pour expliquer pourquoi, à 8 octets avec champ pointeur, le bras pointeur exécute une lecture de plus et va pourtant plus vite.
+- Expliquer, à l'aide des compteurs de performance du processeur, pourquoi un seul bras, le pointeur à 8 octets avec champ pointeur, va plus vite que ses voisins. Le désassemblage a écarté le chargement de plus et l'alignement de la boucle ([`Campagnes/CONTRE-EPREUVE_H-012-8-octets.md`](Campagnes/CONTRE-EPREUVE_H-012-8-octets.md), D-61).
 - Borner directement l'encombrement de la mémoire par les compteurs de performance du processeur.
 - Rejouer la classification d'échappement de H-006 sur le poste de référence Windows.
 - Appliquer le lot 9 de l'audit, qui touche les gabarits du harnais, avant la première campagne arm64, qui ouvrira de toute façon une nouvelle série de comparaison (D-50).
@@ -172,22 +196,24 @@ Les critères ont été committés avant la première ligne de code ([`LeakLab/d
 
 Campagne de référence `R-2026-09-13-2` : go1.27.0, windows/amd64, 1 099 mesures en 9 min, aucune cellule dont les répétitions divergent.
 
-| Hyp. | Affirmation (page) | Mesure | Verdict |
-|---|---|---|---|
-| H-001 | Une fuite passe les tests en silence (561) | Test ordinaire vert sur les 11 fuites | confirmée |
-| H-002 | Le cadre de test signale les goroutines fuitées (217) | Aucun signalement sur 55 exécutions | **infirmée** |
-| H-003 | `-race` rapporte les courses (232) | 2 courses sur 2, aucun faux positif | confirmée |
-| H-004 | `-race` en CI attrape les bogues de concurrence (232) | 0 défaut autre qu'une course sur 14 | **infirmée** |
-| H-005 | `synctest` panique sur une goroutine restée bloquée (289–292) | 8 fuites sur 11 ; bloque sur mutex, canal global, réseau | **infirmée** |
-| H-006 | Le délai de 500 ms se teste instantanément (291) | Sous la résolution de l'horloge, contre 500,6 ms hors bulle | confirmée |
-| H-007 | Les deux interblocages finissent en erreur fatale (564) | Vrai pour un programme | confirmée |
-| H-008 | Même affirmation, sous `go test` | Les deux bloquent : l'alarme de 10 min empêche la détection | **infirmée** |
-| H-009 | Un `cancel()` oublié retient de la mémoire jusqu'à l'échéance (567) | Sonde défectueuse (voir H-014) | **infirmée** |
-| H-010 | Un `cancel()` oublié coûte des goroutines (567) | 0 avec un parent standard | **infirmée** |
-| H-011 | `time.After` en boucle fait croître la mémoire (276) | +0,01 octet par itération | **infirmée** |
-| H-012 | La hausse de `NumGoroutine` signale une fuite (293) | 11 fuites sur 11, aucun faux positif | confirmée |
-| H-013 | Le profil `goroutineleak` voit les primitives inaccessibles (notes Go 1.26/1.27) | Manque le mutex de 8 octets | **infirmée** |
-| H-014 | Successeur de H-009, résidu net du coût d'expiration | 275 à 319 octets retenus, rendus après l'échéance | confirmée |
+*Note du 2026-09-22.* La colonne « Portée » est une lecture ajoutée après coup (définitions sous le résumé); verdicts et rationales sont ceux du fichier de verdicts de `R-2026-09-13-2`. H-004 et H-008 sont restreintes : la première lit « bogues de concurrence » comme tous les défauts du corpus, la seconde éprouve l'affirmation sous `go test` et non dans un programme. H-009 est de banc : sa sonde comptait le coût d'expiration de toute minuterie (D-14). H-012 est restreinte : elle juge NUMGOROUTINE, détecteur construit par le banc (K = 10 exécutions, seuil K/2, attente d'au plus 1 s, contrainte C-006), plus que la surveillance que décrit le livre.
+
+| Hyp. | Affirmation (page) | Mesure | Verdict | Portée |
+|---|---|---|---|---|
+| H-001 | Une fuite passe les tests en silence (561) | Test ordinaire vert sur les 11 fuites | confirmée | de fond |
+| H-002 | Le cadre de test signale les goroutines fuitées (217) | Aucun signalement sur 55 exécutions | **infirmée** | de fond |
+| H-003 | `-race` rapporte les courses (232) | 2 courses sur 2, aucun faux positif | confirmée | de fond |
+| H-004 | `-race` en CI attrape les bogues de concurrence (232) | 0 défaut autre qu'une course sur 14 | **infirmée** | restreinte |
+| H-005 | `synctest` panique sur une goroutine restée bloquée (289–292) | 8 fuites sur 11 ; bloque sur mutex, canal global, réseau | **infirmée** | de fond |
+| H-006 | Le délai de 500 ms se teste instantanément (291) | Sous la résolution de l'horloge, contre 500,6 ms hors bulle | confirmée | de fond |
+| H-007 | Les deux interblocages finissent en erreur fatale (564) | Vrai pour un programme | confirmée | de fond |
+| H-008 | Même affirmation, sous `go test` | Les deux bloquent : l'alarme de 10 min empêche la détection | **infirmée** | restreinte |
+| H-009 | Un `cancel()` oublié retient de la mémoire jusqu'à l'échéance (567) | Sonde défectueuse (voir H-014) | **infirmée** | de banc |
+| H-010 | Un `cancel()` oublié coûte des goroutines (567) | 0 avec un parent standard | **infirmée** | de fond |
+| H-011 | `time.After` en boucle fait croître la mémoire (276) | +0,01 octet par itération | **infirmée** | de fond |
+| H-012 | La hausse de `NumGoroutine` signale une fuite (293) | 11 fuites sur 11, aucun faux positif | confirmée | restreinte |
+| H-013 | Le profil `goroutineleak` voit les primitives inaccessibles (notes Go 1.26/1.27) | Manque le mutex de 8 octets | **infirmée** | de fond |
+| H-014 | Successeur de H-009, résidu net du coût d'expiration | 275 à 319 octets retenus, rendus après l'échéance | confirmée | de fond |
 
 ### 8.4 Lecture
 
@@ -199,7 +225,7 @@ Le livre recommande deux outils qui ne voient pas les fuites, le test et `-race`
 
 La première campagne, `R-2026-09-13-1`, a produit un verdict faux (H-008) et une infirmation tirée d'une sonde défectueuse (H-009). Relus avant la rédaction du rapport, les résultats contraires à l'attente ont révélé deux défauts de construction. Le banc lançait les binaires de test sans le délai que `go test` leur transmet : sans alarme, le runtime déclarait les interblocages, H-008 était confirmée à tort, et `synctest` semblait voir deux fuites qu'il ne voit pas. La sonde de H-009 comptait, comme mémoire retenue par les contextes, ce que le runtime garde après l'expiration de toute minuterie. Le premier défaut a été corrigé et la campagne refaite ; le second a donné une hypothèse successeur, H-014, sans retouche du critère gelé. Contrairement à H-006 dans EscapeBench, aucun verdict faux n'a atteint le rapport : la campagne fautive est archivée comme telle, et quatre contre-épreuves hors campagne ont tranché les doutes restants. Cela montre que l'agent peut appliquer la leçon d'un projet au suivant, pas qu'il n'a plus besoin de vérification extérieure : le banc n'a eu aucune revue humaine (D-01).
 
-Limites propres à LeakLab : corpus synthétique, un seul poste Windows, pas de campagne sous Linux, et une vérité terrain que l'oracle ne vérifie pas pour les courses ni pour l'accessibilité des primitives. Détails : [`Doc/RAPPORT-FINAL_LeakLab.md`](Doc/RAPPORT-FINAL_LeakLab.md), décisions D-01 à D-17 : [`Doc/DECISION_LeakLab.md`](Doc/DECISION_LeakLab.md).
+Limites propres à LeakLab : corpus synthétique, un seul poste Windows, pas de campagne sous Linux, et une vérité terrain que l'oracle ne vérifie pas pour les courses ni pour l'accessibilité des primitives. Détails : [`Doc/RAPPORT-FINAL_LeakLab.md`](Doc/RAPPORT-FINAL_LeakLab.md), décisions : [`Doc/DECISION_LeakLab.md`](Doc/DECISION_LeakLab.md).
 
 ## 9. Reproduire les résultats
 
@@ -222,7 +248,7 @@ La matrice de référence demande environ 29 minutes sur la machine décrite en 
 go test -race -shuffle=on -count=1 -tags=integration_test ./...
 ```
 
-H-012 exige une matrice à cinq réplicats et une campagne qui nomme ses hypothèses (`--hypotheses`). Les classifications d'échappement, les mesures de campagne et les verdicts publiés sont archivés dans [`EscapeBench/results/`](EscapeBench/results/); la procédure détaillée est dans [`EscapeBench/LANCEMENT.md`](EscapeBench/LANCEMENT.md).
+H-012 exige une matrice à cinq réplicats et une campagne qui nomme ses hypothèses (`--hypotheses`). Une campagne écrite depuis le 2026-09-22 contient, à côté de `campaign.json` et de `measurements/`, un répertoire `raw/` : la sortie brute de `go test` de chaque sujet, désignée par le champ `rawOutputFile` de sa Measurement (D-60). Les classifications d'échappement, les mesures de campagne et les verdicts publiés sont archivés dans [`EscapeBench/results/`](EscapeBench/results/); la procédure détaillée est dans [`EscapeBench/LANCEMENT.md`](EscapeBench/LANCEMENT.md).
 
 ### 9.2 LeakLab
 
@@ -248,7 +274,7 @@ Le binaire refuse la campagne si le catalogue du corpus diverge de la spécifica
 Prospection/
 ├── Doc/           cadrage, méthode, décisions, audit du code et rapports finaux
 ├── Campagnes/     rapports des campagnes de mesure intermédiaires d'EscapeBench
-├── Revue/         revues du dépôt et revues contradictoires
+├── Revue/         revues du dépôt, revues contradictoires par agents, prompts archivés, dossier de revue des cas d'utilisation
 ├── EscapeBench/   le premier banc (P1) : spécification, code Go, réglages de l'agent, résultats
 └── LeakLab/       le second banc (P3) : spécification, corpus, code Go, réglages de l'agent, résultats
 ```
@@ -258,24 +284,30 @@ Prospection/
 | [`Doc/RAPPORT-FINAL_EscapeBench.md`](Doc/RAPPORT-FINAL_EscapeBench.md) | Verdicts consolidés, portée des confirmations, défauts de construction, questions ouvertes. **À lire en premier.** |
 | [`Doc/Projets-candidats_Building-Enterprise-Projects-with-Go.md`](Doc/Projets-candidats_Building-Enterprise-Projects-with-Go.md) | Cartographie des affirmations réfutables, grille d'évaluation, fiches P1 à P8, séquence recommandée |
 | [`Doc/Guide-implementation_AIUP-Claude-Code.md`](Doc/Guide-implementation_AIUP-Claude-Code.md) | Méthode : AIUP adapté aux bancs de réfutation, réglages Claude Code, cycle de travail par cas d'utilisation |
-| [`Doc/DECISION.md`](Doc/DECISION.md) | Journal des décisions D-01 à D-54 : écarts assumés, conception du harnais, statistiques, clôture, correctifs de l'audit, dépôt final |
-| [`Doc/AUDIT.md`](Doc/AUDIT.md) | Audit du code du 2026-09-12 : constats vérifiés, lots de correctifs, état d'implantation et décisions sur les points restants |
-| [`Campagnes/RAPPORT-CAMPAGNE_C-2026-09-10-1.md`](Campagnes/RAPPORT-CAMPAGNE_C-2026-09-10-1.md) | Campagne de référence : premiers verdicts (H-001 à H-006) et audit contradictoire |
+| [`Doc/DECISION.md`](Doc/DECISION.md) | Journal des décisions D-01 à D-61 (D-56 attend la revue des cas d'utilisation) : écarts assumés, conception du harnais, statistiques, clôture, correctifs de l'audit, dépôt final, implantation de l'évaluation |
+| [`Doc/ETAT-DE-L-ART.md`](Doc/ETAT-DE-L-ART.md) | État de l'art (métrologie des micro-mesures, concurrence et fuites en Go, préenregistrement et agents), positionnement de chaque résultat porteur, références vérifiées par agent |
+| [`Doc/QR2-MESURES.md`](Doc/QR2-MESURES.md) | QR2 mesurée après coup : sessions, temps actif, jetons et agents par phase, trous nommés; script [`Doc/outils/qr2-sessions.sh`](Doc/outils/qr2-sessions.sh) |
+| [`Doc/EVALUATION-ACADEMIQUE_2026-09-15.md`](Doc/EVALUATION-ACADEMIQUE_2026-09-15.md), [`Doc/PLAN-IMPLANTATION_EVALUATION_2026-09-15.md`](Doc/PLAN-IMPLANTATION_EVALUATION_2026-09-15.md) | Évaluation du dépôt (constats E-01 à E-34) et plan d'implantation en lots |
+| [`Doc/AUDIT.md`](Doc/AUDIT.md) | Audit du code par agents du 2026-09-12 : constats vérifiés, lots de correctifs, état d'implantation et décisions sur les points restants |
+| [`Campagnes/RAPPORT-CAMPAGNE_C-2026-09-10-1.md`](Campagnes/RAPPORT-CAMPAGNE_C-2026-09-10-1.md) | Campagne de référence : premiers verdicts (H-001 à H-006) et revue contradictoire par agents |
 | [`Campagnes/RAPPORT-CAMPAGNE_C-2026-09-10-3.md`](Campagnes/RAPPORT-CAMPAGNE_C-2026-09-10-3.md) | Première épreuve de la seconde génération (H-007 à H-013) |
 | [`Campagnes/RAPPORT-CAMPAGNE_C-2026-09-10-4.md`](Campagnes/RAPPORT-CAMPAGNE_C-2026-09-10-4.md) | Première épreuve de H-012 sur une matrice à réplicats |
 | [`Campagnes/RAPPORT-CAMPAGNE_C-2026-09-10-5.md`](Campagnes/RAPPORT-CAMPAGNE_C-2026-09-10-5.md) | Première épreuve de H-013 et démonstration de l'attestation de quiétude |
+| [`Campagnes/CONTRE-EPREUVE_H-012-8-octets.md`](Campagnes/CONTRE-EPREUVE_H-012-8-octets.md) | Contre-épreuves hors campagne : désassemblage de la cellule écartée par H-012, paramètres retrouvés de `M-8f03757ac206` |
 | [`Revue/REVUE-PRELANCEMENT_2026-09-10.md`](Revue/REVUE-PRELANCEMENT_2026-09-10.md) | Revue du cadrage avant le développement |
-| [`Revue/REVUE-C008_2026-09-10.md`](Revue/REVUE-C008_2026-09-10.md) | Revue contradictoire des capacités ajoutées pour la seconde génération d'hypothèses |
+| [`Revue/REVUE-C008_2026-09-10.md`](Revue/REVUE-C008_2026-09-10.md) | Revue contradictoire par agents des capacités ajoutées pour la seconde génération d'hypothèses |
+| [`Revue/PROMPTS-REVUES_2026-09-10.md`](Revue/PROMPTS-REVUES_2026-09-10.md) | Prompts, rôles, modèle, nombre d'agents et règle d'accord des six revues et rédactions par agents, dont les « 172 agents » et l'audit du code |
+| [`Revue/DOSSIER-REVUE-UC_2026-09-22.md`](Revue/DOSSIER-REVUE-UC_2026-09-22.md) | Dossier préparé pour la revue humaine à froid des huit cas d'utilisation par un tiers; rien n'y est approuvé |
 | [`EscapeBench/`](EscapeBench/) | Le banc : spécification (`docs/`), code Go (`cmd/`, `internal/`), réglages de l'agent (`CLAUDE.md`, `.claude/`), résultats (`results/`), procédure (`LANCEMENT.md`) |
 | [`Doc/RAPPORT-FINAL_LeakLab.md`](Doc/RAPPORT-FINAL_LeakLab.md) | LeakLab : verdicts des quatorze hypothèses, matrice de détectabilité, recommandation pour l'intégration continue, défauts de construction |
-| [`Doc/DECISION_LeakLab.md`](Doc/DECISION_LeakLab.md) | Journal des décisions de LeakLab, D-01 à D-17 : gel, architecture, oracle, détecteurs, décisions prises après la première campagne |
+| [`Doc/DECISION_LeakLab.md`](Doc/DECISION_LeakLab.md) | Journal des décisions de LeakLab, D-01 à D-17 puis D-19 et suivantes (D-18 attend la revue des cas d'utilisation) : gel, architecture, oracle, détecteurs, décisions prises après la première campagne |
 | [`LeakLab/`](LeakLab/) | Le second banc : spécification (`docs/`), corpus et pilotes (`lab/`), code Go (`cmd/`, `internal/`), réglages de l'agent (`CLAUDE.md`, `.claude/`), résultats (`results/`) |
 
 Les campagnes finales `C-2026-09-10-11` et `C-2026-09-10-12`, dont viennent les treize verdicts d'EscapeBench, n'ont pas de rapport propre : elles sont consolidées dans le rapport final.
 
 Ordre de lecture suggéré : le rapport final d'EscapeBench, puis [`EscapeBench/docs/`](EscapeBench/docs/) dans l'ordre AIUP (vision, exigences, modèle d'entités, cas d'utilisation) ; ensuite le rapport final de LeakLab et [`LeakLab/docs/`](LeakLab/docs/). Pour cadrer un nouveau projet : `Doc/Projets-candidats…` §1–5 et §7, puis `Doc/Guide-implementation…` §1–7.
 
-Conventions : prose en français, identifiants et code en anglais; pages citées = folios imprimés; marqueurs épistémiques *Confirmé*, *Probable*, *Hypothèse*, *À vérifier* et *Adaptation* dans les documents de cadrage.
+Conventions : prose en français, identifiants et code en anglais; pages citées = folios imprimés; marqueurs épistémiques *Confirmé*, *Probable*, *Hypothèse*, *À vérifier* et *Adaptation* dans les documents de cadrage. Messages de commit : `UC-###:` ou `H-###:` pour le code des bancs, `LeakLab:` pour ce qui touche tout LeakLab, `Évaluation : lot N — …` pour les lots documentaires transversaux de l'implantation de l'évaluation. Les messages antérieurs au 2026-09-15 hors de cette convention (« Huge commit », « Update audit.md », etc.) restent tels quels : l'historique publié n'est pas réécrit pour eux (E-22).
 
 ## Licence
 

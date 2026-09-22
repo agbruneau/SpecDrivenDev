@@ -172,6 +172,15 @@ Ordre invariable, aligné sur SDD p. 23–24 et p. 129–130.
 
 Critère de sortie d'un UC : approuvé, synchronisé avec le code, protégé par des tests couvrant flux principal et alternatifs (SDD, p. 142).
 
+**Ce qu'une revue par agents ne remplace pas** *(ajout du 2026-09-22)*. Les deux bancs ont été revus par des sous-agents d'un modèle de langage, jamais par un humain avant la clôture (D-01 des deux journaux; prompts et règles d'accord dans [`Revue/PROMPTS-REVUES_2026-09-10.md`](../Revue/PROMPTS-REVUES_2026-09-10.md)). Ces revues ont trouvé des défauts réels, mais elles ne tiennent pas lieu de quatre choses.
+
+- **L'indépendance.** Réviseurs et auteur partagent le même modèle, donc les mêmes angles morts : ni les revues contradictoires ni les gardes n'ont vu l'erreur du classificateur qui a produit le verdict faux de H-006, trouvée après publication par un audit lui aussi mené par agents. Trois votes d'un même modèle ne font pas trois avis indépendants.
+- **La décision `Approved`.** L'AIUP la réserve à un humain (étape 2). Un verdict APPROVE de `spec-reviewer` prépare cette décision, il ne la prend pas; une approbation par l'agent sur mandat se consigne comme écart (D-01).
+- **Le périmètre de la question.** Un sous-agent ne revoit que ce que son prompt lui montre et lui demande. Ce qu'aucun prompt ne nomme, par exemple la portée d'une confirmation ou la littérature antérieure, reste hors revue.
+- **La validation des sources.** Une référence trouvée ou résumée par un agent reste « vérifiée par agent » tant qu'un humain n'a pas lu la source.
+
+Si la revue humaine n'a pas eu lieu à temps, la faire après coup, à froid, par un tiers, sur un dossier qui cite les fichiers à lire et la grille à appliquer ([`Revue/DOSSIER-REVUE-UC_2026-09-22.md`](../Revue/DOSSIER-REVUE-UC_2026-09-22.md)), et le déclarer comme revue postérieure plutôt que comme approbation.
+
 ## 8. Traçabilité dans le code Go
 
 Conventions retenues (*Adaptation* des principes p. 21–23 ; le livre montre une annotation Java `@UseCase(id, scenario)`, p. 96) :

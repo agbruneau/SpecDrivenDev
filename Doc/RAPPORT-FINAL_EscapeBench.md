@@ -2,27 +2,31 @@
 
 **Révision du 2026-09-12 :** H-006 passe d'infirmée à **confirmée**. Son premier verdict était un artefact du banc, non une observation ; le défaut est corrigé et le rejeu a été mené. La section *Errata* dit ce qui s'est passé et sur quoi la correction repose. Les douze autres verdicts sont inchangés, et un harnais de non-régression les rejoue désormais sur les campagnes archivées.
 
+**Révision du 2026-09-22 :** aucun verdict ne change. Le décompte se lit désormais par portée (tableau des verdicts); les paramètres de `M-8f03757ac206` sont retrouvés et le désassemblage de la cellule écartée par H-012 est fait (*Errata*, *Ce qui reste ouvert*).
+
 Clôture du 2026-09-10. Le banc a éprouvé treize affirmations de *Building Enterprise Projects with Go* (Shahsavan, Apress 2026). Chaque critère de réfutation a été gelé avant les mesures qui le jugent, et chaque verdict est produit par un évaluateur qui applique ce texte à la lettre.
 
 ## Les treize verdicts
 
-| Hypothèse | Page | Ce que le livre affirme | Verdict |
-|---|---|---|---|
-| H-001 | 245, 253 | Copier une petite structure peut coûter moins cher que passer un pointeur | **infirmée** |
-| H-002 | 253 | La valeur reste préférable de un à trois mots machine | **infirmée** |
-| H-003 | 256 | Passer de la valeur au pointeur double les allocations | confirmée |
-| H-004 | 254 | Un accès dispersé coûte dix à deux cents fois un accès séquentiel | **infirmée** |
-| H-005 | 114 | La préallocation est six fois plus rapide et prend un cinquième de la mémoire | confirmée |
-| H-006 | 238-242 | Les quatre causes d'échappement énumérées couvrent les cas | confirmée *(verdict corrigé le 2026-09-12 ; infirmée à tort le 2026-09-10, voir Errata)* |
-| H-007 | 253 | Même affirmation que H-002, sur une disposition assignable aux registres | confirmée |
-| H-008 | 254 | Même affirmation que H-004, sur une chaîne de pointeurs dépendante | confirmée |
-| H-009 | 241 | La règle des conteneurs se généralise de la map à la tranche et à la structure | confirmée |
-| H-010 | 256 | Même affirmation que H-003, sur une base d'allocation qui varie | **infirmée** |
-| H-011 | 114 | Même affirmation que H-005, aux tolérances du livre | **infirmée** |
-| H-012 | 253 | Même affirmation que H-007, sur un plancher de bruit apparié et mesuré | confirmée |
-| H-013 | 254 | Même affirmation que H-008, sous attestation de quiétude de la machine | confirmée |
+*Note du 2026-09-22.* La colonne « Portée » est une lecture ajoutée après coup, la même que dans le README (résumé et §4.2); verdicts et rationales sont ceux des fichiers de verdicts. Une infirmation est *de fond* si elle contredit l'affirmation telle que le livre l'énonce, *restreinte* si elle ne contredit qu'une lecture stricte ou une opérationnalisation, *de banc* si elle vient d'un artefact de mesure. Une confirmation est *de fond* si la mesure pouvait l'infirmer sur ce matériel, *restreinte* si elle ne le pouvait pas, *de banc* si le corpus la rendait acquise d'avance.
 
-Cinq infirmations, huit confirmations. Les verdicts viennent de deux campagnes menées en série sur la même machine et dans la même soirée: `C-2026-09-10-11` pour douze hypothèses, 541 sujets et 1 h 08; `C-2026-09-10-12` pour H-012, 82 sujets et 11 min. Aucun sujet en échec. L'occupation médiane des cœurs hors du sujet vaut 5,8 % et 5,5 %, sous le seuil de 12 % que C-010 annonce.
+| Hypothèse | Page | Ce que le livre affirme | Verdict | Portée |
+|---|---|---|---|---|
+| H-001 | 245, 253 | Copier une petite structure peut coûter moins cher que passer un pointeur | **infirmée** | restreinte |
+| H-002 | 253 | La valeur reste préférable de un à trois mots machine | **infirmée** | de fond |
+| H-003 | 256 | Passer de la valeur au pointeur double les allocations | confirmée | de banc |
+| H-004 | 254 | Un accès dispersé coûte dix à deux cents fois un accès séquentiel | **infirmée** | restreinte |
+| H-005 | 114 | La préallocation est six fois plus rapide et prend un cinquième de la mémoire | confirmée | de fond |
+| H-006 | 238-242 | Les quatre causes d'échappement énumérées couvrent les cas | confirmée *(verdict corrigé le 2026-09-12 ; infirmée à tort le 2026-09-10, voir Errata)* | de banc |
+| H-007 | 253 | Même affirmation que H-002, sur une disposition assignable aux registres | confirmée | restreinte |
+| H-008 | 254 | Même affirmation que H-004, sur une chaîne de pointeurs dépendante | confirmée | restreinte |
+| H-009 | 241 | La règle des conteneurs se généralise de la map à la tranche et à la structure | confirmée | de fond |
+| H-010 | 256 | Même affirmation que H-003, sur une base d'allocation qui varie | **infirmée** | de fond |
+| H-011 | 114 | Même affirmation que H-005, aux tolérances du livre | **infirmée** | restreinte |
+| H-012 | 253 | Même affirmation que H-007, sur un plancher de bruit apparié et mesuré | confirmée | de fond |
+| H-013 | 254 | Même affirmation que H-008, sous attestation de quiétude de la machine | confirmée | restreinte |
+
+Cinq infirmations, huit confirmations. Par portée *(lecture ajoutée le 2026-09-22)* : deux infirmations de fond (H-002, H-010) et trois restreintes (H-001, H-004, H-011), aucune de banc depuis la correction de H-006; trois confirmations de fond (H-005, H-009, H-012), trois restreintes (H-007, H-008, H-013) et deux de banc (H-003, H-006). H-001 est restreinte parce que deux de ses trois paires (0,06 et 0,05 ns) restent sous le plancher de bruit que H-007 mesure dans la même série (0,063 ns), alors que son critère en exige deux; H-007 parce que sa tolérance d'une exception sur trois rendait l'infirmation inatteignable (D-24). Les verdicts viennent de deux campagnes menées en série sur la même machine et dans la même soirée: `C-2026-09-10-11` pour douze hypothèses, 541 sujets et 1 h 08; `C-2026-09-10-12` pour H-012, 82 sujets et 11 min. Aucun sujet en échec. L'occupation médiane des cœurs hors du sujet vaut 5,8 % et 5,5 %, sous le seuil de 12 % que C-010 annonce.
 
 Deux hypothèses ne peuvent pas cohabiter dans une même campagne, et c'est voulu. H-012 exige cinq réplicats de chaque paire; H-007 indexe ses comparaisons par taille et n'en retiendrait qu'une, tirée de l'ordre du fichier. La campagne refuse donc la combinaison au lieu de rendre un verdict que cet ordre aurait dicté.
 
@@ -48,9 +52,11 @@ UC-005 a ensuite été rejoué sur les deux campagnes qui portaient un H-006 inf
 
 **La réserve qu'il faut lire avec ce verdict.** Les campagnes ont été mesurées sur `windows/amd64` ; le rejeu a eu lieu sur `linux/amd64`, la version de Go étant la même. Le nouveau rapport d'échappement porte donc une provenance que la règle de sélection de UC-005 n'apparie pas à celle des campagnes, et il a été désigné explicitement par `--escape` ; les fichiers de verdicts le citent. Ce qui autorise cette désignation n'est pas une commodité mais une mesure : sur 532 cellules, 412 rendent la même catégorie sous `windows/go1.27.0` et sous `linux/go1.27.0`, et les 120 qui diffèrent sont exactement celles que le correctif vise. Le système d'exploitation est donc sans effet sur ce corpus. Un rejeu sur le poste de référence lèverait la réserve tout à fait ; rien dans les données n'incite à en attendre autre chose.
 
-**Ce qui n'a pas été rejoué.** La matrice `M-8f03757ac206` porte elle aussi 80 cellules `OTHER`, mais ses paramètres ne sont consignés nulle part et n'ont pas été retrouvés. Aucune des campagnes qui l'emploient ne gèle H-006 : le verdict publié n'en dépend pas.
+**Ce qui n'a pas été rejoué** *(révisé le 2026-09-22)*. La matrice `M-8f03757ac206` porte elle aussi 80 cellules `OTHER`. Ses paramètres, retrouvés le 2026-09-22 (D-61, [`LANCEMENT.md`](../EscapeBench/LANCEMENT.md) §5), permettent désormais de la régénérer, mais la classification n'a pas été rejouée. Aucune des campagnes qui l'emploient ne gèle H-006 : le verdict publié n'en dépend pas. La version publiée le 2026-09-12 disait ces paramètres « consignés nulle part » et non retrouvés.
 
 **2026-09-13 — Décompte et état du dépôt.** Le décompte publié à la clôture, « sept infirmations, six confirmations », ne correspondait pas au tableau, qui en comptait six et sept ; depuis la correction de H-006, il est de cinq et huit. Le titre « Les quatre infirmations qui portent » perd son nombre pour la même raison. Le tableau de l'état du dépôt annonçait six campagnes archivées, dont une contaminée : `results/` en porte dix, dont deux mesurées sous charge, `C-2026-09-10-6` délibérément (D-33) et `C-2026-09-10-7` par erreur (D-36).
+
+**2026-09-22 — Paramètres de `M-8f03757ac206` et lecture par portée.** Le paragraphe *Ce qui n'a pas été rejoué* disait les paramètres de cette matrice consignés nulle part : ils étaient dans le `matrix.json` resté sur le poste et sont désormais consignés (D-61). La ligne de décompte ajoute une lecture par portée; les nombres publiés, cinq infirmations et huit confirmations, ne changent pas.
 
 ## Ce que les confirmations valent, et ce qu'elles ne valent pas
 
@@ -64,7 +70,7 @@ Une confirmation n'est pas une preuve. Trois d'entre elles portent une réserve 
 
 ## Ce que le banc a appris sur lui-même
 
-Trois défauts de construction ont été trouvés par des revues contradictoires, chacun corrigé par une hypothèse successeur plutôt que par une retouche d'un critère gelé.
+Trois défauts de construction ont été trouvés par des revues contradictoires par agents (des sous-agents d'un modèle de langage, [`Revue/PROMPTS-REVUES_2026-09-10.md`](../Revue/PROMPTS-REVUES_2026-09-10.md)), chacun corrigé par une hypothèse successeur plutôt que par une retouche d'un critère gelé.
 
 Le premier est que H-010 ne pouvait pas être infirmée avant qu'on rende mesurable le nombre de charges allouées par instance: le doublement était une identité du gabarit, pas une propriété du mode de passage. Le second est que le plancher de bruit de H-007 était mesuré sur un témoin dont les deux bras exécutent le même code machine, vérifié par comparaison des sources générées et par désassemblage; H-012 le mesure sur cinq réplicats de la paire réelle, séparés chacun par une passe complète de la matrice, et la dispersion relevée tombe d'un facteur six à huit. Le troisième est que la branche du rapport de H-008 est indissociable d'un artefact de contention; H-013 y répond par l'attestation de quiétude.
 
@@ -88,7 +94,9 @@ La matrice de référence n'a jamais bougé: `M-823d8b5af441`, 220 cellules et 1
 ## Ce qui reste ouvert
 
 - **Un boîtier plus rapide.** Sur la machine du catalogue, ni H-008 ni H-013 ne peuvent être infirmées: leur latence non résidente au repos dépasse de vingt-sept à trente-sept pour cent le seuil du livre. Une architecture arm64, que la contrainte d'architectures souhaite déjà, trancherait.
-- **Le désassemblage des deux bras d'une paire.** C'est la capacité qui expliquerait pourquoi, à huit octets avec champ pointeur, le bras pointeur exécute un chargement de plus et va pourtant plus vite. Sans elle, cette cellule reste consignée et non jugée.
+- **Le mécanisme de l'écart à huit octets avec champ pointeur** *(révisé le 2026-09-22)*. Le désassemblage est fait ([`CONTRE-EPREUVE_H-012-8-octets.md`](../Campagnes/CONTRE-EPREUVE_H-012-8-octets.md), D-61). Le chargement de plus du bras pointeur n'est pas la cause : la paire sans champ pointeur a la même structure et ne montre pas d'écart. L'alignement de la boucle à 32 octets est écarté. Reste une anomalie propre à un seul binaire, que seuls les compteurs de performance du processeur permettraient d'expliquer. La cellule reste consignée et non jugée.
 - **La contention mémoire elle-même.** L'attestation de quiétude mesure l'occupation processeur, indicateur nécessaire et non suffisant. Borner directement la bande passante demanderait les compteurs de performance du processeur, hors de la bibliothèque standard et donc hors des contraintes de dépendances du banc.
 - **Le lot 9 de l'audit** *(ajout du 2026-09-14)*. A-073, A-081 et le volet code de A-246 changeraient l'empreinte du harnais et rendraient les campagnes archivées incomparables : ils sont consignés comme dette assumée, à solder avant la première campagne arm64 ([`DECISION.md`](DECISION.md), D-50). A-036, d'abord laissé ouvert, est corrigé sans qu'aucun verdict archivé ne change (D-51).
 - **Le rejeu de H-006 sur le poste de référence** *(ajout du 2026-09-14)*, qui lèverait la réserve de provenance décrite aux *Errata*.
+- **La revue humaine des cas d'utilisation** *(ajout du 2026-09-22)*. Les cinq cas d'utilisation ont été approuvés par l'agent sur mandat (D-01). Une revue à froid par un tiers est préparée ([`Revue/DOSSIER-REVUE-UC_2026-09-22.md`](../Revue/DOSSIER-REVUE-UC_2026-09-22.md)); elle n'a pas encore eu lieu.
+- **Les limites de méthode nommées le 2026-09-22** : variance intra-processus, comparaisons multiples, préenregistrement séquentiel informé et état de la machine non consigné. Elles sont décrites au §6 du [README](../README.md); le positionnement des résultats dans la littérature est dans [`ETAT-DE-L-ART.md`](ETAT-DE-L-ART.md).

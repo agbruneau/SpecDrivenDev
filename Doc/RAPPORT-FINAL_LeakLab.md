@@ -2,28 +2,32 @@
 
 Clôture du 2026-09-13. Le banc a éprouvé douze affirmations de *Building Enterprise Projects with Go* (Shahsavan, Apress 2026) sur les anti-patrons de concurrence et les outils qui les révèlent, une affirmation des notes de version de Go et une hypothèse successeur. Les critères ont été gelés par un commit avant la première ligne de code ; chaque verdict est produit par un évaluateur qui applique leur texte à la lettre.
 
+**Révision du 2026-09-22 :** aucun verdict ne change. Le décompte se lit désormais par portée (tableau des verdicts), et les limites nomment la construction de NUMGOROUTINE, la résolution de l'horloge et la revue humaine préparée.
+
 **Campagne de référence : `R-2026-09-13-2`** (commit `500d954`, 9 min 01). go1.27.0, windows/amd64, 24 cœurs logiques (identifiant Intel64 Family 6 Model 198), 32 cas × 6 détecteurs dynamiques × 5 répétitions en processus isolés, 2 analyseurs statiques, 15 bras de sonde × 5 répétitions. Aucune cellule instable : les cinq répétitions de chaque cellule ont rendu la même issue. La campagne `R-2026-09-13-1` est archivée mais non conforme à C-004 (voir *Ce que le banc a appris sur lui-même*).
 
 ## Les quatorze verdicts
 
-| Hypothèse | Page | Ce que le livre affirme | Mesure | Verdict |
-|---|---|---|---|---|
-| H-001 | 561 | Une fuite de goroutine est silencieuse : les tests peuvent passer | Un test ordinaire passe sur les 11 cas de fuite | confirmée |
-| H-002 | 217 | Depuis Go 1.25, le cadre de test signale mieux les goroutines fuitées | Aucune des 55 exécutions `go test -v` d'un cas de fuite ne contient de signalement | **infirmée** |
-| H-003 | 232 | Sous `-race`, une course donne un rapport et un échec | Les 2 cas de course diagnostiqués, aucun faux positif | confirmée |
-| H-004 | 232 | Lancer toute la suite sous `-race` en CI attrape les bogues de concurrence | 0 des 14 défauts autres que les courses révélé par `-race` | **infirmée** |
-| H-005 | 289–292 | `synctest` panique si une goroutine reste bloquée à la fin du test | Panique sur 8 fuites sur 11 ; blocage de 10 min sur `mutex-leak`, `global-channel-leak`, `io-without-context-leak` | **infirmée** |
-| H-006 | 291 | Le test de délai de 500 ms se termine instantanément dans une bulle | 0 ns à la résolution de l'horloge (5 µs par bulle en contre-épreuve), contre 500,6 ms hors bulle | confirmée |
-| H-007 | 564 | Les deux exemples d'interblocage finissent par « all goroutines are asleep » | Erreur fatale du runtime sur les deux, exécutés comme programmes | confirmée |
-| H-008 | 564 | Même affirmation, éprouvée par `go test` | Les deux cas bloquent ; tués au bout de 5 s, `go test` les aurait attendus 10 min | **infirmée** |
-| H-009 | 567 | Sans `cancel()`, les ressources vivent jusqu'à l'échéance, puis sont libérées | Retenue 275 et 319 o par contexte ; « résidu » 157 et 172 o après échéance, mesuré par une sonde défectueuse | **infirmée** (par un défaut de mesure, voir H-014) |
-| H-010 | 567 | L'oubli de `cancel()` coûte aussi des goroutines | 0 goroutine avec un parent standard ; 20 000 avec le parent opaque témoin | **infirmée** |
-| H-011 | 276 | `time.After` en boucle mène à une croissance continue de la mémoire | +0,01 o par itération, contre 258 o pour le témoin qui garde ses minuteries | **infirmée** |
-| H-012 | 293, 563 | Une hausse du nombre de goroutines signale une fuite | 11 fuites sur 11 signalées, aucun cas sain signalé | confirmée |
-| H-013 | notes Go 1.26/1.27 | Le profil `goroutineleak` repère les fuites sur une primitive inaccessible | 6 cas du domaine sur 7 ; manque `mutex-leak` | **infirmée** |
-| H-014 | 567 | Successeur de H-009, résidu net du coût d'expiration des minuteries | Retenue 275 et 319 o ; résidu −51 et −37 o | confirmée |
+*Note du 2026-09-22.* La colonne « Portée » est une lecture ajoutée après coup, la même que dans le README (résumé et §8.3); verdicts et rationales sont ceux du fichier de verdicts de `R-2026-09-13-2`. Une infirmation est *de fond* si elle contredit l'affirmation telle que le livre l'énonce, *restreinte* si elle ne contredit qu'une lecture stricte ou une opérationnalisation, *de banc* si elle vient d'un artefact de mesure. Une confirmation est *de fond* si la mesure pouvait l'infirmer, *restreinte* si elle juge un outil construit par le banc.
 
-Six confirmations, huit infirmations.
+| Hypothèse | Page | Ce que le livre affirme | Mesure | Verdict | Portée |
+|---|---|---|---|---|---|
+| H-001 | 561 | Une fuite de goroutine est silencieuse : les tests peuvent passer | Un test ordinaire passe sur les 11 cas de fuite | confirmée | de fond |
+| H-002 | 217 | Depuis Go 1.25, le cadre de test signale mieux les goroutines fuitées | Aucune des 55 exécutions `go test -v` d'un cas de fuite ne contient de signalement | **infirmée** | de fond |
+| H-003 | 232 | Sous `-race`, une course donne un rapport et un échec | Les 2 cas de course diagnostiqués, aucun faux positif | confirmée | de fond |
+| H-004 | 232 | Lancer toute la suite sous `-race` en CI attrape les bogues de concurrence | 0 des 14 défauts autres que les courses révélé par `-race` | **infirmée** | restreinte |
+| H-005 | 289–292 | `synctest` panique si une goroutine reste bloquée à la fin du test | Panique sur 8 fuites sur 11 ; blocage de 10 min sur `mutex-leak`, `global-channel-leak`, `io-without-context-leak` | **infirmée** | de fond |
+| H-006 | 291 | Le test de délai de 500 ms se termine instantanément dans une bulle | 0 ns à la résolution de l'horloge (5 µs par bulle en contre-épreuve), contre 500,6 ms hors bulle | confirmée | de fond |
+| H-007 | 564 | Les deux exemples d'interblocage finissent par « all goroutines are asleep » | Erreur fatale du runtime sur les deux, exécutés comme programmes | confirmée | de fond |
+| H-008 | 564 | Même affirmation, éprouvée par `go test` | Les deux cas bloquent ; tués au bout de 5 s, `go test` les aurait attendus 10 min | **infirmée** | restreinte |
+| H-009 | 567 | Sans `cancel()`, les ressources vivent jusqu'à l'échéance, puis sont libérées | Retenue 275 et 319 o par contexte ; « résidu » 157 et 172 o après échéance, mesuré par une sonde défectueuse | **infirmée** (par un défaut de mesure, voir H-014) | de banc |
+| H-010 | 567 | L'oubli de `cancel()` coûte aussi des goroutines | 0 goroutine avec un parent standard ; 20 000 avec le parent opaque témoin | **infirmée** | de fond |
+| H-011 | 276 | `time.After` en boucle mène à une croissance continue de la mémoire | +0,01 o par itération, contre 258 o pour le témoin qui garde ses minuteries | **infirmée** | de fond |
+| H-012 | 293, 563 | Une hausse du nombre de goroutines signale une fuite | 11 fuites sur 11 signalées, aucun cas sain signalé | confirmée | restreinte |
+| H-013 | notes Go 1.26/1.27 | Le profil `goroutineleak` repère les fuites sur une primitive inaccessible | 6 cas du domaine sur 7 ; manque `mutex-leak` | **infirmée** | de fond |
+| H-014 | 567 | Successeur de H-009, résidu net du coût d'expiration des minuteries | Retenue 275 et 319 o ; résidu −51 et −37 o | confirmée | de fond |
+
+Six confirmations, huit infirmations. Par portée *(lecture ajoutée le 2026-09-22)* : cinq infirmations de fond (H-002, H-005, H-010, H-011, H-013), deux restreintes (H-004, qui lit « bogues de concurrence » comme tous les défauts du corpus; H-008, qui éprouve l'affirmation sous `go test` et non dans un programme) et une de banc (H-009, sonde défectueuse, D-14); cinq confirmations de fond et une restreinte (H-012, qui juge NUMGOROUTINE, détecteur construit par le banc, plus que la pratique du livre).
 
 ## Matrice de détectabilité
 
@@ -84,8 +88,10 @@ Les verdicts de `R-2026-09-13-1` restent lisibles dans `results/verdicts/`. Sur 
 
 - **Validité externe.** Corpus synthétique de 32 cas, un poste Windows amd64, Go 1.27.0. La campagne n'a pas été rejouée sous Linux : la toolchain de WSL est trop ancienne, et aucun téléchargement n'a été lancé.
 - **Vérité terrain.** L'oracle vérifie par les piles de goroutines les fuites, leur primitive et l'absence de fuite des cas corrigés. Il ne vérifie ni les courses, ni l'accessibilité d'une primitive, ni les défauts statiques, ni les interblocages, qui tiennent par construction.
-- **Détecteurs idéalisés.** NUMGOROUTINE mesure un scénario isolé répété dix fois ; dans une vraie suite, les tests parallèles partagent le compte, ce que le banc n'a pas mesuré.
-- **Revue humaine.** Les cas d'utilisation ont été approuvés par l'agent sur mandat (D-01) : la revue prévue par l'AIUP n'a pas eu lieu.
+- **Détecteurs idéalisés.** NUMGOROUTINE mesure un scénario isolé répété dix fois ; dans une vraie suite, les tests parallèles partagent le compte, ce que le banc n'a pas mesuré. C'est en outre un pilote écrit pour le banc (K = 10, seuil K/2, attente d'au plus 1 s, C-006), pas un outil du livre : H-012 juge ce pilote plus que la surveillance « lente et continue » de la p. 293 *(précision du 2026-09-22)*.
+- **Résolution de l'horloge** *(ajout du 2026-09-22)*. Sur ce poste Windows, H-006 borne la durée d'une bulle sans la mesurer : 0 ns est la résolution de l'horloge monotone, environ 5 µs par bulle en contre-épreuve (D-15).
+- **Revue humaine.** Les cas d'utilisation ont été approuvés par l'agent sur mandat (D-01) : la revue prévue par l'AIUP n'a pas eu lieu avant la clôture. Une revue à froid par un tiers est préparée ([`Revue/DOSSIER-REVUE-UC_2026-09-22.md`](../Revue/DOSSIER-REVUE-UC_2026-09-22.md)); elle n'a pas encore eu lieu *(ajout du 2026-09-22)*. LeakLab n'a pas eu non plus de revue par agents ([`QR2-MESURES.md`](QR2-MESURES.md)).
+- **Travaux antérieurs** *(ajout du 2026-09-22)*. Plusieurs résultats répliquent des travaux connus (Tu et coll., 2019, pour H-002 et H-004; l'*issue* golang/go n° 69188 pour H-008); positionnement dans [`ETAT-DE-L-ART.md`](ETAT-DE-L-ART.md).
 
 ## Ce qui reste ouvert
 

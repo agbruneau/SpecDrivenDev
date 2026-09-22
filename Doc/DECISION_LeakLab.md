@@ -48,6 +48,12 @@ La première campagne a tourné sur le banc du commit `fb21942`. Avant d'en croi
 
 **D-17 — H-002 ne dépend pas du sous-test.** Le livre parle d'un sous-test qui oublie une goroutine ; le corpus fuit dans un test de premier niveau. Contre-épreuve : un sous-test séquentiel et un sous-test parallèle qui laissent chacun une goroutine bloquée produisent, sous `-v`, les seules lignes `=== RUN`, `=== PAUSE`, `=== CONT` et `--- PASS`.
 
+## 4 bis. Implantation de l'évaluation académique (2026-09-22)
+
+*D-18 est réservée à la revue humaine des cas d'utilisation par un tiers (lot 1) ; elle sera écrite quand la revue aura eu lieu.*
+
+**D-19 — La couverture de LeakLab est portée au-dessus de 75 % par paquet grâce à une campagne synthétique; le catalogue devient une variable de paquet (2026-09-22, lots 5 et 6 du plan d'implantation de l'évaluation).** L'évaluation (E-11) relevait `cmd` à 34,3 %, `campaign` à 49,4 % et `results` à 55,6 %, soit une couverture non rapportée. Le trou principal était `campaign.Run`, que seule une vraie campagne parcourait. Un module jetable, `internal/campaign/testdata/synthlab`, en tient lieu : pilotes qui répondent aussitôt, un diagnostic `go vet` et un diagnostic `ctxvet`. Le test `TestUC001_CampagneSynthetique` le copie dans un répertoire temporaire avec la vraie spécification et joue Run de bout en bout : oracle, provenance, trois compilations dont `-race`, matrice, détecteurs statiques, quinze bras de sonde, écriture exclusive. Sur le catalogue complet, ce test prenait 174 s, pour environ 1 065 lancements de processus. `campaign` lit donc désormais le corpus par `var catalog = corpus.Catalog`, que le test restreint à trois cas (et le tableau de la spécification aux lignes correspondantes) : 21 s. En production, rien ne change, la variable n'étant jamais réassignée hors test. Le nom du processeur (E-29) et `osVersion` (E-14, lot 6) sont lus sans dépendance : le registre sous Windows (même lecture qu'EscapeBench, A-065), `/proc/cpuinfo`, `/etc/os-release` et `/proc/sys/kernel/osrelease` sous Linux. `ProductName` n'est pas lu, parce qu'il vaut « Windows 10 » sur Windows 11. Le build numérique et `DisplayVersion` suffisent. Sous arm64 Linux, `/proc/cpuinfo` n'a pas de `model name` : `cpu` y resterait vide, ce qui est sans objet tant qu'aucune série arm64 n'est prévue (Q6). `osVersion` est facultatif (`omitempty`), et un test relit les deux campagnes archivées sans lui. Enfin, la phrase sur l'acteur « Pipeline CI » demandée par le plan (lot 8) pour UC-001 va dans UC-003 : c'est là, et seulement là, que LeakLab nomme cet acteur.
+
 ## 5. Vérification
 
 | Contrôle | Résultat |
@@ -59,4 +65,7 @@ La première campagne a tourné sur le banc du commit `fb21942`. Avant d'en croi
 | Hook `guard-paths.sh` | refuse `results/` (casse ignorée) et les chemins avec `..` ; laisse `docs/` |
 | Campagne de référence `R-2026-09-13-2` | 960 observations dynamiques, 64 statiques, 75 mesures de sonde, 9 min 01 ; aucune cellule instable |
 | Verdicts | six confirmées, huit infirmées ; rapport `RAPPORT-FINAL_LeakLab.md` |
+| Couverture de statements (module principal, 2026-09-22) | **91,8 %** au total (74,1 % avant le lot 5); chaque paquet à 79 % ou plus (cible : 75 %) |
 | Linux | non exécuté : toolchain de WSL trop ancienne, aucun téléchargement lancé |
+
+Couverture par paquet, avant → après le lot 5 : `verdict` 98,6 % → 98,6 % · `ctxvet` 91,8 % → 91,8 % · `campaign` 49,4 % → 89,1 % · `results` 55,6 % → 88,9 % · `spec` 88,8 % → 88,8 % · `cmd/leaklab` 34,3 % → 79,1 %. Mesure : `go test -count=1 -coverprofile=… ./...` puis `go tool cover -func`, windows/amd64, go1.27.0. Reste non couvert : `main` (signal et `os.Exit`); la branche de succès de `leaklab run`, qui demande une campagne sur le catalogue complet (9 min); les refus de compilation, les échecs de sonde et un `go env` illisible dans `campaign.Run`; les branches d'erreur d'entrée-sortie de `WriteExclusive`. `campaign.Run` est parcouru de bout en bout par `TestUC001_CampagneSynthetique` (D-19).

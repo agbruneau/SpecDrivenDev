@@ -5,7 +5,9 @@
 
 ## 1. Résultat
 
-Les six hypothèses ont un verdict, produit par le seul critère gelé avant la mesure. Ces verdicts sont enregistrés et ne changent pas. Mais trois d'entre eux ne disent pas ce qu'ils ont l'air de dire, et un audit contradictoire de 172 agents, dont j'ai vérifié chaque affirmation chiffrée, en donne la raison.
+Les six hypothèses ont un verdict, produit par le seul critère gelé avant la mesure. Ces verdicts sont enregistrés et ne changent pas. Mais trois d'entre eux ne disent pas ce qu'ils ont l'air de dire, et un audit contradictoire de 172 agents *(sous-agents d'un modèle de langage, non des relecteurs humains; note du 2026-09-22 ci-dessous)*, dont j'ai vérifié chaque affirmation chiffrée, en donne la raison.
+
+*Note du 2026-09-22.* Les 172 agents sont des sous-agents du modèle `claude-opus-5` : 9 auditeurs (un par hypothèse, plus trois dimensions transversales), 162 vérificateurs (54 constats, trois lentilles chacun) et 1 critique de complétude. Un constat était retenu si au moins deux votes valides le maintenaient ; 19 l'ont été sur 54. Le « je » de ce rapport est l'agent principal : c'est lui, et non un relecteur humain, qui a vérifié leurs chiffres. Les prompts et la règle d'accord sont archivés dans [`Revue/PROMPTS-REVUES_2026-09-10.md`](../Revue/PROMPTS-REVUES_2026-09-10.md), §1.
 
 | Hypothèse | Verdict | Ce que la campagne établit réellement |
 |---|---|---|
