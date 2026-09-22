@@ -465,6 +465,9 @@ func TestUC003_ValidationsDuModeleDEntites(t *testing.T) {
 			"occupation négative": func(m *Measurement) {
 				m.QuietudeMeasured, m.QuietudeOccupancy = true, -0.1
 			},
+			// D-60 : iterations suit nsPerOp valeur pour valeur.
+			"iterations incomplètes": func(m *Measurement) { m.Iterations = []int64{5, 6} },
+			"b.N nul":                func(m *Measurement) { m.Iterations = []int64{0} },
 		} {
 			t.Run(name, func(t *testing.T) {
 				t.Parallel()
@@ -480,6 +483,18 @@ func TestUC003_ValidationsDuModeleDEntites(t *testing.T) {
 		m.QuietudeMeasured = true
 		if err := m.Validate(1); err != nil {
 			t.Fatalf("une occupation nulle est légitime : %v", err)
+		}
+		// D-60 : iterations est facultatif ; présent, il porte exactement count valeurs.
+		// Mutation : exiger iterations ⇒ les campagnes archivées deviennent invalides.
+		m = complete()
+		m.Iterations = []int64{1000}
+		if err := m.Validate(1); err != nil {
+			t.Fatalf("un b.N par répétition est valide : %v", err)
+		}
+		f := Measurement{CampaignID: "C-1", SubjectID: "s", Status: MeasurementFailed,
+			FailureReason: "boom", Iterations: []int64{1}}
+		if err := f.Validate(1); err == nil {
+			t.Fatal("les listes sont vides si FAILED, iterations compris")
 		}
 	})
 

@@ -130,6 +130,9 @@ ok  	escapebench.local/matrix/M-1/subjects/s	0.5s`
 	if samples[0].NsPerOp != 1.234 || samples[0].BytesPerOp != 0 || samples[0].AllocsPerOp != 0 {
 		t.Fatalf("première répétition = %+v", samples[0])
 	}
+	if samples[0].Iterations != 1000000 || samples[1].Iterations != 900000 {
+		t.Fatalf("b.N = %d, %d ; 1000000, 900000 attendus (D-60)", samples[0].Iterations, samples[1].Iterations)
+	}
 	if samples[1].BytesPerOp != 16 || samples[1].AllocsPerOp != 1 {
 		t.Fatalf("seconde répétition = %+v", samples[1])
 	}
@@ -167,6 +170,42 @@ func TestRunMesureUnSujet(t *testing.T) {
 		if !strings.Contains(command, flag) {
 			t.Fatalf("%q absent de la commande %q", flag, command)
 		}
+	}
+}
+
+// UC-003, étapes 5 et 6 (D-60) : le b.N de chaque répétition est conservé dans l'ordre, et la
+// sortie brute accompagne la Measurement, réussie ou non, pour que le dépôt l'archive.
+// Mutation : ne pas recopier b.N ⇒ échec attendu ; ne pas joindre la sortie d'un échec ⇒ échec attendu.
+func TestUC003_Etape5_IterationsEtSortieBrute(t *testing.T) {
+	t.Parallel()
+	var lines []string
+	for i := 0; i < 20; i++ {
+		lines = append(lines, fmt.Sprintf("BenchmarkSubject   \t %d\t 3 ns/op\t 0 B/op\t 0 allocs/op", 1000+i))
+	}
+	out := strings.Join(lines, "\n")
+	m, err := New((&recorder{result: Result{Stdout: out}}).run, "").Run(context.Background(), "/m", "s",
+		ports.RunOptions{Count: 20, BenchTime: "1ms"})
+	if err != nil {
+		t.Fatalf("Run : %v", err)
+	}
+	if len(m.Iterations) != 20 {
+		t.Fatalf("%d valeurs d'iterations, 20 attendues", len(m.Iterations))
+	}
+	for i, n := range m.Iterations {
+		if n != int64(1000+i) {
+			t.Fatalf("iterations[%d] = %d, %d attendu", i, n, 1000+i)
+		}
+	}
+	if m.RawOutput != out {
+		t.Fatal("la sortie brute doit être rendue telle quelle")
+	}
+	f, err := New((&recorder{result: Result{Stderr: "panic: boum", ExitCode: 2}}).run, "").Run(
+		context.Background(), "/m", "s", ports.RunOptions{Count: 20, BenchTime: "1ms"})
+	if err != nil {
+		t.Fatalf("Run : %v", err)
+	}
+	if f.Status != models.MeasurementFailed || f.RawOutput != "panic: boum" || len(f.Iterations) != 0 {
+		t.Fatalf("échec : statut %s, sortie brute %q, %d iterations", f.Status, f.RawOutput, len(f.Iterations))
 	}
 }
 

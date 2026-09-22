@@ -476,8 +476,25 @@ type Provenance struct {
 	LastLevelCacheBytes int64
 	PageSizeBytes       int64
 	GOMAXPROCS          int
-	CapturedAt          time.Time
+	// Les quatre champs suivants décrivent l'état de la machine (D-60, E-14). Ils sont facultatifs,
+	// constatés et jamais imposés : vides quand la plateforme ne les expose pas, et absents des
+	// fichiers antérieurs au 2026-09-22. Aucun critère ne les lit.
+	OSVersion   string
+	PowerPlan   string
+	CPUAffinity string
+	CoreTypes   CoreTypes
+	CapturedAt  time.Time
 }
+
+// CoreTypes compte les cœurs physiques d'un processeur hybride par classe. La valeur nulle signifie
+// que la topologie ne les distingue pas.
+type CoreTypes struct {
+	Performance int
+	Efficiency  int
+}
+
+// Distinguished indique si la topologie sépare deux classes de cœurs.
+func (c CoreTypes) Distinguished() bool { return c.Performance > 0 && c.Efficiency > 0 }
 
 // Validate applique NFR-001 : un résultat sans provenance complète est invalide.
 func (p Provenance) Validate() error {
@@ -599,6 +616,15 @@ type Measurement struct {
 	// légitime, qu'une absence ne doit pas imiter.
 	QuietudeOccupancy float64
 	QuietudeMeasured  bool
+	// Iterations est le b.N de chaque répétition, dans l'ordre de NsPerOp (D-60, E-19). Facultatif :
+	// vide dans un fichier antérieur au 2026-09-22, sinon exactement `count` valeurs.
+	Iterations []int64
+	// RawOutputFile est le chemin, relatif à la racine, de la sortie brute de `go test` archivée
+	// sous results/campaigns/<id>/raw/ ; vide dans un fichier antérieur. RawOutput porte cette
+	// sortie du runner jusqu'au dépôt, qui l'écrit et pose RawOutputFile ; elle n'est jamais
+	// sérialisée dans la Measurement.
+	RawOutputFile string
+	RawOutput     string
 }
 
 // QuietudeThreshold est le seuil qu'annonce C-010 : au-delà, la machine faisait pendant la fenêtre
@@ -622,7 +648,7 @@ func (m Measurement) Validate(count int) error {
 		if m.FailureReason == "" {
 			return invalid("Measurement.failureReason est requis si FAILED (%s)", m.SubjectID)
 		}
-		if len(m.NsPerOp) != 0 || len(m.BytesPerOp) != 0 || len(m.AllocsPerOp) != 0 {
+		if len(m.NsPerOp) != 0 || len(m.BytesPerOp) != 0 || len(m.AllocsPerOp) != 0 || len(m.Iterations) != 0 {
 			return invalid("les listes sont vides si FAILED (%s)", m.SubjectID)
 		}
 		return nil
@@ -633,6 +659,17 @@ func (m Measurement) Validate(count int) error {
 	if len(m.NsPerOp) != count || len(m.BytesPerOp) != count || len(m.AllocsPerOp) != count {
 		return invalid("Measurement de %s : %d/%d/%d valeurs, %d attendues (NFR-003)",
 			m.SubjectID, len(m.NsPerOp), len(m.BytesPerOp), len(m.AllocsPerOp), count)
+	}
+	// D-60 : iterations est facultatif, mais présent il suit nsPerOp valeur pour valeur.
+	if len(m.Iterations) != 0 && len(m.Iterations) != count {
+		return invalid("Measurement de %s : %d valeurs d'iterations, %d attendues ou aucune (D-60)",
+			m.SubjectID, len(m.Iterations), count)
+	}
+	for i, n := range m.Iterations {
+		if n <= 0 {
+			return invalid("Measurement de %s : iterations[%d] = %d, un b.N strictement positif est attendu",
+				m.SubjectID, i, n)
+		}
 	}
 	// A-016 : une valeur négative, infinie ou NaN traverserait médianes, rapports et intervalle de
 	// confiance jusqu'au verdict, sans qu'aucun évaluateur ne la remarque.

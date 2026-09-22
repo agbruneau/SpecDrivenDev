@@ -32,6 +32,23 @@ func RenderProvenance(p models.Provenance) string {
 	if len(memory) > 0 {
 		line += " · " + strings.Join(memory, " · ")
 	}
+	// D-60 : état de la machine, affiché seulement quand il a été relevé.
+	var host []string
+	if p.OSVersion != "" {
+		host = append(host, p.OSVersion)
+	}
+	if p.PowerPlan != "" {
+		host = append(host, "alimentation "+p.PowerPlan)
+	}
+	if p.CPUAffinity != "" {
+		host = append(host, "affinité "+p.CPUAffinity)
+	}
+	if p.CoreTypes.Distinguished() {
+		host = append(host, fmt.Sprintf("cœurs %d P + %d E", p.CoreTypes.Performance, p.CoreTypes.Efficiency))
+	}
+	if len(host) > 0 {
+		line += " · " + strings.Join(host, " · ")
+	}
 	return line
 }
 

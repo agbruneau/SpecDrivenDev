@@ -79,6 +79,10 @@ func TestC010_Occupancy(t *testing.T) {
 
 // La sonde réelle doit produire une valeur sur la plateforme du catalogue, sans quoi H-013 serait
 // non concluante par défaut d'outillage plutôt que par état de la machine.
+//
+// Exempté de testing/synctest (règle amendée, D-59) : le test lit les compteurs réels du système et
+// les rapporte à une durée réelle. Dans une bulle, l'horloge ne bougerait pas pendant la boucle de
+// travail et la fraction se déclarerait non mesurable.
 func TestC010_SondeReelle(t *testing.T) {
 	t.Parallel()
 	p := NewQuietudeProbe()

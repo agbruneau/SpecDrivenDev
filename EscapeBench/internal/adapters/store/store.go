@@ -352,7 +352,47 @@ func (s *Store) WriteMeasurement(_ context.Context, m models.Measurement) error 
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return fmt.Errorf("création du répertoire des mesures : %w", err)
 	}
+	// D-60 : la sortie brute est écrite avant la Measurement qui en porte le chemin, de sorte
+	// qu'aucune Measurement ne désigne un fichier absent.
+	if m.RawOutput != "" {
+		rawPath, err := s.writeRawOutput(m.CampaignID, m.SubjectID, m.RawOutput)
+		if err != nil {
+			return err
+		}
+		m.RawOutputFile = rawPath
+	}
 	return writeJSONExclusive(path, toMeasurementDTO(m))
+}
+
+// maxRawAttempts borne la recherche d'un nom libre pour une sortie brute.
+const maxRawAttempts = 100
+
+// writeRawOutput crée la sortie brute de `go test` d'un sujet sous raw/ et rend son chemin relatif
+// à la racine (UC-003 étape 6, BR-003-3). Un fichier existant n'est jamais réécrit : s'il reste
+// d'une tentative dont la Measurement n'a pas été écrite, la reprise (A4) prend le nom suffixé
+// suivant. SubjectDir ne contient ni tiret ni point, donc aucun suffixe ne rejoint le nom d'un
+// autre sujet.
+func (s *Store) writeRawOutput(campaignID, subjectID, content string) (string, error) {
+	dir := filepath.Join(s.campaignDir(campaignID), "raw")
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		return "", fmt.Errorf("création du répertoire des sorties brutes : %w", err)
+	}
+	base := models.SubjectDir(subjectID)
+	for attempt := 0; attempt < maxRawAttempts; attempt++ {
+		name := base + ".txt"
+		if attempt > 0 {
+			name = base + "-" + strconv.Itoa(attempt) + ".txt"
+		}
+		path := filepath.Join(dir, name)
+		err := writeFileExclusive(path, []byte(content))
+		if err == nil {
+			return s.rel(path), nil
+		}
+		if !errors.Is(err, ErrImmutable) {
+			return "", err
+		}
+	}
+	return "", fmt.Errorf("%w : %d sorties brutes déjà présentes pour %s", ErrImmutable, maxRawAttempts, subjectID)
 }
 
 // LoadMeasurements lit toutes les mesures d'une campagne, triées par identifiant de sujet.

@@ -9,6 +9,8 @@ import (
 	"testing"
 
 	"github.com/agbruneau/escapebench/internal/adapters/cli"
+	"github.com/agbruneau/escapebench/internal/adapters/store"
+	"github.com/agbruneau/escapebench/internal/models"
 )
 
 // projectDocs copie docs/ du dépôt vers une racine temporaire : le binaire y écrira matrices/,
@@ -118,6 +120,31 @@ func TestRunChaineCompleteUC001aUC005(t *testing.T) {
 		t.Fatalf("campaign : %v", err)
 	}
 	campaignID := onlyCampaignID(t, root)
+
+	// UC-003, étapes 3, 5 et 6 (D-60), sur la vraie chaîne d'outils : chaque Measurement porte
+	// exactement count valeurs de b.N et désigne sa sortie brute, créée sous raw/.
+	disk := store.New(root)
+	campaign, err := disk.LoadCampaign(ctx, campaignID)
+	if err != nil {
+		t.Fatalf("LoadCampaign : %v", err)
+	}
+	t.Logf("provenance : osVersion=%q powerPlan=%q cpuAffinity=%q coreTypes=%+v",
+		campaign.Provenance.OSVersion, campaign.Provenance.PowerPlan,
+		campaign.Provenance.CPUAffinity, campaign.Provenance.CoreTypes)
+	measurements, err := disk.LoadMeasurements(ctx, campaignID)
+	if err != nil || len(measurements) != 2 {
+		t.Fatalf("LoadMeasurements = %d mesures, %v", len(measurements), err)
+	}
+	for _, m := range measurements {
+		if m.Status != models.MeasurementComplete || len(m.Iterations) != 20 {
+			t.Fatalf("%s : statut %s, %d valeurs d'iterations", m.SubjectID, m.Status, len(m.Iterations))
+		}
+		raw, err := os.ReadFile(filepath.Join(root, filepath.FromSlash(m.RawOutputFile)))
+		if err != nil || !strings.HasPrefix(m.RawOutputFile, "results/campaigns/"+campaignID+"/raw/") ||
+			strings.Count(string(raw), "BenchmarkSubject") != 20 {
+			t.Fatalf("%s : sortie brute %q illisible ou incomplète : %v", m.SubjectID, m.RawOutputFile, err)
+		}
+	}
 
 	if err := run(ctx, "compare", []string{"--root", root, "--campaign", campaignID}); err != nil {
 		t.Fatalf("compare : %v", err)

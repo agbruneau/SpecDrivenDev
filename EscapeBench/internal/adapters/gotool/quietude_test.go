@@ -3,6 +3,7 @@ package gotool
 import (
 	"context"
 	"testing"
+	"testing/synctest"
 	"time"
 
 	"github.com/agbruneau/escapebench/internal/models"
@@ -87,29 +88,37 @@ func TestC010_SansTempsDArbreLAttestationEstAbsente(t *testing.T) {
 }
 
 // Le chemin complet : sonde branchée et temps d'arbre relevé.
+//
+// Règle synctest amendée (D-59) : Run mesure sa fenêtre sur l'horloge murale, et une fenêtre nulle
+// se déclare non mesurable. Le test ne lit pourtant aucun compteur réel — exécuteur et sonde sont
+// factices —, il n'est donc pas exempté : la bulle synctest fait avancer l'horloge de la fenêtre
+// sans attente réelle. L'exemption vaut pour les tests qui lisent les compteurs du système
+// (TestC010_SondeReelle, dans internal/adapters/system).
+// Mutation : ne plus porter l'attestation quand les trois relevés sont valides ⇒ échec attendu.
 func TestC010_AttestationPortee(t *testing.T) {
 	t.Parallel()
-	busy := time.Duration(0)
-	run := func(_ context.Context, _ string, _ string, _ ...string) (Result, error) {
-		// La fenêtre doit être non nulle : sur une horloge à résolution milliseconde, un exécuteur
-		// instantané donnerait une durée nulle et la fraction se déclarerait non mesurable.
-		time.Sleep(5 * time.Millisecond)
-		busy = 2 * time.Second
-		return Result{
-			Stdout:          "BenchmarkSubject\t1000000\t1.00 ns/op\t0 B/op\t0 allocs/op\n",
-			TreeCPU:         time.Second,
-			TreeCPUMeasured: true,
-		}, nil
-	}
-	tc := New(run, "").WithQuietude(func(context.Context) (time.Duration, bool) { return busy, true }, 8)
-	m, err := tc.Run(context.Background(), ".", "S/LOCAL/VALUE", ports.RunOptions{Count: 1, BenchTime: "1x"})
-	if err != nil {
-		t.Fatalf("Run : %v", err)
-	}
-	if !m.QuietudeMeasured {
-		t.Fatal("l'attestation doit être portée")
-	}
-	if m.QuietudeOccupancy < 0 || m.QuietudeOccupancy > 1 {
-		t.Fatalf("fraction hors bornes : %.4f", m.QuietudeOccupancy)
-	}
+	synctest.Test(t, func(t *testing.T) {
+		busy := time.Duration(0)
+		run := func(_ context.Context, _ string, _ string, _ ...string) (Result, error) {
+			time.Sleep(5 * time.Millisecond) // horloge de la bulle : aucune attente réelle
+			busy = 2 * time.Second
+			return Result{
+				Stdout:          "BenchmarkSubject\t1000000\t1.00 ns/op\t0 B/op\t0 allocs/op\n",
+				TreeCPU:         time.Second,
+				TreeCPUMeasured: true,
+			}, nil
+		}
+		tc := New(run, "").WithQuietude(func(context.Context) (time.Duration, bool) { return busy, true }, 8)
+		m, err := tc.Run(context.Background(), ".", "S/LOCAL/VALUE", ports.RunOptions{Count: 1, BenchTime: "1x"})
+		if err != nil {
+			t.Fatalf("Run : %v", err)
+		}
+		if !m.QuietudeMeasured {
+			t.Fatal("l'attestation doit être portée")
+		}
+		// Fenêtre de 5 ms exactement dans la bulle : (2 s − 0 − 1 s) / (8 × 5 ms), borné à 1.
+		if m.QuietudeOccupancy != 1 {
+			t.Fatalf("fraction = %.4f, 1 attendu (borne haute)", m.QuietudeOccupancy)
+		}
+	})
 }

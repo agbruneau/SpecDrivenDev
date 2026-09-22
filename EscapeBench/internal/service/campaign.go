@@ -273,9 +273,10 @@ func (s *CampaignService) measure(ctx context.Context, campaign models.Campaign,
 		measurement.CampaignID = campaign.ID
 		measurement.SubjectID = subjectID
 		if err := measurement.Validate(opts.Count); err != nil {
-			// Une mesure incohérente est consignée comme échec plutôt que perdue (A3).
+			// Une mesure incohérente est consignée comme échec plutôt que perdue (A3). Sa sortie
+			// brute est gardée : c'est elle qui dira pourquoi (D-60).
 			measurement = models.Measurement{CampaignID: campaign.ID, SubjectID: subjectID,
-				Status: models.MeasurementFailed, FailureReason: err.Error()}
+				Status: models.MeasurementFailed, FailureReason: err.Error(), RawOutput: measurement.RawOutput}
 		}
 		// Étape 6 : écriture dès que la mesure est complète.
 		if err := s.store.WriteMeasurement(ctx, measurement); err != nil {

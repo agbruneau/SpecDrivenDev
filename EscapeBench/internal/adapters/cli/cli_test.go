@@ -142,6 +142,18 @@ func TestRenderProvenance(t *testing.T) {
 			t.Fatalf("%q absent de %q", needle, got)
 		}
 	}
+	if strings.Contains(got, "alimentation") || strings.Contains(got, "cœurs") {
+		t.Fatalf("un état non relevé ne s'affiche pas : %q", got)
+	}
+	// UC-003, étape 4 (D-60) : l'état relevé de la machine s'affiche avec la Provenance.
+	p.OSVersion, p.PowerPlan, p.CPUAffinity = "Windows 10.0.26220", "Utilisation normale", "non épinglé"
+	p.CoreTypes = models.CoreTypes{Performance: 8, Efficiency: 16}
+	got = RenderProvenance(p)
+	for _, needle := range []string{"Windows 10.0.26220", "alimentation Utilisation normale", "affinité non épinglé", "cœurs 8 P + 16 E"} {
+		if !strings.Contains(got, needle) {
+			t.Fatalf("%q absent de %q", needle, got)
+		}
+	}
 }
 
 func TestRenderMatrix(t *testing.T) {

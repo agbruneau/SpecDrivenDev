@@ -164,6 +164,8 @@ var benchLineRe = regexp.MustCompile(`^Benchmark\S*\s+(\d+)\s+([0-9.eE+-]+)\s+ns
 
 // Sample est une répétition unique d'un benchmark.
 type Sample struct {
+	// Iterations est le b.N de la répétition, premier nombre de la ligne de résultat (D-60).
+	Iterations  int64
 	NsPerOp     float64
 	BytesPerOp  int64
 	AllocsPerOp int64
@@ -177,6 +179,10 @@ func ParseBenchmarkOutput(out string) ([]Sample, error) {
 		if match == nil {
 			continue
 		}
+		iterations, err := strconv.ParseInt(match[1], 10, 64)
+		if err != nil {
+			return nil, fmt.Errorf("b.N illisible dans %q : %w", line, err)
+		}
 		ns, err := strconv.ParseFloat(match[2], 64)
 		if err != nil {
 			return nil, fmt.Errorf("ns/op illisible dans %q : %w", line, err)
@@ -189,7 +195,7 @@ func ParseBenchmarkOutput(out string) ([]Sample, error) {
 		if err != nil {
 			return nil, fmt.Errorf("allocs/op illisible dans %q : %w", line, err)
 		}
-		samples = append(samples, Sample{NsPerOp: ns, BytesPerOp: bytes, AllocsPerOp: allocs})
+		samples = append(samples, Sample{Iterations: iterations, NsPerOp: ns, BytesPerOp: bytes, AllocsPerOp: allocs})
 	}
 	if len(samples) == 0 {
 		return nil, fmt.Errorf("aucune ligne de benchmark dans la sortie")
@@ -230,18 +236,22 @@ func (t *Toolchain) Run(ctx context.Context, matrixDir, subjectID string, opts p
 	if err != nil {
 		return failed(subjectID, err.Error()), nil
 	}
+	// D-60 : la sortie brute accompagne la Measurement, réussie ou non ; le dépôt l'archive.
+	raw := result.Combined()
+	withRaw := func(m models.Measurement) models.Measurement { m.RawOutput = raw; return m }
 	if result.ExitCode != 0 {
-		return failed(subjectID, strings.TrimSpace(result.Combined())), nil
+		return withRaw(failed(subjectID, strings.TrimSpace(raw))), nil
 	}
-	samples, err := ParseBenchmarkOutput(result.Combined())
+	samples, err := ParseBenchmarkOutput(raw)
 	if err != nil {
-		return failed(subjectID, err.Error()), nil
+		return withRaw(failed(subjectID, err.Error())), nil
 	}
 	if len(samples) != opts.Count {
-		return failed(subjectID, fmt.Sprintf("%d répétitions mesurées, %d demandées", len(samples), opts.Count)), nil
+		return withRaw(failed(subjectID, fmt.Sprintf("%d répétitions mesurées, %d demandées", len(samples), opts.Count))), nil
 	}
-	m := models.Measurement{SubjectID: subjectID, Status: models.MeasurementComplete}
+	m := withRaw(models.Measurement{SubjectID: subjectID, Status: models.MeasurementComplete})
 	for _, s := range samples {
+		m.Iterations = append(m.Iterations, s.Iterations)
 		m.NsPerOp = append(m.NsPerOp, s.NsPerOp)
 		m.BytesPerOp = append(m.BytesPerOp, s.BytesPerOp)
 		m.AllocsPerOp = append(m.AllocsPerOp, s.AllocsPerOp)

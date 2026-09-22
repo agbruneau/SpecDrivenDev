@@ -34,6 +34,7 @@ type Prober struct {
 	clock    interface{ Now() time.Time }
 	cpu      CPUReader
 	topology func() Topology
+	host     func(ctx context.Context) Host
 	pageSize func() int
 	procs    func() int
 	version  func() string
@@ -53,6 +54,7 @@ func NewProber(clock interface{ Now() time.Time }, cpu CPUReader) *Prober {
 		clock:    clock,
 		cpu:      cpu,
 		topology: detectTopology,
+		host:     detectHost,
 		pageSize: os.Getpagesize,
 		procs:    func() int { return runtime.GOMAXPROCS(0) },
 		version:  runtime.Version,
@@ -64,13 +66,15 @@ func NewProber(clock interface{ Now() time.Time }, cpu CPUReader) *Prober {
 // Capture rend la provenance courante. Aucun champ obligatoire n'est laissé vide : un résultat
 // sans provenance complète est invalide (NFR-001). Les trois tailles mémoire ajoutées par C-008
 // valent zéro quand la machine ne les expose pas ; une hypothèse qui en dépend se déclare alors
-// non concluante plutôt que de supposer une valeur.
+// non concluante plutôt que de supposer une valeur. Les quatre champs de D-60 (état de la machine)
+// restent vides quand la plateforme ne les expose pas.
 func (p *Prober) Capture(ctx context.Context) (models.Provenance, error) {
 	cpu := strings.TrimSpace(p.cpu(ctx))
 	if cpu == "" {
 		cpu = "inconnu"
 	}
 	topology := p.topology()
+	host := p.host(ctx)
 	provenance := models.Provenance{
 		GoVersion:           p.version(),
 		GOOS:                p.goos,
@@ -80,6 +84,10 @@ func (p *Prober) Capture(ctx context.Context) (models.Provenance, error) {
 		LastLevelCacheBytes: topology.LastLevelCacheBytes,
 		PageSizeBytes:       int64(p.pageSize()),
 		GOMAXPROCS:          p.procs(),
+		OSVersion:           host.OSVersion,
+		PowerPlan:           host.PowerPlan,
+		CPUAffinity:         host.CPUAffinity,
+		CoreTypes:           host.CoreTypes,
 		CapturedAt:          p.clock.Now().UTC(),
 	}
 	return provenance, provenance.Validate()

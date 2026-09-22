@@ -10,31 +10,51 @@ import (
 // internal/models restent sans tag (C-004, CLAUDE.md) : la conversion se fait ici.
 
 type provenanceDTO struct {
-	GoVersion           string    `json:"goVersion"`
-	GOOS                string    `json:"goos"`
-	GOARCH              string    `json:"goarch"`
-	CPUModel            string    `json:"cpuModel"`
-	L1DataCacheBytes    int64     `json:"l1DataCacheBytes,omitempty"`
-	LastLevelCacheBytes int64     `json:"lastLevelCacheBytes,omitempty"`
-	PageSizeBytes       int64     `json:"pageSizeBytes,omitempty"`
-	GOMAXPROCS          int       `json:"gomaxprocs,omitempty"`
-	CapturedAt          time.Time `json:"capturedAt"`
+	GoVersion           string `json:"goVersion"`
+	GOOS                string `json:"goos"`
+	GOARCH              string `json:"goarch"`
+	CPUModel            string `json:"cpuModel"`
+	L1DataCacheBytes    int64  `json:"l1DataCacheBytes,omitempty"`
+	LastLevelCacheBytes int64  `json:"lastLevelCacheBytes,omitempty"`
+	PageSizeBytes       int64  `json:"pageSizeBytes,omitempty"`
+	GOMAXPROCS          int    `json:"gomaxprocs,omitempty"`
+	// D-60 : facultatifs, absents des fichiers antérieurs au 2026-09-22.
+	OSVersion   string        `json:"osVersion,omitempty"`
+	PowerPlan   string        `json:"powerPlan,omitempty"`
+	CPUAffinity string        `json:"cpuAffinity,omitempty"`
+	CoreTypes   *coreTypesDTO `json:"coreTypes,omitempty"`
+	CapturedAt  time.Time     `json:"capturedAt"`
+}
+
+type coreTypesDTO struct {
+	Performance int `json:"performance"`
+	Efficiency  int `json:"efficiency"`
 }
 
 func toProvenanceDTO(p models.Provenance) provenanceDTO {
-	return provenanceDTO{
+	dto := provenanceDTO{
 		GoVersion: p.GoVersion, GOOS: p.GOOS, GOARCH: p.GOARCH, CPUModel: p.CPUModel,
 		L1DataCacheBytes: p.L1DataCacheBytes, LastLevelCacheBytes: p.LastLevelCacheBytes,
 		PageSizeBytes: p.PageSizeBytes, GOMAXPROCS: p.GOMAXPROCS, CapturedAt: p.CapturedAt.UTC(),
+		OSVersion: p.OSVersion, PowerPlan: p.PowerPlan, CPUAffinity: p.CPUAffinity,
 	}
+	if p.CoreTypes.Distinguished() {
+		dto.CoreTypes = &coreTypesDTO{Performance: p.CoreTypes.Performance, Efficiency: p.CoreTypes.Efficiency}
+	}
+	return dto
 }
 
 func (d provenanceDTO) toModel() models.Provenance {
-	return models.Provenance{
+	p := models.Provenance{
 		GoVersion: d.GoVersion, GOOS: d.GOOS, GOARCH: d.GOARCH, CPUModel: d.CPUModel,
 		L1DataCacheBytes: d.L1DataCacheBytes, LastLevelCacheBytes: d.LastLevelCacheBytes,
 		PageSizeBytes: d.PageSizeBytes, GOMAXPROCS: d.GOMAXPROCS, CapturedAt: d.CapturedAt,
+		OSVersion: d.OSVersion, PowerPlan: d.PowerPlan, CPUAffinity: d.CPUAffinity,
 	}
+	if d.CoreTypes != nil {
+		p.CoreTypes = models.CoreTypes{Performance: d.CoreTypes.Performance, Efficiency: d.CoreTypes.Efficiency}
+	}
+	return p
 }
 
 type typeSpecDTO struct {
@@ -338,6 +358,9 @@ type measurementDTO struct {
 	// L'attestation de quiétude est un pointeur : une occupation nulle est une valeur légitime que
 	// l'absence du champ ne doit pas imiter (C-010).
 	QuietudeOccupancy *float64 `json:"quietudeOccupancy,omitempty"`
+	// D-60 : facultatifs, absents des fichiers antérieurs au 2026-09-22.
+	Iterations    []int64 `json:"iterations,omitempty"`
+	RawOutputFile string  `json:"rawOutputFile,omitempty"`
 }
 
 func toMeasurementDTO(m models.Measurement) measurementDTO {
@@ -345,6 +368,7 @@ func toMeasurementDTO(m models.Measurement) measurementDTO {
 		CampaignID: m.CampaignID, SubjectID: m.SubjectID, NsPerOp: m.NsPerOp,
 		BytesPerOp: m.BytesPerOp, AllocsPerOp: m.AllocsPerOp,
 		Status: string(m.Status), FailureReason: m.FailureReason,
+		Iterations: m.Iterations, RawOutputFile: m.RawOutputFile,
 	}
 	if m.QuietudeMeasured {
 		occupancy := m.QuietudeOccupancy
@@ -358,6 +382,7 @@ func (d measurementDTO) toModel() models.Measurement {
 		CampaignID: d.CampaignID, SubjectID: d.SubjectID, NsPerOp: d.NsPerOp,
 		BytesPerOp: d.BytesPerOp, AllocsPerOp: d.AllocsPerOp,
 		Status: models.MeasurementStatus(d.Status), FailureReason: d.FailureReason,
+		Iterations: d.Iterations, RawOutputFile: d.RawOutputFile,
 	}
 	if d.QuietudeOccupancy != nil {
 		m.QuietudeOccupancy, m.QuietudeMeasured = *d.QuietudeOccupancy, true

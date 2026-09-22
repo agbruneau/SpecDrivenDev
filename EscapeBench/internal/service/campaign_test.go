@@ -185,7 +185,9 @@ func TestUC003_A3_MesureIncoherenteConsigneeCommeEchec(t *testing.T) {
 	// FAILED plutôt qu'écrite telle quelle.
 	f := newCampaignFixture(t)
 	fautif := f.matrix.SubjectIDs()[0]
-	f.runner.measurements[fautif] = completeMeasurementOf(fautif, models.MinCount-5, 1, 8, 1)
+	incoherente := completeMeasurementOf(fautif, models.MinCount-5, 1, 8, 1)
+	incoherente.RawOutput = "sortie brute du sujet fautif"
+	f.runner.measurements[fautif] = incoherente
 	report, err := f.service.Run(context.Background(), defaultOptions(f.matrix.ID))
 	if err != nil {
 		t.Fatalf("Run : %v", err)
@@ -197,6 +199,11 @@ func TestUC003_A3_MesureIncoherenteConsigneeCommeEchec(t *testing.T) {
 	for _, m := range measurements {
 		if m.SubjectID == fautif && (m.Status != models.MeasurementFailed || m.FailureReason == "") {
 			t.Fatalf("mesure fautive = %+v", m)
+		}
+		// D-60 : la sortie brute survit au déclassement en FAILED ; c'est elle qui dit pourquoi.
+		// Mutation : reconstruire la Measurement FAILED sans RawOutput ⇒ échec attendu.
+		if m.SubjectID == fautif && m.RawOutput != "sortie brute du sujet fautif" {
+			t.Fatalf("sortie brute perdue : %q", m.RawOutput)
 		}
 	}
 }
