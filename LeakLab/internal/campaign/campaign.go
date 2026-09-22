@@ -3,7 +3,6 @@
 package campaign
 
 import (
-	"bufio"
 	"context"
 	"fmt"
 	"io"
@@ -20,6 +19,10 @@ import (
 
 // MinReps est le plancher de NFR-002.
 const MinReps = 5
+
+// catalog est le corpus parcouru par la campagne ; les tests le restreignent à quelques cas pour
+// jouer une campagne synthétique complète en quelques secondes.
+var catalog = corpus.Catalog
 
 // Config paramètre une campagne.
 type Config struct {
@@ -77,7 +80,7 @@ func Run(ctx context.Context, cfg Config) (results.Run, string, error) {
 	if err != nil {
 		return results.Run{}, "", err
 	}
-	if diffs := spec.CompareCorpus(rows, corpus.Catalog()); len(diffs) > 0 {
+	if diffs := spec.CompareCorpus(rows, catalog()); len(diffs) > 0 {
 		return results.Run{}, "", fmt.Errorf("UC-001 A2, catalogue et spécification divergent :\n%s", strings.Join(diffs, "\n"))
 	}
 
@@ -131,7 +134,7 @@ func Run(ctx context.Context, cfg Config) (results.Run, string, error) {
 	var obs []results.Observation
 	dynamic := []results.Detector{results.DetectorBare, results.DetectorRace, results.DetectorSynctest, results.DetectorNumGoroutine, results.DetectorLeakProfile, results.DetectorProgram}
 	for rep := 1; rep <= cfg.Reps; rep++ {
-		for _, c := range corpus.Catalog() {
+		for _, c := range catalog() {
 			for _, det := range dynamic {
 				name, args := bins.command(det, c.ID)
 				p, err := runProcess(ctx, cfg.Timeout, labDir, []string{"LEAKLAB_CASE=" + c.ID}, name, args...)
@@ -207,24 +210,39 @@ func provenance(ctx context.Context, labDir string) (results.Provenance, error) 
 	if p.exitCode != 0 || len(f) != 3 {
 		return results.Provenance{}, fmt.Errorf("go env illisible : %q", p.output)
 	}
-	return results.Provenance{GoVersion: f[0], GOOS: f[1], GOARCH: f[2], CPU: cpuName(), NumCPU: runtime.NumCPU()}, nil
+	return results.Provenance{GoVersion: f[0], GOOS: f[1], GOARCH: f[2], CPU: cpuName(), NumCPU: runtime.NumCPU(), OSVersion: platformOSVersion()}, nil
 }
 
-// cpuName rend l'identifiant du processeur que le système expose sans dépendance, ou "".
+// cpuName rend le nom commercial du processeur ; à défaut, l'identifiant que le système expose, ou
+// "" (modèle d'entités, Provenance, révision du 2026-09-22).
 func cpuName() string {
-	if name := os.Getenv("PROCESSOR_IDENTIFIER"); name != "" {
+	if name := platformCPU(); name != "" {
 		return name
 	}
-	f, err := os.Open("/proc/cpuinfo")
-	if err != nil {
-		return ""
-	}
-	defer f.Close()
-	s := bufio.NewScanner(f)
-	for s.Scan() {
-		if k, v, ok := strings.Cut(s.Text(), ":"); ok && strings.TrimSpace(k) == "model name" {
+	return os.Getenv("PROCESSOR_IDENTIFIER")
+}
+
+// cpuInfoModel rend le champ « model name » d'un /proc/cpuinfo, ou "".
+func cpuInfoModel(cpuinfo string) string {
+	for _, l := range strings.Split(cpuinfo, "\n") {
+		if k, v, ok := strings.Cut(l, ":"); ok && strings.TrimSpace(k) == "model name" {
 			return strings.TrimSpace(v)
 		}
 	}
 	return ""
+}
+
+// linuxOSVersion compose PRETTY_NAME de /etc/os-release et la version du noyau ; chacun peut manquer.
+func linuxOSVersion(osRelease, kernel string) string {
+	var parts []string
+	for _, l := range strings.Split(osRelease, "\n") {
+		if v, ok := strings.CutPrefix(strings.TrimSpace(l), "PRETTY_NAME="); ok {
+			parts = append(parts, strings.Trim(v, `"'`))
+			break
+		}
+	}
+	if k := strings.TrimSpace(kernel); k != "" {
+		parts = append(parts, "noyau "+k)
+	}
+	return strings.Join(parts, ", ")
 }

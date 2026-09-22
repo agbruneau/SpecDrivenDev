@@ -53,3 +53,56 @@ func TestUC001_NextRunID(t *testing.T) {
 		t.Fatalf("répertoire absent : %q, %v", got, err)
 	}
 }
+
+func TestUC001_Detecteurs(t *testing.T) {
+	ds := Detectors()
+	if len(ds) != 8 || ds[0] != DetectorBare || ds[5] != DetectorProgram || ds[7] != DetectorCtxvet {
+		t.Fatalf("Detectors = %v : six dynamiques puis VET et CTXVET attendus (C-006)", ds)
+	}
+}
+
+func TestNFR004_EcritureJSONEtRelecture(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "runs", "R-2026-09-22-1.json")
+	want := Run{ID: "R-2026-09-22-1", Provenance: Provenance{GoVersion: "go1.27.0", CPU: "x", NumCPU: 2, OSVersion: "Windows 10.0.26220"}, Reps: 5}
+	if err := WriteJSONExclusive(path, want); err != nil {
+		t.Fatal(err)
+	}
+	got, err := LoadRun(path)
+	if err != nil || got.ID != want.ID || got.Provenance != want.Provenance {
+		t.Fatalf("LoadRun = %+v, %v", got, err)
+	}
+	if err := WriteJSONExclusive(path, want); err == nil {
+		t.Fatal("une campagne existante a été réécrite")
+	}
+	if err := WriteJSONExclusive(filepath.Join(t.TempDir(), "x.json"), make(chan int)); err == nil {
+		t.Fatal("une valeur non encodable doit être une erreur")
+	}
+	if _, err := LoadRun(filepath.Join(t.TempDir(), "absent.json")); err == nil {
+		t.Fatal("campagne absente : erreur attendue")
+	}
+	bad := filepath.Join(t.TempDir(), "bad.json")
+	if err := os.WriteFile(bad, []byte("{"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := LoadRun(bad); err == nil {
+		t.Fatal("JSON invalide : erreur attendue")
+	}
+}
+
+// TestNFR001_CampagnesArchiveesLisibles vérifie que les campagnes archivées, antérieures à
+// osVersion (modèle d'entités, révision du 2026-09-22), se relisent sans lui. Lecture seule.
+func TestNFR001_CampagnesArchiveesLisibles(t *testing.T) {
+	paths, err := filepath.Glob(filepath.Join("..", "..", "results", "runs", "R-*.json"))
+	if err != nil || len(paths) == 0 {
+		t.Fatalf("aucune campagne archivée : %v", err)
+	}
+	for _, p := range paths {
+		r, err := LoadRun(p)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if r.Provenance.GoVersion == "" || r.Provenance.CPU == "" || len(r.Observations) == 0 || r.Provenance.OSVersion != "" {
+			t.Errorf("%s : provenance %+v, %d observations", filepath.Base(p), r.Provenance, len(r.Observations))
+		}
+	}
+}

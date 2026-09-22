@@ -52,6 +52,7 @@ type Provenance struct {
 	GOARCH    string `json:"goarch"`
 	CPU       string `json:"cpu"`
 	NumCPU    int    `json:"numCPU"`
+	OSVersion string `json:"osVersion,omitempty"` // facultatif : absent des campagnes antérieures au 2026-09-22
 }
 
 // Observation est une exécution d'un cas par un détecteur.

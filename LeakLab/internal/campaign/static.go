@@ -11,7 +11,6 @@ import (
 
 	"github.com/agbruneau/leaklab/internal/ctxvet"
 	"github.com/agbruneau/leaklab/internal/results"
-	"github.com/agbruneau/leaklab/lab/corpus"
 )
 
 var vetDiagnostic = regexp.MustCompile(`^(?:vet: )?(.+?\.go):\d+:\d+: (.+)$`)
@@ -35,7 +34,7 @@ func parseVet(output string) []finding {
 // le fichier du cas. Un diagnostic sur un fichier sans cas n'est attribué à personne.
 func attribute(det results.Detector, fs []finding, d time.Duration) []results.Observation {
 	var obs []results.Observation
-	for _, c := range corpus.Catalog() {
+	for _, c := range catalog() {
 		o := results.Observation{CaseID: c.ID, Detector: det, Rep: 1, Outcome: results.OutcomePass, DurationMs: d.Milliseconds()}
 		for _, f := range fs {
 			if f.file == c.File() {
