@@ -4,6 +4,8 @@ Le modèle sert de glossaire : les noms ci-dessous sont repris tels quels dans l
 
 Révision du 2026-09-22, lot 6 du plan d'implantation de l'évaluation (E-14, E-19, D-60) : `Provenance` reçoit quatre champs facultatifs qui décrivent l'état de la machine — `osVersion`, `powerPlan`, `cpuAffinity`, `coreTypes` — et `Measurement` en reçoit deux qui archivent la mesure brute — `iterations` et `rawOutputFile`. Aucun ne participe à une identité, à une empreinte ni à un critère de réfutation, et aucun gabarit du harnais n'est touché : un fichier de résultats antérieur reste valide et se relit sans eux. Le banc constate ces réglages ; il n'en impose aucun.
 
+Révision du 2026-09-22, lot 9 de l'audit (A-073, A-081, A-246, D-63) : `Matrix.harnessDigest` et `Campaign.harnessDigest` couvrent aussi `harness.go` ; `Matrix.parameters` reçoit `cacheLineBytes`, dont dépend la règle de `Probe.parameter` ; `Provenance` reçoit `cacheLineBytes`, facultatif. Ces changements ouvrent une nouvelle série de comparaison ; ils ne rendent invalide aucun fichier de résultats antérieur.
+
 Révision du 2026-09-10, satisfaction de C-010 : `Measurement` porte une attestation de quiétude. Elle est facultative, comme les quatre champs de `Provenance` ajoutés par C-008 : un fichier de résultats antérieur reste valide. Elle ne participe à aucune identité et n'entre dans aucune empreinte.
 
 Révision du 2026-09-10, satisfaction de C-009 : `Cell` porte un rang de réplicat. Il n'entre ni dans `Comparison`, ni dans `ComparisonSet.tippingPoints` : H-012 groupe ses réplicats par la taille, la disposition, la présence d'un champ pointeur et le profil, tous déjà présents dans `Comparison`, et les distingue par `valueCellId`. Faire entrer un champ de plus dans la clé des points de bascule rendrait H-002 non concluante sur toute campagne future, sans erreur ni trace. Ce qu'aucun critère ne lit, le modèle ne le porte pas. Corollaire assumé : le point de bascule d'une série répliquée n'est pas défini, le balayage descendant dépendant alors de l'ordre du fichier, et UC-004 ne le publie pas.
@@ -76,7 +78,7 @@ Sonde de mesure indépendante des TypeSpec (FR-006, H-004, H-005) ; mesurée par
 |---|---|---|
 | id | String | Requis, unique, immuable ; forme `probe/<kind>/<parameter>` (disjoint des identifiants de Cell : le deuxième segment n'est jamais un code de LifetimeProfile) |
 | kind | Enum | Requis ; valeurs : `SEQUENTIAL_SCAN`, `SCATTERED_SCAN`, `APPEND_PREALLOC`, `APPEND_GROW`, et, ajouté par C-008, `POINTER_CHASE` |
-| parameter | Integer | Requis, > 0 ; jeu de travail en octets pour `*_SCAN` et `POINTER_CHASE`, multiple de 64 et d'au moins deux nœuds ; nombre d'éléments pour `APPEND_*` |
+| parameter | Integer | Requis, > 0 ; jeu de travail en octets pour `*_SCAN` et `POINTER_CHASE`, multiple de la ligne de cache de la Matrix (`parameters.cacheLineBytes`, 64 par défaut) et d'au moins deux lignes ; nombre d'éléments pour `APPEND_*` |
 
 Les deux parcours mesurent un débit : leurs chargements sont indépendants et se recouvrent. `POINTER_CHASE` mesure une latence : une itération de `b.N` vaut un seul accès, dont l'adresse a été lue à l'accès précédent (H-008).
 | sourceFile | String | Requis ; chemin relatif du fichier Go généré |
@@ -86,8 +88,8 @@ Les deux parcours mesurent un débit : leurs chargements sont indépendants et s
 | Attribut | Type | Règles de validation |
 |---|---|---|
 | id | String | Requis, unique ; forme `M-<sha256 court des paramètres>` |
-| parameters | Objet | Requis ; paramètres normalisés de la demande (tailles, champ pointeur, profils, modes, Probe), base de `id` (BR-001-1) |
-| harnessDigest | String | Requis ; empreinte SHA-256 des **gabarits embarqués** `internal/harness/templates/*.tmpl` à la génération (UC-001 étape 6, C-005). Elle ne couvre pas `internal/harness/harness.go`, qui façonne pourtant la source rendue : voir la limite consignée à C-005 |
+| parameters | Objet | Requis ; paramètres normalisés de la demande (tailles, champ pointeur, profils, modes, Probe), base de `id` (BR-001-1). Depuis le lot 9 de l'audit, `cacheLineBytes` (64 ou 128, 64 par défaut, C-006) y figure ; il n'entre dans `id` que hors de sa valeur par défaut |
+| harnessDigest | String | Requis ; empreinte SHA-256 des gabarits embarqués `internal/harness/templates/*.tmpl` **et de `internal/harness/harness.go`** à la génération (UC-001 étape 6, C-005, révision du lot 9 de l'audit, A-246). Les matrices antérieures portent l'empreinte des seuls gabarits |
 | cells | Liste de Cell | Au moins une cellule |
 | probes | Liste de Probe | Peut être vide ; jamais omise |
 | generatedAt | DateTime (UTC) | Requis |
@@ -121,9 +123,10 @@ Résultat de la classification d'une cellule par le compilateur.
 | powerPlan | String | Ajouté le 2026-09-22 (D-60) ; facultatif ; plan d'alimentation actif sous Windows (nom et GUID), gouverneur de fréquence du premier processeur sous Linux, vide ailleurs ou si la lecture échoue. Consigné, jamais imposé |
 | cpuAffinity | String | Ajouté le 2026-09-22 (D-60) ; facultatif ; masque d'affinité du processus du banc, dont héritent les processus `go test` ; « non épinglé » quand il couvre tous les processeurs de la machine. Vide si la lecture échoue |
 | coreTypes | { performance, efficiency } | Ajouté le 2026-09-22 (D-60) ; facultatif ; nombre de cœurs physiques de performance et d'efficacité, quand la topologie les distingue (processeur hybride). Absent sinon : un processeur homogène ne porte pas ce champ, plutôt qu'une répartition inventée |
+| cacheLineBytes | Integer | Ajouté par le lot 9 de l'audit (A-081, D-63) ; facultatif ; ligne du cache de données de niveau 1, relevée sur la machine, jamais saisie. Zéro si la plateforme ne l'expose pas. UC-003 la compare au `cacheLineBytes` de la Matrix ; aucun critère ne la lit |
 | capturedAt | DateTime (UTC) | Requis |
 
-Les quatre champs ajoutés par C-008 et les quatre ajoutés le 2026-09-22 ne sont pas exigés par NFR-001 : un fichier de résultats antérieur reste valide, et ils ne participent ni à l'identité de la toolchain que compare UC-002 A3, ni à la vérification de provenance d'une reprise (UC-003, A4).
+Les quatre champs ajoutés par C-008, les quatre ajoutés le 2026-09-22 et `cacheLineBytes` ne sont pas exigés par NFR-001 : un fichier de résultats antérieur reste valide, et ils ne participent ni à l'identité de la toolchain que compare UC-002 A3, ni à la vérification de provenance d'une reprise (UC-003, A4).
 
 ## Campaign
 
@@ -131,7 +134,7 @@ Les quatre champs ajoutés par C-008 et les quatre ajoutés le 2026-09-22 ne son
 |---|---|---|
 | id | String | Requis, unique, immuable ; forme `C-<date>-<n>` |
 | matrixId | String | Requis, référence une Matrix |
-| harnessDigest | String | Requis ; empreinte SHA-256 des gabarits embarqués `internal/harness/templates/*.tmpl` au démarrage (même portée qu'à `Matrix.harnessDigest`) |
+| harnessDigest | String | Requis ; empreinte du harnais au démarrage, même portée qu'à `Matrix.harnessDigest` : gabarits embarqués et, depuis le lot 9 de l'audit, `harness.go`. Deux campagnes ne se comparent que sous une même empreinte : `551ce66b…` pour la série de 2026-09-10, `fd4a470c…` pour la série ouverte par D-63 |
 | hypothesesDigest | String | Requis ; empreinte SHA-256 des énoncés et critères des Hypothesis liées, lus dans `docs/requirements.md` au démarrage |
 | hypothesisIds | Liste de String | Requis ; identifiants couverts par la campagne, base de `hypothesesDigest` (BR-003-5) |
 | count | Integer | Requis, ≥ 20 (NFR-003) |
