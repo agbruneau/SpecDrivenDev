@@ -1,7 +1,7 @@
 # Planification d'exécution : implantation de l'évaluation académique
 
 **Source** : [`EVALUATION-ACADEMIQUE_2026-09-15.md`](EVALUATION-ACADEMIQUE_2026-09-15.md), 34 constats (E-01 à E-34) et 12 recommandations (R1 à R12).
-**État de départ** : `main` au commit `1eddb85` (2026-09-15, D-54), arbre propre, `origin/main` identique.
+**État de départ** : `main` au commit `581004a` (2026-09-15, D-54), arbre propre, `origin/main` identique.
 **Date** : 2026-09-15.
 **But** : porter le dépôt de B+ (77) en zone A- (80 et plus) sans toucher à un critère gelé, à un fichier de résultats ni à un gabarit du harnais hors du lot prévu à cet effet.
 
@@ -11,7 +11,7 @@ Le format reprend celui de la planification des correctifs de [`AUDIT.md`](AUDIT
 
 ## 0. Ce que la vérification préalable a établi
 
-Faits vérifiés le 2026-09-15 sur le commit `1eddb85`, qui conditionnent le plan.
+Faits vérifiés le 2026-09-15 sur le commit `581004a`, qui conditionnent le plan.
 
 | Fait | Conséquence |
 |---|---|
