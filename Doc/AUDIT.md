@@ -14,16 +14,16 @@ L'audit ne juge pas la clôture du projet ni les verdicts eux-mêmes. Il cherche
 |---|---|---|---|
 | Bloquants | 3 | bloquant | implantés (lots 1 et 2) |
 | Majeurs | 12 | majeur | implantés |
-| Mineurs | 53 | mineur | implantés, sauf A-073 (dette assumée, D-50) ; A-106 et A-107 sans objet depuis D-53 |
+| Mineurs | 53 | mineur | implantés, sauf A-073 (dette assumée, D-50) et A-133 (ouvert, voir ci-dessous) ; A-106 et A-107 sans objet depuis D-53 |
 | Suggestions | 35 | suggestion | implantées, sauf A-081 (dette assumée, D-50) et A-038 (dette assumée) |
-| Confirmés à la contre-vérification | 8 | majeur | implantés, sauf A-246 : volet documentaire fait, volet code en dette assumée (D-50) |
+| Confirmés à la contre-vérification | 8 | majeur | implantés, sauf A-246 : volet documentaire fait, volet code en dette assumée (D-50). Contre-vérification sans trace locale (erratum, point 6) |
 | Sans vérification contradictoire complète | 75 | 36 mineurs, 39 suggestions | 19 implantés au fil de l'eau, 56 ouverts, aucun sans objet depuis D-53 |
 | Écartés par la vérification | 4 | — | sans correctif |
 | **Total** | **190 entrées, 187 constats** | 3 bloquants, 20 majeurs, 89 mineurs, 74 suggestions, 4 écartés | |
 
-Décompte par état des 186 entrées retenues : **124 implantées** (105 confirmées, plus 19 des 75), **4 en dette assumée** (A-038, A-073, A-081, A-246 volet code), **2 sans objet depuis D-53** (A-106, A-107), **56 ouvertes**, toutes parmi les 75 sans contre-vérification.
+Décompte par état des 186 entrées retenues : **123 implantées** (104 confirmées, plus 19 des 75), **4 en dette assumée** (A-038, A-073, A-081, A-246 volet code), **2 sans objet depuis D-53** (A-106, A-107), **57 ouvertes** : 56 parmi les 75 sans contre-vérification, et l'entrée de A-133 parmi les Mineurs confirmés.
 
-L'état des sections confirmées reprend la section [État d'implantation](#état-dimplantation-au-2026-09-12). Seuls les 75 ont été revérifiés un à un contre le code, le 2026-09-22. A-128, A-133 et A-134 sont inscrits deux fois (voir l'erratum) : la revérification trouve A-133 encore ouvert, contrairement à ce que dit son rang parmi les confirmés implantés. Un total par gravité compte ces trois constats deux fois.
+L'état des sections confirmées reprend la section [État d'implantation](#état-dimplantation-au-2026-09-12). Seuls les 75 ont été revérifiés un à un contre le code, le 2026-09-22. A-128, A-133 et A-134 sont inscrits deux fois (voir l'erratum) : la revérification du 2026-09-22 contre le code trouve A-133 encore ouvert, et c'est cet état qui vaut pour ses deux entrées, malgré son rang parmi les confirmés implantés (État d'implantation au 2026-09-12). Un total par gravité compte ces trois constats deux fois.
 
 ## Résultat
 
@@ -64,6 +64,7 @@ Le paragraphe « Méthode » ci-dessus reste tel que publié ; cet erratum le co
 3. **84 non vérifiés.** Ce sont les 75, les 8 de la contre-vérification et A-261. Pour le fichier d'exécution, ils se répartissent en 20 confirmés (les 17 du point 2 et les 3 doublons), 62 réfutés par défaut parce que deux ou trois de leurs vérificateurs n'ont pas répondu (un vérificateur muet vaut réfutation dans l'affichage du workflow), et 2 réfutés par deux voix sur trois : A-141, confirmé ensuite par la contre-vérification et implanté, et A-151.
 4. **4 rejetés.** Ce sont 4 des 68 réfutés du fichier, tous réfutés par au moins deux voix. A-141 et A-151 remplissent la même condition sans être comptés parmi les rejetés.
 5. **« 37 mineurs, 38 suggestions ».** Le tableau des 75 compte 36 mineurs et 39 suggestions.
+6. **La contre-vérification du 2026-09-12 n'a pas de trace locale.** Aucun prompt, aucun fichier d'exécution ni aucune transcription sur le poste n'appuie le paragraphe qui la décrit : ni les « 16/16 » constats critiques confirmés, ni la validation des 8 majeurs, ni leur statut « Confirmé (3/3) » dans la section qui les liste ([`QR2-MESURES.md`](QR2-MESURES.md), §3, point 1; [`Revue/PROMPTS-REVUES_2026-09-10.md`](../Revue/PROMPTS-REVUES_2026-09-10.md), « Non archivées, faute de trace locale »). Le fichier `wf_e30c209a-4c3`, antérieur, en confirme trois (A-156, A-185, A-187, point 2) et réfute A-141 par deux voix sur trois (point 3); les quatre autres (A-246, A-263, A-265, A-278) sont, par différence, parmi les 62 réfutés par défaut faute de réponse. Ces chiffres sont donc publiés sans les données qui les fondent. Ils ne sont pas retirés : les correctifs sont implantés et vérifiables dans le code (sauf le volet code de A-246, en dette assumée), ce qui ne dit rien des votes.
 
 **Supposé, non vérifié : pourquoi l'écart existe.** La colonne « Votes » des 75 ne concorde pas avec l'état final : A-147, par exemple, est à « 0/3 » alors que ses trois vérificateurs ont conclu le 2026-09-12 vers 12 h 09 UTC, pendant la dernière reprise (11 h 58 à 12 h 19 UTC). Les trois doublons y sont à « 2/3 », alors qu'ils ont trois voix dans le fichier. L'hypothèse la plus économique : la liste des non vérifiés a été rendue à partir d'un état du workflow antérieur à la dernière reprise, et les sections confirmées à partir d'un état plus récent. La version initiale de ce document (commit `a9e10f6`, 12 h 20 UTC) écrivait d'ailleurs « 187 après dédoublonnage » ; le total de 190 est apparu à la révision suivante (`0e934e3`), qui a additionné les sections. Ce qui trancherait : l'état intermédiaire du workflow, que le fichier d'exécution ne conserve pas.
 
