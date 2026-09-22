@@ -9,7 +9,7 @@
 **Status:** Deployed
 
 **Linked Requirements:** FR-003, FR-006, NFR-001, NFR-003, NFR-004, NFR-005, C-001, C-002, C-003, C-005, C-006, C-008, C-009, C-010
-**Révision :** 2026-09-12 — audit du code : A4 précise la vérification de provenance, la reprise du verrou, la conservation des Measurement `FAILED` et la restitution des paramètres de mesure ; A5 (interruption demandée) est ajouté ; l'étape 3 enregistre les paramètres de C-003 et dérive l'identifiant sous le verrou. 2026-09-10 — ajout de l'empreinte des critères (étape 3, BR-003-5) à la demande de UC-005 ; spécification modifiée avant tout code. Même jour : les Probe (FR-006) sont mesurées comme les Cell (étapes 4, 5, 8, A3, A4, BR-003-4) ; `Measurement.subjectId` remplace `cellId`. Revue pré-lancement du 2026-09-10 : BR-003-3 admet la transition de `status` dans `campaign.json` ; la précondition UC-002 ne vaut que si la Matrix contient une Cell.
+**Révision :** 2026-09-22 — lot 6 du plan d'implantation de l'évaluation (E-14, E-19, D-60) : la Provenance créée à l'étape 3 et affichée à l'étape 4 porte l'état de la machine (quatre champs facultatifs, voir le modèle d'entités), l'étape 5 conserve le `b.N` de chaque répétition, l'étape 6 archive la sortie brute de `go test` ; BR-003-3 nomme ce fichier parmi ceux qui sont créés et jamais réécrits. Spécification modifiée avant tout code. 2026-09-12 — audit du code : A4 précise la vérification de provenance, la reprise du verrou, la conservation des Measurement `FAILED` et la restitution des paramètres de mesure ; A5 (interruption demandée) est ajouté ; l'étape 3 enregistre les paramètres de C-003 et dérive l'identifiant sous le verrou. 2026-09-10 — ajout de l'empreinte des critères (étape 3, BR-003-5) à la demande de UC-005 ; spécification modifiée avant tout code. Même jour : les Probe (FR-006) sont mesurées comme les Cell (étapes 4, 5, 8, A3, A4, BR-003-4) ; `Measurement.subjectId` remplace `cellId`. Revue pré-lancement du 2026-09-10 : BR-003-3 admet la transition de `status` dans `campaign.json` ; la précondition UC-002 ne vaut que si la Matrix contient une Cell.
 **Linked Hypotheses:** H-001, H-002, H-003, H-004, H-005, H-007, H-008, H-010, H-011, H-012, H-013
 **Entities:** Matrix, Cell, Probe, Campaign, Measurement, Provenance
 
@@ -25,8 +25,8 @@
 2. Le système vérifie que le nombre de répétitions satisfait NFR-003 et que l'empreinte du harnais est celle de la Matrix.
 3. Le système crée une Campaign avec un identifiant nouveau, sa Provenance, l'empreinte du harnais, l'empreinte des critères des hypothèses liées (lus dans `docs/requirements.md`) et les paramètres de mesure de C-003 (`count`, `benchtime`, `cpu`), au statut `RUNNING`. L'identifiant est dérivé sous le verrou de campagne, de sorte que deux lancements simultanés ne puissent pas le choisir en même temps.
 4. Le système affiche l'identifiant de la Campaign, la Provenance, le nombre de Cell et le nombre de Probe à mesurer.
-5. Le système mesure chaque Cell puis chaque Probe selon C-003 et enregistre, par sujet, une Measurement contenant exactement `count` valeurs de `nsPerOp`, `bytesPerOp` et `allocsPerOp`.
-6. Le système écrit chaque Measurement dans `results/campaigns/<campaignId>/` dès qu'elle est complète.
+5. Le système mesure chaque Cell puis chaque Probe selon C-003 et enregistre, par sujet, une Measurement contenant exactement `count` valeurs de `nsPerOp`, `bytesPerOp`, `allocsPerOp` et `iterations` (le `b.N` de chaque répétition).
+6. Le système écrit la sortie brute de `go test` du sujet dans `results/campaigns/<campaignId>/raw/`, puis la Measurement, qui en porte le chemin, dans `results/campaigns/<campaignId>/measurements/`, dès qu'elle est complète.
 7. Le système vérifie, en fin de campagne, que l'empreinte du harnais est inchangée.
 8. Le système passe la Campaign au statut `COMPLETED` et affiche la durée totale, le nombre de Cell et le nombre de Probe mesurées.
 
@@ -88,7 +88,7 @@ Une Campaign n'est valide que si l'empreinte de `internal/harness/` est identiqu
 Aucune Measurement n'est écrite sans une Campaign portant une Provenance complète (NFR-001).
 
 ### BR-003-3: Écriture seule
-Le runner de campagne crée des fichiers dans `results/`. Il ne modifie ni ne supprime aucun fichier existant, à deux exceptions nommées : le `campaign.json` de la campagne courante, dont seul le champ `status` passe de `RUNNING` à `COMPLETED` ou `ABORTED`, et `results/.campaign-lock`, créé au démarrage, repris à la reprise (A4) et retiré à la fin. Aucune Measurement, aucun fichier de comparaison, de verdicts ou d'échappement n'est réécrit.
+Le runner de campagne crée des fichiers dans `results/`. Il ne modifie ni ne supprime aucun fichier existant, à deux exceptions nommées : le `campaign.json` de la campagne courante, dont seul le champ `status` passe de `RUNNING` à `COMPLETED` ou `ABORTED`, et `results/.campaign-lock`, créé au démarrage, repris à la reprise (A4) et retiré à la fin. Aucune Measurement, aucune sortie brute, aucun fichier de comparaison, de verdicts ou d'échappement n'est réécrit. Une sortie brute laissée par une tentative dont la Measurement n'a pas été écrite (processus tué entre les deux écritures) est conservée : la reprise (A4) écrit la sienne sous un nom suffixé, sans toucher la première.
 
 ### BR-003-4: Un sujet, un processus
 Chaque Cell et chaque Probe est mesurée dans un processus `go test` distinct afin qu'aucun état du runtime ne se propage d'un sujet au suivant.
@@ -109,6 +109,8 @@ L'empreinte des critères de réfutation est calculée à la création de la Cam
 
 - Révision du 2026-09-12, A5. Une interruption était convertie en échec de mesure sans erreur Go : la boucle ne voyait pas l'annulation, tous les sujets restants échouaient en chaîne, et la campagne se clôturait `COMPLETED`. A4 devenait alors structurellement inatteignable, puisque la reprise exige `RUNNING`. Une interruption n'est pas un résultat de mesure : elle arrête la boucle et laisse la campagne reprenable.
 
+- Révision du 2026-09-22, lot 6 (E-14, E-19). La Provenance d'une campagne ne disait rien de l'état de la machine au-delà du processeur et des caches : ni la version du système, ni le plan d'alimentation, ni l'affinité, ni la répartition des cœurs d'un processeur hybride, alors que chacun déplace un temps par opération. Les Measurement ne gardaient que les valeurs par opération : ni le `b.N` de chaque répétition, ni la sortie brute, reconnus manquants dès la campagne 1. Les nouveaux champs sont facultatifs, constatés et non imposés ; ils ne participent ni à la vérification de provenance d'A4 ni à aucune empreinte, de sorte que les campagnes archivées restent valides et comparables. Note de revue : révision rédigée et vérifiée par un agent (barre de sortie commune, harnais de non-régression sur les campagnes archivées) ; aucune revue humaine ne l'a encore lue, ce que la revue par un tiers des cas d'utilisation (lot 1 du plan) couvrira.
+- Acteur « Pipeline CI » : il désigne un usage prévu. Depuis le retrait de la CI (D-53), ce rôle est tenu par le journal manuel de vérification hors poste, `Doc/VERIFICATION-HORS-POSTE.md` à la racine du dépôt.
 - Les drapeaux exacts (`-benchmem`, `-count`, `-cpu`) relèvent de C-003, pas de ce cas d'utilisation.
 - La détection du CPU et de la version de Go est un adapter (`internal/adapters/provenance`) ; le service ne fait que consigner ce qu'il reçoit.
 - Les pannes techniques (disque plein, toolchain absente) sont traitées par l'implémentation et n'apparaissent pas comme flux alternatifs.

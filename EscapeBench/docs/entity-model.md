@@ -2,6 +2,8 @@
 
 Le modèle sert de glossaire : les noms ci-dessous sont repris tels quels dans les exigences, les cas d'utilisation, le code (`internal/models`) et les tests.
 
+Révision du 2026-09-22, lot 6 du plan d'implantation de l'évaluation (E-14, E-19, D-60) : `Provenance` reçoit quatre champs facultatifs qui décrivent l'état de la machine — `osVersion`, `powerPlan`, `cpuAffinity`, `coreTypes` — et `Measurement` en reçoit deux qui archivent la mesure brute — `iterations` et `rawOutputFile`. Aucun ne participe à une identité, à une empreinte ni à un critère de réfutation, et aucun gabarit du harnais n'est touché : un fichier de résultats antérieur reste valide et se relit sans eux. Le banc constate ces réglages ; il n'en impose aucun.
+
 Révision du 2026-09-10, satisfaction de C-010 : `Measurement` porte une attestation de quiétude. Elle est facultative, comme les quatre champs de `Provenance` ajoutés par C-008 : un fichier de résultats antérieur reste valide. Elle ne participe à aucune identité et n'entre dans aucune empreinte.
 
 Révision du 2026-09-10, satisfaction de C-009 : `Cell` porte un rang de réplicat. Il n'entre ni dans `Comparison`, ni dans `ComparisonSet.tippingPoints` : H-012 groupe ses réplicats par la taille, la disposition, la présence d'un champ pointeur et le profil, tous déjà présents dans `Comparison`, et les distingue par `valueCellId`. Faire entrer un champ de plus dans la clé des points de bascule rendrait H-002 non concluante sur toute campagne future, sans erreur ni trace. Ce qu'aucun critère ne lit, le modèle ne le porte pas. Corollaire assumé : le point de bascule d'une série répliquée n'est pas défini, le balayage descendant dépendant alors de l'ordre du fichier, et UC-004 ne le publie pas.
@@ -115,9 +117,13 @@ Résultat de la classification d'une cellule par le compilateur.
 | lastLevelCacheBytes | Integer | Ajouté par C-008 ; même règle |
 | pageSizeBytes | Integer | Ajouté par C-008 ; consigné pour le diagnostic, aucun critère ne s'y adosse |
 | gomaxprocs | Integer | Ajouté par C-008 ; consigné pour la comparaison avec les chiffres du livre |
+| osVersion | String | Ajouté le 2026-09-22 (D-60) ; facultatif ; nom, version et build du système d'exploitation, relevés sur la machine. Vide si la plateforme ne les expose pas |
+| powerPlan | String | Ajouté le 2026-09-22 (D-60) ; facultatif ; plan d'alimentation actif sous Windows (nom et GUID), gouverneur de fréquence du premier processeur sous Linux, vide ailleurs ou si la lecture échoue. Consigné, jamais imposé |
+| cpuAffinity | String | Ajouté le 2026-09-22 (D-60) ; facultatif ; masque d'affinité du processus du banc, dont héritent les processus `go test` ; « non épinglé » quand il couvre tous les processeurs de la machine. Vide si la lecture échoue |
+| coreTypes | { performance, efficiency } | Ajouté le 2026-09-22 (D-60) ; facultatif ; nombre de cœurs physiques de performance et d'efficacité, quand la topologie les distingue (processeur hybride). Absent sinon : un processeur homogène ne porte pas ce champ, plutôt qu'une répartition inventée |
 | capturedAt | DateTime (UTC) | Requis |
 
-Les quatre champs ajoutés par C-008 ne sont pas exigés par NFR-001 : un fichier de résultats antérieur reste valide, et ils ne participent pas à l'identité de la toolchain que compare UC-002 A3.
+Les quatre champs ajoutés par C-008 et les quatre ajoutés le 2026-09-22 ne sont pas exigés par NFR-001 : un fichier de résultats antérieur reste valide, et ils ne participent ni à l'identité de la toolchain que compare UC-002 A3, ni à la vérification de provenance d'une reprise (UC-003, A4).
 
 ## Campaign
 
@@ -149,6 +155,8 @@ Les quatre champs ajoutés par C-008 ne sont pas exigés par NFR-001 : un fichie
 | status | Enum | Requis ; valeurs : `COMPLETE`, `FAILED` ; les listes sont vides si `FAILED` |
 | failureReason | String | Requis si `FAILED` |
 | quietudeOccupancy | Decimal | Ajouté par C-010 ; facultatif ; fraction de la capacité de la machine consommée pendant la fenêtre de mesure par tout ce qui n'est pas le sujet, une fois retranché le travail de la campagne. Vaut de 0 à 1. Absent d'un fichier antérieur à C-010, et absent quand la plateforme ne sait pas le produire : H-013 se déclare alors non concluante plutôt que de supposer une quiétude |
+| iterations | Liste de Integer | Ajouté le 2026-09-22 (D-60) ; facultatif ; nombre d'itérations `b.N` de chaque répétition, dans l'ordre de `nsPerOp`. Exactement `count` valeurs strictement positives quand il est présent ; absent d'un fichier antérieur et vide si `FAILED` |
+| rawOutputFile | String | Ajouté le 2026-09-22 (D-60) ; facultatif ; chemin, relatif à la racine du projet, de la sortie brute de `go test` pour ce sujet, sous `results/campaigns/<campaignId>/raw/`. Le fichier est créé une fois et jamais réécrit (BR-003-3). Présent aussi pour une Measurement `FAILED` quand `go test` a produit une sortie ; absent d'un fichier antérieur |
 
 ## Comparison
 

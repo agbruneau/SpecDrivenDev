@@ -20,13 +20,14 @@ Une ligne par élément vérifiable du UC :
 - scénario principal → `TestUC###_MainFlow` ;
 - chaque flux alternatif `Ak` → `TestUC###_Ak_<slug>` ;
 - chaque règle `BR-<UC>-<n>` → `TestUC###_BRn_<slug>` ;
+- chaque évaluateur d'hypothèse (UC-005) → `TestUC005_H###_<slug>` ;
 - chaque postcondition d'échec → assertion « état inchangé » dans le test du flux correspondant.
 
 ## 3. Écrire ou compléter les tests
 - Table-driven (`[]struct{name string; ...}` + `t.Run`), un cas par ligne de la matrice manquante ; `t.Parallel()` seulement si le cas n'utilise ni disque partagé ni horloge.
 - Assertions sur les **postconditions** (état des fichiers, contenu retourné, erreur typée), pas sur des détails internes.
 - Adapters factices en mémoire : `internal/service/fakes_test.go` (`memoryStore`, `fakeRunner`, `fakeDigester`, `fakeProvenance`…). Les étendre plutôt qu'en créer d'autres ; aucun appel réel à `go build`/`go test` dans un test unitaire. Les tests qui exercent les adapters réels portent `//go:build integration_test` et tournent par `make integration_test`.
-- `testing/synctest` (Go 1.25) pour tout délai, ticker ou goroutine ; jamais de `time.Sleep`.
+- `testing/synctest` (Go 1.25) pour tout délai, ticker ou goroutine simulables ; jamais de `time.Sleep`. Exemption : un test qui lit des compteurs réels du système (temps processeur de la machine ou d'un arbre de processus) le dit en commentaire (D-59).
 - Provenance et empreintes : tests avec des valeurs fixes injectées, jamais l'environnement réel.
 - Pour chaque test créé, applique le troisième contrôle de SDD (p. 95) : indique en commentaire la mutation qui doit le faire échouer (`// Mutation : retirer la vérification BR-003-1 ⇒ échec attendu`).
 
