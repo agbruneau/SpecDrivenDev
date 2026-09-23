@@ -1,0 +1,53 @@
+{
+  "id": "C-2026-09-23-1",
+  "matrixId": "M-b44a93baae51",
+  "harnessDigest": "551ce66be89b2dda720d9fd5ea7a3fb840977f09aed9bbbdf2ed5d112796257b",
+  "hypothesesDigest": "4f0272d3e9bf578e913044c9e1a78788b953525549c013e5e6e8cb27df9bb1c6",
+  "hypothesisIds": [
+    "H-001",
+    "H-002",
+    "H-003",
+    "H-004",
+    "H-005",
+    "H-006",
+    "H-007",
+    "H-008",
+    "H-009",
+    "H-010",
+    "H-011",
+    "H-013"
+  ],
+  "criteriaDigests": {
+    "H-001": "22ba16bb28c08479c4d1aa760034135865d0ac794a83b777a6bb560b27b10488",
+    "H-002": "52f4b97535cf703e47d28ebbe20c037395a858a8f8c29efc1c38405fc4366674",
+    "H-003": "84d312cc9e78b6c3530d9adb0de7742d45da9b852cbf157e00bb426205ca278d",
+    "H-004": "d19fb9cc4ddb8f8a939b3be4388f015c693f9516abf19595ca28778cf74726fd",
+    "H-005": "e3aa27aa25a32aebfa57ab9fabf109843d7b48c8b88126078f0993f971b06876",
+    "H-006": "bccd139ef8e72658cd86d0d6174ea61693e20ce5bf9922ca8cb4c3948a0ecd5f",
+    "H-007": "f3e37bbd46f6ce76b2f5eccdc28e3d9b954a22a7d8bdee1d89b1a448027584a7",
+    "H-008": "0112dad1c602785fd64092f752a7c6a356011619a55c4b14fb82cef7b8bc018d",
+    "H-009": "971c980547a2839d72855176d8dcc13cec064e291dfd84fb72dc4f6f182ce597",
+    "H-010": "34b3355c8f08b97106ceb0b65d2e63acd1b986088a72915d739519ea2a1c908d",
+    "H-011": "d7beb6bce3add796f688fa0064f9c5962dc7a59bff3dc77df06d390553e7e9b0",
+    "H-013": "30900c5722c000aa59a60ea0c7530f0b0c12e48094454812e90b29f1fede6202"
+  },
+  "count": 20,
+  "benchTime": "250ms",
+  "cpu": 1,
+  "status": "COMPLETED",
+  "provenance": {
+    "goVersion": "go1.27.0",
+    "goos": "linux",
+    "goarch": "amd64",
+    "cpuModel": "Intel(R) Core(TM) Ultra 9 275HX",
+    "l1DataCacheBytes": 49152,
+    "lastLevelCacheBytes": 37748736,
+    "pageSizeBytes": 4096,
+    "gomaxprocs": 24,
+    "osVersion": "Ubuntu 24.04.4 LTS, noyau 6.18.33.2-microsoft-standard-WSL2",
+    "cpuAffinity": "non épinglé",
+    "capturedAt": "2026-09-23T09:33:52.054233049Z"
+  },
+  "startedAt": "2026-09-23T09:33:52.055208804Z",
+  "finishedAt": "2026-09-23T10:36:14.467926938Z"
+}

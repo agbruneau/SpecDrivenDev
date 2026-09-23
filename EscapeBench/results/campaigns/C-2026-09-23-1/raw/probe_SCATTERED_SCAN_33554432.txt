@@ -1,0 +1,26 @@
+goos: linux
+goarch: amd64
+pkg: escapebench.local/matrix/M-b44a93baae51/subjects/probe_SCATTERED_SCAN_33554432
+cpu: Intel(R) Core(TM) Ultra 9 275HX
+BenchmarkSubject 	      78	   4432176 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	      76	   3725002 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	      93	   3915125 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	     103	   2649316 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	     124	   2539255 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	     100	   2576022 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	     100	   2632369 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	     100	   2716902 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	     100	   2798907 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	     100	   2566332 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	      93	   2713810 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	     114	   2638217 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	     100	   2637505 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	     121	   2445406 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	     122	   2432632 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	     121	   2458855 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	     100	   2566761 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	     100	   2676791 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	      99	   2603428 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	     100	   2663749 ns/op	       0 B/op	       0 allocs/op
+PASS
+ok  	escapebench.local/matrix/M-b44a93baae51/subjects/probe_SCATTERED_SCAN_33554432	7.550s

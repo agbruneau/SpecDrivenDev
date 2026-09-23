@@ -1,0 +1,26 @@
+goos: linux
+goarch: amd64
+pkg: escapebench.local/matrix/M-b44a93baae51/subjects/Size0024FieldsPtr_STORED_IN_STRUCT_VALUE
+cpu: Intel(R) Core(TM) Ultra 9 275HX
+BenchmarkSubject 	1000000000	         0.2162 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	1000000000	         0.2172 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	1000000000	         0.2152 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	1000000000	         0.2146 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	1000000000	         0.2195 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	1000000000	         0.2222 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	1000000000	         0.2242 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	1000000000	         0.2177 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	1000000000	         0.2166 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	1000000000	         0.2205 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	1000000000	         0.2202 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	1000000000	         0.2222 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	1000000000	         0.2204 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	1000000000	         0.2293 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	1000000000	         0.2197 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	1000000000	         0.2171 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	1000000000	         0.2184 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	1000000000	         0.2215 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	1000000000	         0.2200 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	1000000000	         0.2239 ns/op	       0 B/op	       0 allocs/op
+PASS
+ok  	escapebench.local/matrix/M-b44a93baae51/subjects/Size0024FieldsPtr_STORED_IN_STRUCT_VALUE	4.871s

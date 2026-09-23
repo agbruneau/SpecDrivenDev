@@ -1,0 +1,26 @@
+goos: linux
+goarch: amd64
+pkg: escapebench.local/matrix/M-b44a93baae51/subjects/Size0016Plain_RETURNED_ALLOCATING_R16_POINTER
+cpu: Intel(R) Core(TM) Ultra 9 275HX
+BenchmarkSubject 	  877562	       313.7 ns/op	     640 B/op	      32 allocs/op
+BenchmarkSubject 	  879748	       310.7 ns/op	     640 B/op	      32 allocs/op
+BenchmarkSubject 	  956570	       307.0 ns/op	     640 B/op	      32 allocs/op
+BenchmarkSubject 	  874941	       317.3 ns/op	     640 B/op	      32 allocs/op
+BenchmarkSubject 	  822711	       311.9 ns/op	     640 B/op	      32 allocs/op
+BenchmarkSubject 	  844573	       319.9 ns/op	     640 B/op	      32 allocs/op
+BenchmarkSubject 	  879933	       317.5 ns/op	     640 B/op	      32 allocs/op
+BenchmarkSubject 	  800349	       313.4 ns/op	     640 B/op	      32 allocs/op
+BenchmarkSubject 	  954842	       311.8 ns/op	     640 B/op	      32 allocs/op
+BenchmarkSubject 	  814407	       316.1 ns/op	     640 B/op	      32 allocs/op
+BenchmarkSubject 	  855898	       308.4 ns/op	     640 B/op	      32 allocs/op
+BenchmarkSubject 	  928184	       319.8 ns/op	     640 B/op	      32 allocs/op
+BenchmarkSubject 	  840874	       318.4 ns/op	     640 B/op	      32 allocs/op
+BenchmarkSubject 	  822577	       309.7 ns/op	     640 B/op	      32 allocs/op
+BenchmarkSubject 	  989168	       307.1 ns/op	     640 B/op	      32 allocs/op
+BenchmarkSubject 	  849673	       319.9 ns/op	     640 B/op	      32 allocs/op
+BenchmarkSubject 	  885170	       310.4 ns/op	     640 B/op	      32 allocs/op
+BenchmarkSubject 	  800443	       317.4 ns/op	     640 B/op	      32 allocs/op
+BenchmarkSubject 	  840846	       310.0 ns/op	     640 B/op	      32 allocs/op
+BenchmarkSubject 	  811408	       310.0 ns/op	     640 B/op	      32 allocs/op
+PASS
+ok  	escapebench.local/matrix/M-b44a93baae51/subjects/Size0016Plain_RETURNED_ALLOCATING_R16_POINTER	6.463s

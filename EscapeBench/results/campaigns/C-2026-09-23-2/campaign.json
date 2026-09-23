@@ -1,0 +1,31 @@
+{
+  "id": "C-2026-09-23-2",
+  "matrixId": "M-57477f022103",
+  "harnessDigest": "551ce66be89b2dda720d9fd5ea7a3fb840977f09aed9bbbdf2ed5d112796257b",
+  "hypothesesDigest": "cd2401837299aab2036ef055eac7fcf4b98f4a88ea525751af901bd35160d8ea",
+  "hypothesisIds": [
+    "H-012"
+  ],
+  "criteriaDigests": {
+    "H-012": "cd2401837299aab2036ef055eac7fcf4b98f4a88ea525751af901bd35160d8ea"
+  },
+  "count": 20,
+  "benchTime": "250ms",
+  "cpu": 1,
+  "status": "COMPLETED",
+  "provenance": {
+    "goVersion": "go1.27.0",
+    "goos": "linux",
+    "goarch": "amd64",
+    "cpuModel": "Intel(R) Core(TM) Ultra 9 275HX",
+    "l1DataCacheBytes": 49152,
+    "lastLevelCacheBytes": 37748736,
+    "pageSizeBytes": 4096,
+    "gomaxprocs": 24,
+    "osVersion": "Ubuntu 24.04.4 LTS, noyau 6.18.33.2-microsoft-standard-WSL2",
+    "cpuAffinity": "non épinglé",
+    "capturedAt": "2026-09-23T10:36:26.532698478Z"
+  },
+  "startedAt": "2026-09-23T10:36:26.533036444Z",
+  "finishedAt": "2026-09-23T10:46:35.418532313Z"
+}

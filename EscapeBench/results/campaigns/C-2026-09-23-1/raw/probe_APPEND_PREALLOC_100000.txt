@@ -1,0 +1,26 @@
+goos: linux
+goarch: amd64
+pkg: escapebench.local/matrix/M-b44a93baae51/subjects/probe_APPEND_PREALLOC_100000
+cpu: Intel(R) Core(TM) Ultra 9 275HX
+BenchmarkSubject 	    4546	     64906 ns/op	  802816 B/op	       1 allocs/op
+BenchmarkSubject 	    4221	     65003 ns/op	  802816 B/op	       1 allocs/op
+BenchmarkSubject 	    4104	     64541 ns/op	  802816 B/op	       1 allocs/op
+BenchmarkSubject 	    4848	     64380 ns/op	  802816 B/op	       1 allocs/op
+BenchmarkSubject 	    4498	     66546 ns/op	  802816 B/op	       1 allocs/op
+BenchmarkSubject 	    4603	     65285 ns/op	  802816 B/op	       1 allocs/op
+BenchmarkSubject 	    4282	     66813 ns/op	  802816 B/op	       1 allocs/op
+BenchmarkSubject 	    4327	     65606 ns/op	  802816 B/op	       1 allocs/op
+BenchmarkSubject 	    4101	     64768 ns/op	  802816 B/op	       1 allocs/op
+BenchmarkSubject 	    4818	     56641 ns/op	  802816 B/op	       1 allocs/op
+BenchmarkSubject 	    4959	     58662 ns/op	  802816 B/op	       1 allocs/op
+BenchmarkSubject 	    5089	     57469 ns/op	  802816 B/op	       1 allocs/op
+BenchmarkSubject 	    5367	     60884 ns/op	  802816 B/op	       1 allocs/op
+BenchmarkSubject 	    4269	     60102 ns/op	  802816 B/op	       1 allocs/op
+BenchmarkSubject 	    5365	     59904 ns/op	  802816 B/op	       1 allocs/op
+BenchmarkSubject 	    4830	     59720 ns/op	  802816 B/op	       1 allocs/op
+BenchmarkSubject 	    4760	     58774 ns/op	  802816 B/op	       1 allocs/op
+BenchmarkSubject 	    4807	     67907 ns/op	  802816 B/op	       1 allocs/op
+BenchmarkSubject 	    4573	     60064 ns/op	  802816 B/op	       1 allocs/op
+BenchmarkSubject 	    4640	     60498 ns/op	  802816 B/op	       1 allocs/op
+PASS
+ok  	escapebench.local/matrix/M-b44a93baae51/subjects/probe_APPEND_PREALLOC_100000	6.635s

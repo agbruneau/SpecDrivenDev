@@ -1,0 +1,26 @@
+goos: linux
+goarch: amd64
+pkg: escapebench.local/matrix/M-b44a93baae51/subjects/Size0016FieldsPtr_RETURNED_ALLOCATING_POINTER
+cpu: Intel(R) Core(TM) Ultra 9 275HX
+BenchmarkSubject 	14111318	        21.34 ns/op	      40 B/op	       2 allocs/op
+BenchmarkSubject 	13699760	        21.26 ns/op	      40 B/op	       2 allocs/op
+BenchmarkSubject 	13974284	        21.29 ns/op	      40 B/op	       2 allocs/op
+BenchmarkSubject 	13883360	        21.16 ns/op	      40 B/op	       2 allocs/op
+BenchmarkSubject 	12236594	        21.46 ns/op	      40 B/op	       2 allocs/op
+BenchmarkSubject 	14367966	        21.33 ns/op	      40 B/op	       2 allocs/op
+BenchmarkSubject 	13316109	        20.65 ns/op	      40 B/op	       2 allocs/op
+BenchmarkSubject 	14393132	        21.79 ns/op	      40 B/op	       2 allocs/op
+BenchmarkSubject 	13249827	        21.53 ns/op	      40 B/op	       2 allocs/op
+BenchmarkSubject 	13845681	        21.07 ns/op	      40 B/op	       2 allocs/op
+BenchmarkSubject 	13979677	        22.05 ns/op	      40 B/op	       2 allocs/op
+BenchmarkSubject 	13882364	        20.91 ns/op	      40 B/op	       2 allocs/op
+BenchmarkSubject 	14345449	        20.46 ns/op	      40 B/op	       2 allocs/op
+BenchmarkSubject 	14529132	        20.96 ns/op	      40 B/op	       2 allocs/op
+BenchmarkSubject 	12861168	        21.03 ns/op	      40 B/op	       2 allocs/op
+BenchmarkSubject 	14538446	        20.75 ns/op	      40 B/op	       2 allocs/op
+BenchmarkSubject 	14680122	        20.23 ns/op	      40 B/op	       2 allocs/op
+BenchmarkSubject 	14516450	        20.29 ns/op	      40 B/op	       2 allocs/op
+BenchmarkSubject 	14685654	        20.31 ns/op	      40 B/op	       2 allocs/op
+BenchmarkSubject 	14448475	        20.51 ns/op	      40 B/op	       2 allocs/op
+PASS
+ok  	escapebench.local/matrix/M-b44a93baae51/subjects/Size0016FieldsPtr_RETURNED_ALLOCATING_POINTER	6.336s

@@ -1,0 +1,26 @@
+goos: linux
+goarch: amd64
+pkg: escapebench.local/matrix/M-b44a93baae51/subjects/probe_SEQUENTIAL_SCAN_33554432
+cpu: Intel(R) Core(TM) Ultra 9 275HX
+BenchmarkSubject 	     166	   1512446 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	     201	   1311828 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	     238	   1225127 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	     250	   1206269 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	     254	   1261150 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	     234	   1232883 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	     247	   1436599 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	     213	   2379078 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	     247	   1531548 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	     181	   1634759 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	     205	   1389278 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	     222	   1253584 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	     238	   1218789 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	     247	   1173564 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	     252	   1198445 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	     250	   1215741 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	     236	   1695544 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	     186	   1392282 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	     210	   1382814 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	     207	   1376881 ns/op	       0 B/op	       0 allocs/op
+PASS
+ok  	escapebench.local/matrix/M-b44a93baae51/subjects/probe_SEQUENTIAL_SCAN_33554432	9.783s

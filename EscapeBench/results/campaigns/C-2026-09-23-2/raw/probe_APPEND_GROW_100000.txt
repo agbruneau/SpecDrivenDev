@@ -1,0 +1,26 @@
+goos: linux
+goarch: amd64
+pkg: escapebench.local/matrix/M-57477f022103/subjects/probe_APPEND_GROW_100000
+cpu: Intel(R) Core(TM) Ultra 9 275HX
+BenchmarkSubject 	    1077	    274243 ns/op	 4101375 B/op	      27 allocs/op
+BenchmarkSubject 	    1102	    278017 ns/op	 4101375 B/op	      27 allocs/op
+BenchmarkSubject 	    1095	    273646 ns/op	 4101375 B/op	      27 allocs/op
+BenchmarkSubject 	    1132	    269799 ns/op	 4101375 B/op	      27 allocs/op
+BenchmarkSubject 	    1124	    276292 ns/op	 4101375 B/op	      27 allocs/op
+BenchmarkSubject 	    1032	    279882 ns/op	 4101375 B/op	      27 allocs/op
+BenchmarkSubject 	    1101	    276059 ns/op	 4101375 B/op	      27 allocs/op
+BenchmarkSubject 	    1123	    268745 ns/op	 4101375 B/op	      27 allocs/op
+BenchmarkSubject 	    1087	    275603 ns/op	 4101375 B/op	      27 allocs/op
+BenchmarkSubject 	    1102	    272435 ns/op	 4101375 B/op	      27 allocs/op
+BenchmarkSubject 	    1124	    268966 ns/op	 4101375 B/op	      27 allocs/op
+BenchmarkSubject 	    1009	    268552 ns/op	 4101375 B/op	      27 allocs/op
+BenchmarkSubject 	    1156	    272581 ns/op	 4101375 B/op	      27 allocs/op
+BenchmarkSubject 	    1094	    277899 ns/op	 4101375 B/op	      27 allocs/op
+BenchmarkSubject 	    1159	    272036 ns/op	 4101375 B/op	      27 allocs/op
+BenchmarkSubject 	    1100	    269381 ns/op	 4101375 B/op	      27 allocs/op
+BenchmarkSubject 	    1111	    313043 ns/op	 4101375 B/op	      27 allocs/op
+BenchmarkSubject 	    1092	    328200 ns/op	 4101375 B/op	      27 allocs/op
+BenchmarkSubject 	    1120	    339474 ns/op	 4101375 B/op	      27 allocs/op
+BenchmarkSubject 	    1076	    327884 ns/op	 4101375 B/op	      27 allocs/op
+PASS
+ok  	escapebench.local/matrix/M-57477f022103/subjects/probe_APPEND_GROW_100000	6.827s

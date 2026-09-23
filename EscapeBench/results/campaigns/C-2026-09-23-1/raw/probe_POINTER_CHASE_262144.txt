@@ -1,0 +1,26 @@
+goos: linux
+goarch: amd64
+pkg: escapebench.local/matrix/M-b44a93baae51/subjects/probe_POINTER_CHASE_262144
+cpu: Intel(R) Core(TM) Ultra 9 275HX
+BenchmarkSubject 	100000000	         2.986 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	100000000	         3.028 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	100000000	         2.985 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	94849063	         2.972 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	100000000	         3.012 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	100000000	         2.981 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	93614667	         3.141 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	100000000	         3.081 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	100000000	         2.987 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	100000000	         3.135 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	96569931	         3.096 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	90315798	         2.998 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	100000000	         2.996 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	98924460	         3.050 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	94561365	         3.097 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	100000000	         3.043 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	100000000	         3.080 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	97463701	         3.146 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	100000000	         3.016 ns/op	       0 B/op	       0 allocs/op
+BenchmarkSubject 	99446052	         3.015 ns/op	       0 B/op	       0 allocs/op
+PASS
+ok  	escapebench.local/matrix/M-b44a93baae51/subjects/probe_POINTER_CHASE_262144	6.063s
