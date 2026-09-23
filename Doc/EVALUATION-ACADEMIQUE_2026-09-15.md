@@ -377,7 +377,7 @@ Ajouté le 2026-09-22, après l'exécution de [`PLAN-IMPLANTATION_EVALUATION_202
 | E-22 | accepté pour le passé | Lot 5 : convention de commit au README; l'historique n'est pas réécrit pour elle. |
 | E-23 | clos | Les répertoires vides ne sont pas suivis par Git et n'existent pas dans le dépôt publié (D-55). |
 | E-24 | clos | Lot 0 : branche distante supprimée. |
-| E-25 | partiel | Lots 0 et 11 : étiquettes `v1.0` et `v1.1`, `CITATION.cff`, section « Citer ce dépôt ». La release GitHub et le DOI restent au chercheur. |
+| E-25 | partiel | Lots 0 et 11 : étiquettes `v1.0` et `v1.1`, `CITATION.cff`, section « Citer ce dépôt ». Release GitHub `v1.1` publiée le 2026-09-22 (`v1.1.1` et `v1.1.2`, même commit, pour Zenodo). DOI non attribué : le webhook de Zenodo est absent du dépôt au 2026-09-23. |
 | E-26 | clos | Lot 10 : sommaire, état des 75 constats, erratum des décomptes (D-65). |
 | E-27 | clos | Lot 4 : 9 auditeurs, 162 vérificateurs, 1 critique (D-58). |
 | E-28 | accepté | Gardes à échec fermé, documentées; confirmé sous WSL2 sans `jq`. |
