@@ -355,7 +355,7 @@ Ajouté le 2026-09-22, après l'exécution de [`PLAN-IMPLANTATION_EVALUATION_202
 |---|---|---|
 | E-01 | clos sous réserve | Lot 3 : [`ETAT-DE-L-ART.md`](ETAT-DE-L-ART.md), README §1.4, D-57. Les références sont vérifiées par agent; leur lecture par le chercheur reste à faire (règle 6 du plan). |
 | E-02 | partiel | Lot 0, D-55 : historique réécrit, sauvegardes et reflog purgés, branche distante supprimée, clone neuf vérifié sans aucun objet des ouvrages. Reste `refs/pull/1/head` chez GitHub, que seul son soutien peut supprimer. |
-| E-03 | partiel | Lot 8 : suite des deux bancs rejouée sous Linux (WSL2) sans échec ([`VERIFICATION-HORS-POSTE.md`](VERIFICATION-HORS-POSTE.md)); les campagnes de mesure sous Linux restent à lancer par le chercheur. Lot 9 : série arm64 préparée sur la branche `lot-9-arm64` (D-63), non mesurée faute de matériel. |
+| E-03 | partiel | Lot 8 : suite des deux bancs rejouée sous Linux (WSL2) sans échec ([`VERIFICATION-HORS-POSTE.md`](VERIFICATION-HORS-POSTE.md)), puis les trois campagnes de référence le 2026-09-23 (D-62, D-20) : quatre verdicts d'EscapeBench et un de LeakLab dépendent de la plateforme. Lot 9 : série arm64 préparée sur la branche `lot-9-arm64` (D-63), non mesurée faute de matériel. |
 | E-04 | clos | Lot 2 (« revues par agents », README §3.5, guide §7) et lot 4 ([`PROMPTS-REVUES_2026-09-10.md`](../Revue/PROMPTS-REVUES_2026-09-10.md), D-58). |
 | E-05 | clos, trous nommés | Lot 4 : [`QR2-MESURES.md`](QR2-MESURES.md), script `outils/qr2-sessions.sh`, D-58. Sessions en nuage du 2026-09-12 hors mesure. |
 | E-06 | clos | Lot 2 : décompte par portée au résumé, colonne « Portée » aux tableaux. |

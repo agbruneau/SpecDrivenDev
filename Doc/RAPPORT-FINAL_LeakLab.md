@@ -86,16 +86,20 @@ Les verdicts de `R-2026-09-13-1` restent lisibles dans `results/verdicts/`. Sur 
 
 ## Limites
 
-- **Validité externe.** Corpus synthétique de 32 cas, un poste Windows amd64, Go 1.27.0. La campagne n'a pas été rejouée sous Linux : la toolchain de WSL est trop ancienne, et aucun téléchargement n'a été lancé.
+- **Validité externe.** Corpus synthétique de 32 cas, un poste Windows amd64, Go 1.27.0. *(Révisé le 2026-09-23.)* La campagne a été rejouée sous Linux dans WSL2, sur le même poste (`R-2026-09-23-1`, D-20) : treize verdicts sur quatorze sont identiques; voir la section du rejeu.
 - **Vérité terrain.** L'oracle vérifie par les piles de goroutines les fuites, leur primitive et l'absence de fuite des cas corrigés. Il ne vérifie ni les courses, ni l'accessibilité d'une primitive, ni les défauts statiques, ni les interblocages, qui tiennent par construction.
 - **Détecteurs idéalisés.** NUMGOROUTINE mesure un scénario isolé répété dix fois ; dans une vraie suite, les tests parallèles partagent le compte, ce que le banc n'a pas mesuré. C'est en outre un pilote écrit pour le banc (K = 10, seuil K/2, attente d'au plus 1 s, C-006), pas un outil du livre : H-012 juge ce pilote plus que la surveillance « lente et continue » de la p. 293 *(précision du 2026-09-22)*.
 - **Résolution de l'horloge** *(ajout du 2026-09-22)*. Sur ce poste Windows, H-006 borne la durée d'une bulle sans la mesurer : 0 ns est la résolution de l'horloge monotone, environ 5 µs par bulle en contre-épreuve (D-15).
 - **Revue humaine.** Les cas d'utilisation ont été approuvés par l'agent sur mandat (D-01) : la revue prévue par l'AIUP n'a pas eu lieu avant la clôture. Une revue à froid par un tiers est préparée ([`Revue/DOSSIER-REVUE-UC_2026-09-22.md`](../Revue/DOSSIER-REVUE-UC_2026-09-22.md)); elle n'a pas encore eu lieu *(ajout du 2026-09-22)*. LeakLab n'a pas eu non plus de revue par agents ([`QR2-MESURES.md`](QR2-MESURES.md)).
 - **Travaux antérieurs** *(ajout du 2026-09-22)*. Plusieurs résultats répliquent des travaux connus (Tu et coll., 2019, pour H-002 et H-004; l'*issue* golang/go n° 69188 pour H-008); positionnement dans [`ETAT-DE-L-ART.md`](ETAT-DE-L-ART.md).
 
+## Rejeu sous Linux (2026-09-23)
+
+`R-2026-09-23-1`, sous Ubuntu 24.04 dans WSL2, même poste, go1.27.0 ([rapport](../Campagnes/RAPPORT-CAMPAGNE_R-2026-09-23-linux.md), D-20). Un seul verdict change : **H-007 passe de confirmée à infirmée**. Exécutés comme programmes, les deux interblocages tournent jusqu'au délai au lieu de finir en erreur fatale. Le corpus importe `net`, ce qui lie cgo au binaire sous Linux, et `checkdead` (`runtime/proc.go`) ne déclare pas l'interblocage d'un programme cgo. Construit avec `CGO_ENABLED=0`, le même binaire finit en erreur fatale en 0,01 s (vérifié). Portée : de banc, puisque l'infirmation tient à la composition du corpus. Elle révèle toutefois une condition que le livre ne donne pas : l'erreur fatale suppose un programme sans cgo. Les deux angles morts propres au dépôt (H-008, H-013) se retrouvent à l'identique sous Linux.
+
 ## Ce qui reste ouvert
 
-- Rejouer la campagne sous Linux et sur arm64.
+- Rejouer la campagne sur arm64 (le rejeu Linux est fait, D-20).
 - Vérifier dans le runtime le mécanisme de l'angle mort du profil `goroutineleak` sur les petits mutex, et l'étendre à `sync.RWMutex`.
 - Mesurer NUMGOROUTINE dans une suite réelle, sous `t.Parallel`.
 - Passer au projet suivant de la séquence recommandée, P4 (HexaGuard).
