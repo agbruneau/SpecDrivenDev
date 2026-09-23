@@ -90,7 +90,8 @@ func TestNFR004_EcritureJSONEtRelecture(t *testing.T) {
 }
 
 // TestNFR001_CampagnesArchiveesLisibles vérifie que les campagnes archivées, antérieures à
-// osVersion (modèle d'entités, révision du 2026-09-22), se relisent sans lui. Lecture seule.
+// osVersion (modèle d'entités, révision du 2026-09-22), se relisent sans lui, et que les campagnes
+// postérieures le portent. Lecture seule.
 func TestNFR001_CampagnesArchiveesLisibles(t *testing.T) {
 	paths, err := filepath.Glob(filepath.Join("..", "..", "results", "runs", "R-*.json"))
 	if err != nil || len(paths) == 0 {
@@ -101,7 +102,8 @@ func TestNFR001_CampagnesArchiveesLisibles(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if r.Provenance.GoVersion == "" || r.Provenance.CPU == "" || len(r.Observations) == 0 || r.Provenance.OSVersion != "" {
+		recent := filepath.Base(p) >= "R-2026-09-22" // osVersion est écrit depuis D-19
+		if r.Provenance.GoVersion == "" || r.Provenance.CPU == "" || len(r.Observations) == 0 || (r.Provenance.OSVersion != "") != recent {
 			t.Errorf("%s : provenance %+v, %d observations", filepath.Base(p), r.Provenance, len(r.Observations))
 		}
 	}

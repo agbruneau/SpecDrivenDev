@@ -361,8 +361,10 @@ func TestUC005_BR5_EmpreintesGeleesInchangees(t *testing.T) {
 // TestUC003_CampagnesArchiveesSansLesChampsDeD60 relit chaque campagne archivée, sa Provenance et
 // toutes ses Measurement, et exige qu'elles restent valides alors qu'elles ne portent aucun des
 // champs ajoutés le 2026-09-22 (D-60) : osVersion, powerPlan, cpuAffinity, coreTypes, iterations,
-// rawOutputFile. C'est la preuve que ces champs sont facultatifs.
-// Mutation : exiger iterations dans Measurement.Validate ⇒ échec attendu sur chaque campagne.
+// rawOutputFile. C'est la preuve que ces champs sont facultatifs. Les campagnes lancées depuis D-60
+// (identifiant daté du 2026-09-22 ou après, comme le rejeu Linux de D-62) doivent au contraire les
+// porter : `iterations` de longueur count et une sortie brute.
+// Mutation : exiger iterations dans Measurement.Validate ⇒ échec attendu sur chaque campagne antérieure.
 func TestUC003_CampagnesArchiveesSansLesChampsDeD60(t *testing.T) {
 	ctx := context.Background()
 	root := projectRoot(t)
@@ -371,7 +373,8 @@ func TestUC003_CampagnesArchiveesSansLesChampsDeD60(t *testing.T) {
 	if err != nil {
 		t.Fatalf("lecture de results/campaigns : %v", err)
 	}
-	campaigns, measured := 0, 0
+	const d60 = "C-2026-09-22" // premier jour où le banc écrit les champs de D-60
+	campaigns, measured, recent := 0, 0, 0
 	for _, entry := range entries {
 		if !entry.IsDir() {
 			continue
@@ -382,6 +385,25 @@ func TestUC003_CampagnesArchiveesSansLesChampsDeD60(t *testing.T) {
 		}
 		if err := campaign.Validate(); err != nil {
 			t.Errorf("campagne %s invalide : %v", campaign.ID, err)
+		}
+		if campaign.ID >= d60 {
+			recent++
+			if campaign.Provenance.OSVersion == "" {
+				t.Errorf("campagne %s, postérieure à D-60 : osVersion absent", campaign.ID)
+			}
+			measurements, err := disk.LoadMeasurements(ctx, campaign.ID)
+			if err != nil {
+				t.Fatalf("mesures de %s : %v", campaign.ID, err)
+			}
+			for _, m := range measurements {
+				if err := m.Validate(campaign.Count); err != nil {
+					t.Errorf("%s : %v", campaign.ID, err)
+				}
+				if m.Status == models.MeasurementComplete && (len(m.Iterations) != campaign.Count || m.RawOutputFile == "") {
+					t.Errorf("%s / %s : iterations ou sortie brute manquante après D-60", campaign.ID, m.SubjectID)
+				}
+			}
+			continue
 		}
 		p := campaign.Provenance
 		if p.OSVersion != "" || p.PowerPlan != "" || p.CPUAffinity != "" || p.CoreTypes != (models.CoreTypes{}) {
@@ -405,5 +427,5 @@ func TestUC003_CampagnesArchiveesSansLesChampsDeD60(t *testing.T) {
 	if campaigns == 0 {
 		t.Fatal("aucune campagne archivée relue : le test ne prouve rien")
 	}
-	t.Logf("%d campagnes archivées et %d Measurement relues sans les champs de D-60", campaigns, measured)
+	t.Logf("%d campagnes archivées et %d Measurement relues sans les champs de D-60; %d campagnes postérieures les portent", campaigns, measured, recent)
 }
