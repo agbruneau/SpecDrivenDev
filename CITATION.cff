@@ -8,7 +8,7 @@ authors:
 version: "v1.1"
 date-released: "2026-09-22"
 license: MIT
-repository-code: "https://github.com/agbruneau/Prospection"
+repository-code: "https://github.com/agbruneau/SpecDrivenDev"
 keywords:
   - Go
   - escape analysis

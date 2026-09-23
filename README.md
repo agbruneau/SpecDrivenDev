@@ -342,7 +342,7 @@ Conventions : prose en français, identifiants et code en anglais; pages citées
 
 ## Citer ce dépôt
 
-Les métadonnées de citation sont dans [`CITATION.cff`](CITATION.cff), que GitHub affiche sous « Cite this repository ». L'état évalué le 2026-09-15 porte l'étiquette `v1.0` (historique purgé, D-55); l'état qui implante l'évaluation porte `v1.1`. La release GitHub [`v1.1`](https://github.com/agbruneau/Prospection/releases/tag/v1.1) est publiée depuis le 2026-09-22; `v1.1.1` et `v1.1.2` portent le même commit et n'existent que pour l'archivage par Zenodo. Aucun DOI n'est encore attribué : au 2026-09-23, le dépôt n'a pas le webhook par lequel Zenodo apprend la publication d'une release, malgré l'activation de l'intégration. Le DOI sera reporté ici et dans `CITATION.cff` dès qu'il existera.
+Les métadonnées de citation sont dans [`CITATION.cff`](CITATION.cff), que GitHub affiche sous « Cite this repository ». L'état évalué le 2026-09-15 porte l'étiquette `v1.0` (historique purgé, D-55); l'état qui implante l'évaluation porte `v1.1`. La release GitHub [`v1.1`](https://github.com/agbruneau/SpecDrivenDev/releases/tag/v1.1) est publiée depuis le 2026-09-22; `v1.1.1` et `v1.1.2` portent le même commit et n'existent que pour l'archivage par Zenodo. Aucun DOI n'est encore attribué : au 2026-09-23, le dépôt n'a pas le webhook par lequel Zenodo apprend la publication d'une release, malgré l'activation de l'intégration. Le DOI sera reporté ici et dans `CITATION.cff` dès qu'il existera.
 
 ## Licence
 
